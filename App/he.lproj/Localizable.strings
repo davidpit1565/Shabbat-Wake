@@ -76,3 +76,7 @@
 "Open Settings" = "פתיחת הגדרות";
 "Times unavailable" = "הזמנים אינם זמינים";
 "Loading times for your location…" = "טוען זמנים לפי המיקום שלך…";
+
+"Saving requests an Apple AlarmKit schedule. The system must accept it, and alarm delivery still requires physical-device verification." = "השמירה מבקשת לתזמן אזעקה דרך Apple AlarmKit. המערכת חייבת לאשר את התזמון, ואת הצלצול עצמו עדיין צריך לבדוק באייפון אמיתי.";
+"AlarmKit scheduling implemented; device verification pending" = "תזמון דרך AlarmKit יושם; נותר אימות במכשיר";
+"Original tones bundled; system playback unverified" = "הצלילים המקוריים צורפו; השמעתם דרך המערכת טרם אומתה";
