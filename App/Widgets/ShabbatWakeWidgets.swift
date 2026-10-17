@@ -59,7 +59,7 @@ struct ShabbatWakeAlarmLiveActivity: Widget {
                     Text(context.state.scheduledAt, style: .time).font(.title3.monospacedDigit())
                 }
                 Spacer()
-                Text(context.state.isLocationReady ? "Location ready" : "Location needed")
+                Text("System alarm scheduled")
                     .font(.caption2).foregroundStyle(.secondary)
             }
             .padding()
@@ -77,7 +77,7 @@ struct ShabbatWakeAlarmLiveActivity: Widget {
                     Text(context.state.scheduledAt, style: .time).monospacedDigit()
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text(context.state.isLocationReady ? "Shabbat Wake is ready" : "Location permission required")
+                    Text("Scheduled with Apple AlarmKit")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             } compactLeading: {
