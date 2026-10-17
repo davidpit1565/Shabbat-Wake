@@ -2,7 +2,7 @@ import CoreLocation
 import SwiftUI
 
 @MainActor
-final class ShabbatLocationModel: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
     @Published private(set) var authorization: CLAuthorizationStatus
     @Published private(set) var location: CLLocation?
     @Published private(set) var placeName: String?
@@ -110,7 +110,7 @@ private struct HebcalItem: Decodable {
     let date: String
     let category: String?
 }
-private struct ShabbatTimeItem: Identifiable {
+struct ShabbatTimeItem: Identifiable {
     let id: String
     let title: String
     let date: Date
