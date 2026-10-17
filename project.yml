@@ -30,7 +30,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
         PRODUCT_NAME: "Shabbat Wake"
-        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Your location can be used to calculate local Shabbat times and zmanim. You can also choose a location manually."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Wake requires your current location to calculate local Shabbat times. No times are calculated if you deny access."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
