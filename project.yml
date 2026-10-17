@@ -36,8 +36,12 @@ targets:
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - target: ShabbatWakeWidget
+        embed: true
     scheme:
-      testTargets: []
+      testTargets:
+        - ShabbatWakeTests
   ShabbatWakeWidget:
     type: app-extension
     platform: iOS
@@ -51,3 +55,15 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Wake"
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
+
+  ShabbatWakeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: ShabbatWake
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
