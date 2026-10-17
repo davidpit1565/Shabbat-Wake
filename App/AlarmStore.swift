@@ -25,44 +25,96 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
 final class AlarmStore: ObservableObject {
     @Published private(set) var alarms: [WakeAlarm] = []
     @Published private(set) var lastError: String?
+    @Published private(set) var systemAlarmIDs: Set<UUID> = []
 
-    private let storageKey = "shabbatWake.localAlarms.v1"
+    private let storageKey = "shabbatWake.localAlarms.v2"
 
     init() { load() }
 
-    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>) {
+    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic") async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
-        let alarm = WakeAlarm(
-            title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Wake-up" : title,
+        var alarm = WakeAlarm(
+            title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? String(localized: "Wake-up") : title,
             hour: parts.hour ?? 7,
             minute: parts.minute ?? 0,
             repeatsWeekly: repeatsWeekly,
-            weekdays: repeatsWeekly ? weekdays : []
+            weekdays: repeatsWeekly ? weekdays : [],
+            soundID: soundID
         )
-        alarms.append(alarm)
-        save()
+        do {
+            try await NativeAlarmService.schedule(alarm)
+            systemAlarmIDs.insert(alarm.id)
+            alarm.isEnabled = true
+            alarms.append(alarm)
+            save()
+            lastError = nil
+            return true
+        } catch {
+            lastError = error.localizedDescription
+            return false
+        }
     }
 
     func toggle(_ alarm: WakeAlarm) {
         guard let index = alarms.firstIndex(where: { $0.id == alarm.id }) else { return }
-        alarms[index].isEnabled.toggle()
-        save()
+        Task {
+            if alarms[index].isEnabled {
+                do {
+                    try await NativeAlarmService.cancel(id: alarm.id)
+                    systemAlarmIDs.remove(alarm.id)
+                    alarms[index].isEnabled = false
+                    save()
+                    lastError = nil
+                } catch {
+                    lastError = error.localizedDescription
+                }
+            } else {
+                do {
+                    try await NativeAlarmService.schedule(alarms[index])
+                    systemAlarmIDs.insert(alarm.id)
+                    alarms[index].isEnabled = true
+                    save()
+                    lastError = nil
+                } catch {
+                    lastError = error.localizedDescription
+                }
+            }
+        }
     }
 
     func delete(at offsets: IndexSet) {
-        alarms.remove(atOffsets: offsets)
-        save()
+        let targets = offsets.map { alarms[$0] }
+        for alarm in targets { delete(alarm) }
     }
 
     func delete(_ alarm: WakeAlarm) {
-        alarms.removeAll { $0.id == alarm.id }
-        save()
+        Task {
+            do {
+                try await NativeAlarmService.cancel(id: alarm.id)
+                systemAlarmIDs.remove(alarm.id)
+            } catch {
+                lastError = error.localizedDescription
+            }
+            alarms.removeAll { $0.id == alarm.id }
+            save()
+        }
+    }
+
+    func requestSystemAlarmPermission() async -> Bool {
+        do {
+            let allowed = try await NativeAlarmService.requestAuthorization()
+            lastError = allowed ? nil : String(localized: "Alarm permission was not granted.")
+            return allowed
+        } catch {
+            lastError = error.localizedDescription
+            return false
+        }
     }
 
     private func load() {
         guard let data = UserDefaults.standard.data(forKey: storageKey) else { return }
         do { alarms = try JSONDecoder().decode([WakeAlarm].self, from: data) }
-        catch { lastError = "Saved alarms could not be read." }
+        catch { lastError = String(localized: "Saved alarms could not be read.") }
     }
 
     private func save() {
@@ -71,7 +123,7 @@ final class AlarmStore: ObservableObject {
             UserDefaults.standard.set(data, forKey: storageKey)
             lastError = nil
         } catch {
-            lastError = "Alarm changes could not be saved."
+            lastError = String(localized: "Alarm changes could not be saved.")
         }
     }
 }
