@@ -5,7 +5,7 @@ import SwiftUI
 
 enum NativeAlarmKitService {
     static func schedule(_ alarm: WakeAlarm) async throws {
-        guard #available(iOS 26.0, *) else { throw NativeAlarmKitError.unsupported }
+        guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
         let manager = AlarmManager.shared
         if manager.authorizationState != .authorized {
             let state = try await manager.requestAuthorization()
@@ -68,7 +68,7 @@ private struct ShabbatWakeAlarmMetadata: AlarmMetadata, Codable, Hashable {}\n\n
     case permissionDenied
     var errorDescription: String? {
         switch self {
-        case .unsupported: return String(localized: "System alarms require iOS 26 or later.")
+        case .unsupported: return String(localized: "System alarms require iOS 26.1 or later.")
         case .permissionDenied: return String(localized: "Alarm permission was not granted.")
         }
     }
