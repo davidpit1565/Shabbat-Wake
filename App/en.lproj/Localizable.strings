@@ -5,7 +5,7 @@
 "Settings" = "Settings";
 "Wake-up" = "Wake-up";
 "Alarm permission was not granted." = "Alarm permission was not granted.";
-"System alarms require iOS 26 or later." = "System alarms require iOS 26 or later.";
+"System alarms require iOS 26.1 or later." = "System alarms require iOS 26.1 or later.";
 "Location access is required to calculate local Shabbat times. Enable it in Settings." = "Location access is required to calculate local Shabbat times. Enable it in Settings.";
 "Location access is required. No local times will be calculated without it." = "Location access is required. No local times will be calculated without it.";
 "Could not get your location. Check Location Services and try again." = "Could not get your location. Check Location Services and try again.";
