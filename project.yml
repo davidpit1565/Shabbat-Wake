@@ -56,6 +56,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
         PRODUCT_NAME: "Shabbat Wake Widget"
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 1.0
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Wake"
         INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
