@@ -234,7 +234,7 @@ private struct AddAlarmSheet: View {
                 Section {
                     Label("Saved on this device", systemImage: "internaldrive")
                         .font(.footnote).foregroundStyle(.secondary)
-                    Text("This creates an in-app schedule only. System alarm delivery is not connected yet, so do not rely on it to wake you.")
+                    Text("Saving requests an Apple system alarm. The alarm will be saved only if iOS grants permission and scheduling succeeds.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
@@ -244,8 +244,10 @@ private struct AddAlarmSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [])
-                        dismiss()
+                        Task {
+                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [])
+                            if saved { dismiss() }
+                        }
                     }
                 }
             }
@@ -272,7 +274,7 @@ private struct SettingsScreen: View {
                         Text("English").tag("en")
                         Text("עברית").tag("he")
                     }
-                    Text("Full Hebrew localization and right-to-left layout will be completed across all screens.")
+                    Text("Choose English or Hebrew. Some system-provided labels may follow the iPhone language.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section("Sound") {
@@ -281,7 +283,7 @@ private struct SettingsScreen: View {
                     } label: {
                         Label("Sound library and previews", systemImage: "music.note.list")
                     }
-                    Text("Preview three original synthesized tones. Native alarm assignment is still being connected.")
+                    Text("Choose a sound for preview; the selected tone is used by supported system alarms.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
