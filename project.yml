@@ -71,3 +71,5 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.tests
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ShabbatWake.app/ShabbatWake"
+        BUNDLE_LOADER: "$(TEST_HOST)"
