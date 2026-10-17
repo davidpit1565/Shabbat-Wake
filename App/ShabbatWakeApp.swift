@@ -55,6 +55,7 @@ struct RootView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showAddAlarm = false
     @StateObject private var alarmStore = AlarmStore()
+    @AppStorage("preferredLanguage") private var preferredLanguage = "system"
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -75,6 +76,8 @@ struct RootView: View {
                 .tag(MainTab.settings)
         }
         .tint(WakePalette.blue)
+        .environment(\.locale, Locale(identifier: preferredLanguage == "system" ? Locale.current.identifier : preferredLanguage))
+        .environment(\.layoutDirection, preferredLanguage == "he" ? .rightToLeft : .leftToRight)
         .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
     }
 }
