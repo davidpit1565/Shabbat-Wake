@@ -25,7 +25,11 @@ enum NativeAlarmKitService {
             time: .init(hour: alarm.hour, minute: alarm.minute),
             repeats: recurrence
         ))
-        let presentation = AlarmPresentation(\n            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: alarm.title)),\n            countdown: nil,\n            paused: nil\n        )
+        let presentation = AlarmPresentation(
+            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: alarm.title)),
+            countdown: nil,
+            paused: nil
+        )
         let attributes = AlarmAttributes(
             presentation: presentation,
             metadata: ShabbatWakeAlarmMetadata(),
