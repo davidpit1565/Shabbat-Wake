@@ -9,7 +9,12 @@ struct JewishCalendarScreen: View {
         return calendar
     }
     private var hebrewDate: String {
-        selectedDate.formatted(.dateTime.calendar(hebrewCalendar).weekday(.wide).day().month(.wide).year())
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "he")
+        formatter.calendar = hebrewCalendar
+        formatter.timeZone = .current
+        formatter.dateFormat = "EEEE, d MMMM y"
+        return formatter.string(from: selectedDate)
     }
     private var gregorianDate: String {
         selectedDate.formatted(date: .complete, time: .omitted)
