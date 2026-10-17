@@ -38,3 +38,5 @@
 "Original tones bundled; system playback unverified" = "Original tones bundled; system playback unverified";
 
 "Could not schedule alarm" = "Could not schedule alarm";
+
+"These are generated original tones, not commercial recordings. Preview playback is implemented; system-alarm playback still needs verification on a supported iPhone." = "These are generated original tones, not commercial recordings. Preview playback is implemented; system-alarm playback still needs verification on a supported iPhone.";
