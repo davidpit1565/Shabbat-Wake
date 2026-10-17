@@ -17,8 +17,7 @@ enum LiveActivityManager {
         let attributes = ShabbatWakeActivityAttributes(alarmID: alarm.id.uuidString)
         let state = ShabbatWakeActivityAttributes.ContentState(
             alarmTitle: alarm.title,
-            scheduledAt: scheduled,
-            isLocationReady: false
+            scheduledAt: scheduled
         )
         do {
             _ = try Activity.request(
