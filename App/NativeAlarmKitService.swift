@@ -56,7 +56,7 @@ enum NativeAlarmKitService {
     }
 
     static func requestAuthorization() async throws -> Bool {
-        guard #available(iOS 26.0, *) else { throw NativeAlarmKitError.unsupported }
+        guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
         let manager = AlarmManager.shared
         if manager.authorizationState == .authorized { return true }
         return try await manager.requestAuthorization() == .authorized
