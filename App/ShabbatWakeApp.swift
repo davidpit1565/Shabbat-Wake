@@ -65,7 +65,7 @@ struct RootView: View {
             AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.alarms.title, systemImage: MainTab.alarms.symbol) }
                 .tag(MainTab.alarms)
-            PlaceholderScreen(title: MainTab.calendar.title, symbol: MainTab.calendar.symbol, detail: "Shabbat and Jewish calendar information will appear here.")
+            JewishCalendarScreen()
                 .tabItem { Label(MainTab.calendar.title, systemImage: MainTab.calendar.symbol) }
                 .tag(MainTab.calendar)
             ReadinessScreen(store: alarmStore)
