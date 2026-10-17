@@ -34,6 +34,14 @@ jobs:
       - name: Generate original alarm sound assets
         run: python3 App/AlarmSoundGenerator.py
 
+      - name: Validate widget extension plist and generated sounds
+        run: |
+          plutil -lint App/Widgets/Info.plist
+          test -s App/Resources/GentleChime.wav
+          test -s App/Resources/SunriseSequence.wav
+          test -s App/Resources/ClassicWake.wav
+          file App/Resources/GentleChime.wav App/Resources/SunriseSequence.wav App/Resources/ClassicWake.wav
+
       - name: Generate Xcode project
         run: xcodegen generate
 
