@@ -63,7 +63,9 @@ enum NativeAlarmKitService {
     }
 }
 
-private struct ShabbatWakeAlarmMetadata: AlarmMetadata, Codable, Hashable {}\n\nenum NativeAlarmKitError: LocalizedError {
+private struct ShabbatWakeAlarmMetadata: AlarmMetadata, Codable, Hashable {}
+
+enum NativeAlarmKitError: LocalizedError {
     case unsupported
     case permissionDenied
     var errorDescription: String? {
