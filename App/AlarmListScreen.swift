@@ -45,7 +45,7 @@ struct AlarmListScreen: View {
                             }
                             .onDelete(perform: store.delete)
                         } footer: {
-                            Text("These are saved in-app schedules, not confirmed system alarms. Do not rely on them for wake-up until system scheduling is implemented and tested.")
+                            Text("Saving requests an Apple AlarmKit schedule. The system must accept it, and alarm delivery still requires physical-device verification.")
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -75,10 +75,10 @@ struct ReadinessScreen: View {
                     Label("\(store.alarms.filter(\.isEnabled).count) enabled in-app schedule(s)", systemImage: "checkmark.circle")
                 }
                 Section("System checks") {
-                    ReadinessRow(title: "System alarm delivery", detail: "Not implemented or verified", status: .pending)
+                    ReadinessRow(title: "System alarm delivery", detail: "AlarmKit scheduling implemented; device verification pending", status: .pending)
                     ReadinessRow(title: "Notification permission", detail: "Not queried yet", status: .pending)
                     ReadinessRow(title: "Location and zmanim", detail: "Not configured", status: .pending)
-                    ReadinessRow(title: "Sound assets", detail: "Licensed audio not bundled", status: .pending)
+                    ReadinessRow(title: "Sound assets", detail: "Original tones bundled; system playback unverified", status: .pending)
                 }
                 Section {
                     Text("This screen intentionally does not show a green 'ready' state while critical capabilities remain unverified.")
