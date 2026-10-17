@@ -67,7 +67,7 @@ struct RootView: View {
             PlaceholderScreen(title: MainTab.calendar.title, symbol: MainTab.calendar.symbol, detail: "Shabbat and Jewish calendar information will appear here.")
                 .tabItem { Label(MainTab.calendar.title, systemImage: MainTab.calendar.symbol) }
                 .tag(MainTab.calendar)
-            PlaceholderScreen(title: MainTab.readiness.title, symbol: MainTab.readiness.symbol, detail: "Readiness will reflect actual permissions and OS-confirmed alarm state.")
+            ReadinessScreen(store: alarmStore)
                 .tabItem { Label(MainTab.readiness.title, systemImage: MainTab.readiness.symbol) }
                 .tag(MainTab.readiness)
             SettingsScreen()
