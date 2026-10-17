@@ -25,13 +25,13 @@ enum NativeAlarmKitService {
             time: .init(hour: alarm.hour, minute: alarm.minute),
             repeats: recurrence
         ))
-        let presentation = AlarmPresentation(alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: alarm.title)))
+        let presentation = AlarmPresentation(\n            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: alarm.title)),\n            countdown: nil,\n            paused: nil\n        )
         let attributes = AlarmAttributes(
             presentation: presentation,
-            metadata: nil,
+            metadata: ShabbatWakeAlarmMetadata(),
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
-        let sound: AlertSound
+        let sound: AlertConfiguration.AlertSound
         switch alarm.soundID {
         case "gentle": sound = .named("GentleChime.wav")
         case "sunrise": sound = .named("SunriseSequence.wav")
@@ -47,7 +47,7 @@ enum NativeAlarmKitService {
 
     static func cancel(id: UUID) async throws {
         if #available(iOS 26.0, *) {
-            try await AlarmManager.shared.cancel(id: id)
+            try AlarmManager.shared.cancel(id: id)
         }
     }
 
@@ -59,7 +59,7 @@ enum NativeAlarmKitService {
     }
 }
 
-enum NativeAlarmKitError: LocalizedError {
+private struct ShabbatWakeAlarmMetadata: AlarmMetadata, Codable, Hashable {}\n\nenum NativeAlarmKitError: LocalizedError {
     case unsupported
     case permissionDenied
     var errorDescription: String? {
