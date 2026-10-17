@@ -276,8 +276,12 @@ private struct SettingsScreen: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section("Sound") {
-                    Label("Sound library", systemImage: "music.note.list")
-                    Text("Bundled sound selection will be enabled after licensed audio assets are added.")
+                    NavigationLink {
+                        SoundLibraryScreen()
+                    } label: {
+                        Label("Sound library and previews", systemImage: "music.note.list")
+                    }
+                    Text("Preview three original synthesized tones. Native alarm assignment is still being connected.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
