@@ -54,13 +54,14 @@ private enum MainTab: String, CaseIterable, Identifiable {
 struct RootView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showAddAlarm = false
+    @StateObject private var alarmStore = AlarmStore()
 
     var body: some View {
         TabView(selection: $selectedTab) {
             HomeDashboard(onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
-            PlaceholderScreen(title: MainTab.alarms.title, symbol: MainTab.alarms.symbol, detail: "Your scheduled wake-up alarms will appear here.")
+            AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.alarms.title, systemImage: MainTab.alarms.symbol) }
                 .tag(MainTab.alarms)
             PlaceholderScreen(title: MainTab.calendar.title, symbol: MainTab.calendar.symbol, detail: "Shabbat and Jewish calendar information will appear here.")
@@ -74,7 +75,7 @@ struct RootView: View {
                 .tag(MainTab.settings)
         }
         .tint(WakePalette.blue)
-        .sheet(isPresented: $showAddAlarm) { AddAlarmSheet() }
+        .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
     }
 }
 
@@ -215,6 +216,7 @@ private struct PlaceholderScreen: View {
 
 private struct AddAlarmSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var store: AlarmStore
     @State private var title = "Shabbat wake-up"
     @State private var time = Date.now
     @State private var repeatWeekly = true
@@ -227,9 +229,9 @@ private struct AddAlarmSheet: View {
                     Toggle("Repeat weekly", isOn: $repeatWeekly)
                 }
                 Section {
-                    Label("Scheduling is not connected yet", systemImage: "info.circle")
+                    Label("Saved on this device", systemImage: "internaldrive")
                         .font(.footnote).foregroundStyle(.secondary)
-                    Text("This first screen is a UI foundation only. It does not create a system alarm.")
+                    Text("This creates an in-app schedule only. System alarm delivery is not connected yet, so do not rely on it to wake you.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
@@ -237,7 +239,12 @@ private struct AddAlarmSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [])
+                        dismiss()
+                    }
+                }
             }
         }
     }
