@@ -5,11 +5,11 @@ import SwiftUI
 
 enum NativeAlarmKitService {
     static func schedule(_ alarm: WakeAlarm) async throws {
-        guard #available(iOS 26.0, *) else { throw AlarmSchedulingError.unsupported }
+        guard #available(iOS 26.0, *) else { throw NativeAlarmKitError.unsupported }
         let manager = AlarmManager.shared
         if manager.authorizationState != .authorized {
             let state = try await manager.requestAuthorization()
-            guard state == .authorized else { throw AlarmSchedulingError.permissionDenied }
+            guard state == .authorized else { throw NativeAlarmKitError.permissionDenied }
         }
         let weekdayMap: [Int: Locale.Weekday] = [
             1: .sunday, 2: .monday, 3: .tuesday, 4: .wednesday,
@@ -52,14 +52,14 @@ enum NativeAlarmKitService {
     }
 
     static func requestAuthorization() async throws -> Bool {
-        guard #available(iOS 26.0, *) else { throw AlarmSchedulingError.unsupported }
+        guard #available(iOS 26.0, *) else { throw NativeAlarmKitError.unsupported }
         let manager = AlarmManager.shared
         if manager.authorizationState == .authorized { return true }
         return try await manager.requestAuthorization() == .authorized
     }
 }
 
-enum AlarmSchedulingError: LocalizedError {
+enum NativeAlarmKitError: LocalizedError {
     case unsupported
     case permissionDenied
     var errorDescription: String? {
