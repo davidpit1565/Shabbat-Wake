@@ -243,12 +243,12 @@ private struct AddAlarmSheet: View {
                     Text("Saving requests an Apple system alarm. The alarm will be saved only if iOS grants permission and scheduling succeeds.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
-            }
-            if let error = store.lastError {
-                Section("Could not schedule alarm") {
-                    Text(error)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
+                if let error = store.lastError {
+                    Section("Could not schedule alarm") {
+                        Text(error)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .navigationTitle("New alarm")
