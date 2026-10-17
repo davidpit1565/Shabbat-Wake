@@ -21,6 +21,11 @@ targets:
     platform: iOS
     sources:
       - path: App
+        excludes:
+          - "Resources/**"
+          - "AlarmSoundGenerator.py"
+    resources:
+      - path: App/Resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
