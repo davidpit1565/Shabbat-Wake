@@ -36,3 +36,5 @@
 "Saving requests an Apple AlarmKit schedule. The system must accept it, and alarm delivery still requires physical-device verification." = "Saving requests an Apple AlarmKit schedule. The system must accept it, and alarm delivery still requires physical-device verification.";
 "AlarmKit scheduling implemented; device verification pending" = "AlarmKit scheduling implemented; device verification pending";
 "Original tones bundled; system playback unverified" = "Original tones bundled; system playback unverified";
+
+"Could not schedule alarm" = "Could not schedule alarm";
