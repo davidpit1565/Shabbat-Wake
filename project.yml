@@ -52,11 +52,13 @@ targets:
     sources:
       - path: App/Widgets
       - path: App/ShabbatWakeLiveActivityAttributes.swift
+    info:
+      path: App/Widgets/Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
         PRODUCT_NAME: "Shabbat Wake Widget"
-        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Wake"
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
