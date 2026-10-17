@@ -42,7 +42,7 @@ final class AlarmStore: ObservableObject {
             soundID: soundID
         )
         do {
-            try await NativeAlarmService.schedule(alarm)
+            try await NativeAlarmKitService.schedule(alarm)
             systemAlarmIDs.insert(alarm.id)
             LiveActivityManager.start(for: alarm)
             alarm.isEnabled = true
@@ -61,7 +61,7 @@ final class AlarmStore: ObservableObject {
         Task {
             if alarms[index].isEnabled {
                 do {
-                    try await NativeAlarmService.cancel(id: alarm.id)
+                    try await NativeAlarmKitService.cancel(id: alarm.id)
                     systemAlarmIDs.remove(alarm.id)
                     alarms[index].isEnabled = false
                     save()
@@ -71,7 +71,7 @@ final class AlarmStore: ObservableObject {
                 }
             } else {
                 do {
-                    try await NativeAlarmService.schedule(alarms[index])
+                    try await NativeAlarmKitService.schedule(alarms[index])
                     systemAlarmIDs.insert(alarm.id)
                     alarms[index].isEnabled = true
                     save()
@@ -91,7 +91,7 @@ final class AlarmStore: ObservableObject {
     func delete(_ alarm: WakeAlarm) {
         Task {
             do {
-                try await NativeAlarmService.cancel(id: alarm.id)
+                try await NativeAlarmKitService.cancel(id: alarm.id)
                 systemAlarmIDs.remove(alarm.id)
             } catch {
                 lastError = error.localizedDescription
@@ -103,7 +103,7 @@ final class AlarmStore: ObservableObject {
 
     func requestSystemAlarmPermission() async -> Bool {
         do {
-            let allowed = try await NativeAlarmService.requestAuthorization()
+            let allowed = try await NativeAlarmKitService.requestAuthorization()
             lastError = allowed ? nil : String(localized: "Alarm permission was not granted.")
             return allowed
         } catch {
