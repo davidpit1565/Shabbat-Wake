@@ -60,7 +60,7 @@
 
 "Wake-up" = "השכמה";
 "Alarm permission was not granted." = "לא ניתנה הרשאה לשעון המעורר.";
-"System alarms require iOS 26 or later." = "שעון מעורר מערכתי דורש iOS 26 ומעלה.";
+"System alarms require iOS 26.1 or later." = "שעון מעורר מערכתי דורש iOS 26.1 ומעלה.";
 "Location access is required to calculate local Shabbat times. Enable it in Settings." = "נדרשת גישה למיקום כדי לחשב זמני שבת מקומיים. אפשר להפעיל אותה בהגדרות.";
 "Location access is required. No local times will be calculated without it." = "נדרשת גישה למיקום. ללא הרשאה לא יחושבו זמנים מקומיים.";
 "Could not get your location. Check Location Services and try again." = "לא ניתן לקבל את המיקום. בדוק את שירותי המיקום ונסה שוב.";
