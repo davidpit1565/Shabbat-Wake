@@ -57,3 +57,22 @@
 "New alarm" = "התראה חדשה";
 "Cancel" = "ביטול";
 "Save" = "שמירה";
+
+"Wake-up" = "השכמה";
+"Alarm permission was not granted." = "לא ניתנה הרשאה לשעון המעורר.";
+"System alarms require iOS 26 or later." = "שעון מעורר מערכתי דורש iOS 26 ומעלה.";
+"Location access is required to calculate local Shabbat times. Enable it in Settings." = "נדרשת גישה למיקום כדי לחשב זמני שבת מקומיים. אפשר להפעיל אותה בהגדרות.";
+"Location access is required. No local times will be calculated without it." = "נדרשת גישה למיקום. ללא הרשאה לא יחושבו זמנים מקומיים.";
+"Could not get your location. Check Location Services and try again." = "לא ניתן לקבל את המיקום. בדוק את שירותי המיקום ונסה שוב.";
+"Shabbat times could not be loaded. Check your connection and try again." = "לא ניתן לטעון את זמני השבת. בדוק את החיבור ונסה שוב.";
+"Original tones" = "צלילים מקוריים";
+"Hebrew date" = "תאריך עברי";
+"Choose a date" = "בחירת תאריך";
+"Next Shabbat" = "השבת הבאה";
+"Current location" = "מיקום נוכחי";
+"Shabbat times" = "זמני שבת";
+"Location permission is required" = "נדרשת הרשאת מיקום";
+"Allow / refresh location" = "אישור / רענון מיקום";
+"Open Settings" = "פתיחת הגדרות";
+"Times unavailable" = "הזמנים אינם זמינים";
+"Loading times for your location…" = "טוען זמנים לפי המיקום שלך…";
