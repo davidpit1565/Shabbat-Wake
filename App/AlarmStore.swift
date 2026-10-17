@@ -44,6 +44,7 @@ final class AlarmStore: ObservableObject {
         do {
             try await NativeAlarmService.schedule(alarm)
             systemAlarmIDs.insert(alarm.id)
+            LiveActivityManager.start(for: alarm)
             alarm.isEnabled = true
             alarms.append(alarm)
             save()
