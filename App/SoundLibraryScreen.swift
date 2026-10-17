@@ -75,7 +75,7 @@ struct SoundLibraryScreen: View {
             } header: {
                 Text("Original tones")
             } footer: {
-                Text("These are generated original tones, not commercial recordings. Preview playback is implemented; native system-alarm sound assignment still requires AlarmKit integration and device testing.")
+                Text("These are generated original tones, not commercial recordings. Preview playback is implemented; system-alarm playback still needs verification on a supported iPhone.")
             }
             Section("Important") {
                 Label("Preview works only when the WAV resources are present in the app bundle.", systemImage: "waveform")
