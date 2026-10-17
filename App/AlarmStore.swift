@@ -57,28 +57,29 @@ final class AlarmStore: ObservableObject {
     }
 
     func toggle(_ alarm: WakeAlarm) {
-        guard let index = alarms.firstIndex(where: { $0.id == alarm.id }) else { return }
+        guard let current = alarms.first(where: { $0.id == alarm.id }) else { return }
+        let alarmID = current.id
+        let shouldEnable = !current.isEnabled
         Task {
-            if alarms[index].isEnabled {
-                do {
-                    try await NativeAlarmKitService.cancel(id: alarm.id)
-                    systemAlarmIDs.remove(alarm.id)
-                    alarms[index].isEnabled = false
-                    save()
-                    lastError = nil
-                } catch {
-                    lastError = error.localizedDescription
+            do {
+                if shouldEnable {
+                    guard let latest = alarms.first(where: { $0.id == alarmID }) else { return }
+                    try await NativeAlarmKitService.schedule(latest)
+                    systemAlarmIDs.insert(alarmID)
+                } else {
+                    try await NativeAlarmKitService.cancel(id: alarmID)
+                    systemAlarmIDs.remove(alarmID)
                 }
-            } else {
-                do {
-                    try await NativeAlarmKitService.schedule(alarms[index])
-                    systemAlarmIDs.insert(alarm.id)
-                    alarms[index].isEnabled = true
-                    save()
-                    lastError = nil
-                } catch {
-                    lastError = error.localizedDescription
+                guard let index = alarms.firstIndex(where: { $0.id == alarmID }) else {
+                    // If the local record disappeared while scheduling, clean up any system alarm.
+                    if shouldEnable { try? await NativeAlarmKitService.cancel(id: alarmID) }
+                    return
                 }
+                alarms[index].isEnabled = shouldEnable
+                save()
+                lastError = nil
+            } catch {
+                lastError = error.localizedDescription
             }
         }
     }
@@ -93,11 +94,13 @@ final class AlarmStore: ObservableObject {
             do {
                 try await NativeAlarmKitService.cancel(id: alarm.id)
                 systemAlarmIDs.remove(alarm.id)
+                alarms.removeAll { $0.id == alarm.id }
+                save()
+                lastError = nil
             } catch {
+                // Keep the local record visible if cancellation failed; do not hide a possibly active alarm.
                 lastError = error.localizedDescription
             }
-            alarms.removeAll { $0.id == alarm.id }
-            save()
         }
     }
 
