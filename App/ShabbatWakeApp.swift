@@ -244,6 +244,13 @@ private struct AddAlarmSheet: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
+            if let error = store.lastError {
+                Section("Could not schedule alarm") {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+            }
             .navigationTitle("New alarm")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
