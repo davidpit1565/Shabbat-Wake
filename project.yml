@@ -27,6 +27,9 @@ targets:
           - "AlarmSoundGenerator.py"
     resources:
       - path: App/Resources
+    preBuildScripts:
+      - name: Generate alarm sounds
+        script: python3 "$SRCROOT/App/AlarmSoundGenerator.py"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
@@ -47,6 +50,7 @@ targets:
     platform: iOS
     sources:
       - path: App/Widgets
+      - path: App/ShabbatWakeLiveActivityAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
