@@ -223,6 +223,7 @@ private struct AddAlarmSheet: View {
     @State private var title = "Shabbat wake-up"
     @State private var time = Date.now
     @State private var repeatWeekly = true
+    @State private var soundID = "classic"
     var body: some View {
         NavigationStack {
             Form {
@@ -230,6 +231,11 @@ private struct AddAlarmSheet: View {
                     TextField("Alarm name", text: $title)
                     DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
                     Toggle("Repeat weekly", isOn: $repeatWeekly)
+                    Picker("Alarm sound", selection: $soundID) {
+                        Text("Gentle Chime").tag("gentle")
+                        Text("Sunrise Sequence").tag("sunrise")
+                        Text("Classic Wake").tag("classic")
+                    }
                 }
                 Section {
                     Label("Saved on this device", systemImage: "internaldrive")
@@ -245,7 +251,7 @@ private struct AddAlarmSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         Task {
-                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [])
+                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [], soundID: soundID)
                             if saved { dismiss() }
                         }
                     }
