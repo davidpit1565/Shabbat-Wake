@@ -34,6 +34,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
         PRODUCT_NAME: "Shabbat Wake"
+        PRODUCT_MODULE_NAME: ShabbatWake
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Wake requires your current location to calculate local Shabbat times. No times are calculated if you deny access."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Wake schedules the wake-up alarms you create using Apple system alarm features."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
