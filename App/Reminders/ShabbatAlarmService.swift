@@ -138,6 +138,15 @@ enum ShabbatAlarmService {
         center.removePendingNotificationRequests(withIdentifiers: pending)
     }
 
+    /// Older builds rang as notifications. Any that are still pending would fire at odd times next to the real alarms.
+    static func clearLegacyNotificationRings() async {
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(RingPlanner.idPrefix) }
+        if !pending.isEmpty { center.removePendingNotificationRequests(withIdentifiers: pending) }
+        let delivered = await center.deliveredNotifications().map(\.request.identifier).filter { $0.hasPrefix(RingPlanner.idPrefix) }
+        if !delivered.isEmpty { center.removeDeliveredNotifications(withIdentifiers: delivered) }
+    }
+
     /// Whether every ring this alarm needs is still known to the system. Used to decide if it must be scheduled again.
     static func isComplete(_ alarm: WakeAlarm, scheduled: Set<UUID>) -> Bool {
         let expected = RingPlanner.rings(for: alarm).map { ringUUID($0.id) }

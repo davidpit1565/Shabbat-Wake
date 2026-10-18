@@ -15,6 +15,43 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     private let manager = CLLocationManager()
     private var activeFetchID = UUID()
 
+    /// The last answer for a place, so the screen shows something the moment it opens.
+    private struct CachedTimes: Codable {
+        let key: String
+        let latitude: Double
+        let longitude: Double
+        let zone: String
+        let name: String?
+        let language: String
+        let weeks: [ShabbatWeek]
+    }
+    private static let cacheKey = "shabbatWake.cachedWeeks.v2"
+    private var cacheID: String { savedPlace?.id.uuidString ?? "current" }
+
+    private func cachedTimes() -> CachedTimes? {
+        guard let data = UserDefaults.standard.data(forKey: Self.cacheKey),
+              let cached = try? JSONDecoder().decode(CachedTimes.self, from: data),
+              cached.key == cacheID,
+              cached.language == AppLanguage.effectiveCode(for: AppLanguage.preference) else { return nil }
+        return cached
+    }
+
+    private func saveCache(latitude: Double, longitude: Double, zone: String, name: String?, weeks: [ShabbatWeek]) {
+        let cached = CachedTimes(key: cacheID, latitude: latitude, longitude: longitude, zone: zone, name: name,
+                                 language: AppLanguage.effectiveCode(for: AppLanguage.preference), weeks: weeks)
+        if let data = try? JSONEncoder().encode(cached) { UserDefaults.standard.set(data, forKey: Self.cacheKey) }
+    }
+
+    private func showCached() {
+        guard let cached = cachedTimes() else { return }
+        let upcoming = cached.weeks.filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
+        guard !upcoming.isEmpty else { return }
+        weeks = upcoming
+        placeName = cached.name
+        isLoading = false
+        errorMessage = nil
+    }
+
     override init() {
         authorization = manager.authorizationStatus
         super.init()
@@ -25,6 +62,8 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     /// Shows a saved place, or the current location when `place` is nil.
     func show(place: SavedPlace?) {
         savedPlace = place
+        if cachedTimes() == nil { weeks = []; placeName = nil }   // never show another place's times while this one loads
+        showCached()
         if let place {
             Task { await load(latitude: place.latitude, longitude: place.longitude, zone: place.timeZoneIdentifier, name: place.name) }
         } else {
@@ -36,7 +75,12 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         if let place = savedPlace { show(place: place); return }
         switch manager.authorizationStatus {
         case .notDetermined: manager.requestWhenInUseAuthorization()
-        case .authorizedAlways, .authorizedWhenInUse: manager.requestLocation()
+        case .authorizedAlways, .authorizedWhenInUse:
+            // The last known position is good enough to start; a fresh one follows.
+            if weeks.isEmpty, let last = manager.location, Date.now.timeIntervalSince(last.timestamp) < 6 * 3600 {
+                Task { await fetchTimes(for: last) }
+            }
+            manager.requestLocation()
         case .denied, .restricted:
             errorMessage = AppLanguage.text("Location access is required to calculate local Shabbat times. Enable it in Settings.")
         @unknown default:
@@ -78,28 +122,40 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     private func fetchTimes(for location: CLLocation) async {
         let fetchID = UUID()
         activeFetchID = fetchID
-        isLoading = true
+        if weeks.isEmpty { isLoading = true }
         errorMessage = nil
-        weeks = []
-        placeName = nil
-        let placemarks = try? await CLGeocoder().reverseGeocodeLocation(location)
+        // Not far from the last answer: keep its name and time zone instead of waiting for the geocoder.
+        var zone: String
+        var name: String?
+        if let cached = cachedTimes(), CLLocation(latitude: cached.latitude, longitude: cached.longitude).distance(from: location) < 5000 {
+            zone = cached.zone
+            name = cached.name
+        } else {
+            let mark = await geocode(location)
+            zone = mark?.timeZone?.identifier ?? TimeZone.current.identifier
+            let text = [mark?.locality, mark?.administrativeArea].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+            name = text.isEmpty ? nil : text
+        }
         guard activeFetchID == fetchID, savedPlace == nil else { return }
-        let mark = placemarks?.first
-        let name = [mark?.locality, mark?.administrativeArea].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
-        await load(
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            zone: mark?.timeZone?.identifier ?? TimeZone.current.identifier,
-            name: name.isEmpty ? nil : name
-        )
+        await load(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude, zone: zone, name: name)
+    }
+
+    /// The place name for a position, but never waiting more than four seconds for it.
+    private func geocode(_ location: CLLocation) async -> CLPlacemark? {
+        await withTaskGroup(of: CLPlacemark?.self) { group in
+            group.addTask { try? await CLGeocoder().reverseGeocodeLocation(location).first }
+            group.addTask { try? await Task.sleep(for: .seconds(4)); return nil }
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first
+        }
     }
 
     private func load(latitude: Double, longitude: Double, zone: String, name: String?) async {
         let fetchID = UUID()
         activeFetchID = fetchID
-        isLoading = true
+        if weeks.isEmpty { isLoading = true }
         errorMessage = nil
-        weeks = []
         placeName = name
         do {
             // Start from yesterday so the Shabbat that is under way right now is still listed.
@@ -114,6 +170,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             ).filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
             guard activeFetchID == fetchID else { return }
             weeks = fetched
+            saveCache(latitude: latitude, longitude: longitude, zone: zone, name: name, weeks: fetched)
             let language = AppLanguage.effectiveCode(for: AppLanguage.preference)
             WidgetSync.updateNextTitle(fetched.first?.displayTitle(language: language))
             WidgetSync.updateLocation(
@@ -128,8 +185,8 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             }
         } catch {
             guard activeFetchID == fetchID else { return }
-            errorMessage = AppLanguage.text("Shabbat times could not be loaded. Check your connection and try again.")
-            weeks = []
+            // Times already on screen stay; only an empty screen shows the error.
+            if weeks.isEmpty { errorMessage = AppLanguage.text("Shabbat times could not be loaded. Check your connection and try again.") }
         }
         guard activeFetchID == fetchID else { return }
         isLoading = false
@@ -320,7 +377,7 @@ struct ShabbatTimesScreen: View {
                 Text(week.shabbatDay.hebrewDateString(in: locale)).font(.subheadline).foregroundStyle(.secondary)
             }
             HStack(spacing: 12) {
-                timeBlock("Candle lighting", symbol: "flame", date: week.candleLighting)
+                timeBlock("Candle lighting", symbol: "candles", date: week.candleLighting)
                 timeBlock("Shabbat ends", symbol: "moon.stars", date: week.havdalah)
             }
         }
@@ -334,7 +391,7 @@ struct ShabbatTimesScreen: View {
 
     private func timeBlock(_ label: LocalizedStringKey, symbol: String, date: Date?) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Label(label, systemImage: symbol).font(.caption).foregroundStyle(.secondary)
+            Label { Text(label) } icon: { KindIcon(symbol: symbol) }.font(.caption).foregroundStyle(.secondary)
             Text(date?.formatted(in: locale, time: .shortened) ?? "—")
                 .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
         }
@@ -353,7 +410,7 @@ struct ShabbatTimesScreen: View {
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
-                Label(week.candleLighting?.formatted(in: locale, time: .shortened) ?? "—", systemImage: "flame")
+                Label { Text(week.candleLighting?.formatted(in: locale, time: .shortened) ?? "—") } icon: { CandleIcon() }
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                 Label(week.havdalah?.formatted(in: locale, time: .shortened) ?? "—", systemImage: "moon.stars")
                     .font(.footnote.monospacedDigit()).foregroundStyle(.secondary)

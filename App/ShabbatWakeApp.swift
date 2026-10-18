@@ -82,7 +82,7 @@ struct RootView: View {
         // Set before the views below are created, so navigation and tab bars pick up the right direction.
         let _ = AppLanguage.applyDirection(for: languageCode)
         TabView(selection: $selectedTab) {
-            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times }, onOpenAlarm: openNextAlarm)
+            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times }, onOpenAlarm: openNextAlarm, onEditAlarm: { editingAlarm = $0 })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
             AlarmListScreen(store: alarmStore, permissions: permissions, onAddAlarm: { showAddAlarm = true })
@@ -112,6 +112,7 @@ struct RootView: View {
             return .handled
         })
         .task {
+            await ShabbatAlarmService.clearLegacyNotificationRings()
             if !ScreenshotMode.isOn { await permissions.checkOnLaunch() }
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
@@ -161,10 +162,45 @@ struct HomeDashboard: View {
     var onAddAlarm: () -> Void
     var onOpenTimes: () -> Void
     var onOpenAlarm: () -> Void
+    var onEditAlarm: (WakeAlarm) -> Void
     @Environment(\.locale) private var locale
 
     @State private var nextShabbatTime: ShabbatTimeItem?
     @State private var nextTitle: String?
+
+    /// The alarm that rings first comes first; switched-off alarms follow.
+    private var orderedAlarms: [WakeAlarm] {
+        alarmStore.alarms.sorted { a, b in
+            switch (a.isEnabled ? a.nextFireDate() : nil, b.isEnabled ? b.nextFireDate() : nil) {
+            case let (x?, y?): return x < y
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default: return a.hour * 60 + a.minute < b.hour * 60 + b.minute
+            }
+        }
+    }
+
+    private func alarmRow(_ alarm: WakeAlarm) -> some View {
+        HStack(spacing: 12) {
+            Button { onEditAlarm(alarm) } label: {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(alarm.timeLabel(in: locale))
+                        .font(.system(size: 26, weight: .light, design: .rounded)).monospacedDigit()
+                    Text(alarm.title).font(.subheadline.weight(.medium))
+                    Text(alarm.repeatsWeekly ? alarm.repeatSummary(locale: locale) : AppLanguage.text("One-time schedule"))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            Toggle("Enabled", isOn: Binding(get: { alarm.isEnabled }, set: { _ in alarmStore.toggle(alarm) }))
+                .labelsHidden()
+                .disabled(alarmStore.busyAlarmIDs.contains(alarm.id))
+                .accessibilityLabel("\(alarm.title), \(alarm.timeLabel(in: locale))")
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+    }
 
     private var nextAlarmTime: String {
         guard let date = alarmStore.nextWake?.date else { return "— —" }
@@ -271,6 +307,22 @@ struct HomeDashboard: View {
                         .accessibilityElement(children: .combine)
                     }
                     .buttonStyle(.plain)
+
+                    if !alarmStore.alarms.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Alarms")
+                                .font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                                .padding(.horizontal, 4)
+                                .accessibilityAddTraits(.isHeader)
+                            VStack(spacing: 0) {
+                                ForEach(orderedAlarms) { alarm in
+                                    alarmRow(alarm)
+                                    if alarm.id != orderedAlarms.last?.id { Divider().padding(.leading, 16) }
+                                }
+                            }
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        }
+                    }
 
                     Button(action: onAddAlarm) {
                         Label("Create an alarm", systemImage: "plus")

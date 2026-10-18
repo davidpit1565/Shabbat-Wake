@@ -310,7 +310,7 @@ private enum SingleTimeKind {
     case candles, ends
 
     var title: LocalizedStringKey { self == .candles ? "Candle lighting" : "Shabbat ends" }
-    var symbol: String { self == .candles ? "flame.fill" : "moon.stars.fill" }
+    var symbol: String { self == .candles ? "candles" : "moon.stars.fill" }
     var tint: Color { self == .candles ? Color(red: 1, green: 0.72, blue: 0.42) : WidgetBrand.cyan }
     func item(_ entry: ShabbatWakeWidgetEntry) -> ShabbatTimeItem? { self == .candles ? entry.candleLighting : entry.havdalah }
 }
@@ -337,12 +337,12 @@ private struct SingleTimeWidgetView: View {
     @ViewBuilder private var content: some View {
         switch family {
         case .accessoryInline:
-            if let date { Label("\(date.dayAndTime(entry.locale))", systemImage: kind.symbol) } else { Label("—", systemImage: kind.symbol) }
+            Label { Text(date.map { $0.dayAndTime(entry.locale) } ?? "—") } icon: { KindIcon(symbol: kind.symbol) }
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
-                    Image(systemName: kind.symbol).font(.caption2)
+                    KindIcon(symbol: kind.symbol, size: 13)
                     Text(date?.hourMinute(entry.locale) ?? "—")
                         .font(.caption.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.6)
                 }
@@ -350,7 +350,7 @@ private struct SingleTimeWidgetView: View {
             .containerBackground(.background, for: .widget)
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
-                Label(kind.title, systemImage: kind.symbol).font(.caption.weight(.semibold))
+                Label { Text(kind.title) } icon: { KindIcon(symbol: kind.symbol) }.font(.caption.weight(.semibold))
                 Text(date?.timeOnly(entry.locale) ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
                 if let date { Text(date.weekdayName(entry.locale)).font(.caption2) }
             }
@@ -360,7 +360,7 @@ private struct SingleTimeWidgetView: View {
             let medium = family == .systemMedium
             VStack(alignment: .leading, spacing: medium ? 6 : 4) {
                 Spacer(minLength: 0)
-                Label(kind.title, systemImage: kind.symbol)
+                Label { Text(kind.title) } icon: { KindIcon(symbol: kind.symbol, size: medium ? 22 : 18) }
                     .font(.system(size: medium ? 18 : 14, weight: .semibold))
                     .foregroundStyle(WidgetBrand.cyan)
                 Text(date?.timeOnly(entry.locale) ?? "--:--")

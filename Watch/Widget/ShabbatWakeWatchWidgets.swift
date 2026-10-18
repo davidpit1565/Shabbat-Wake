@@ -49,7 +49,7 @@ enum WatchKind {
 
     var symbol: String {
         switch self {
-        case .candle: return "flame.fill"
+        case .candle: return "candles"
         case .ends: return "moon.stars.fill"
         case .alarm: return "alarm.fill"
         }
@@ -91,18 +91,18 @@ struct WatchComplicationView: View {
         Group {
             switch family {
             case .accessoryInline:
-                Label("\(day) \(time)", systemImage: kind.symbol)
+                Label { Text("\(day) \(time)") } icon: { KindIcon(symbol: kind.symbol) }
             case .accessoryCircular, .accessoryCorner:
                 ZStack {
                     AccessoryWidgetBackground()
                     VStack(spacing: 0) {
-                        Image(systemName: kind.symbol).font(.caption2)
+                        KindIcon(symbol: kind.symbol, size: 13)
                         Text(time).font(.caption2.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.5).lineLimit(1)
                     }
                 }
             default:
                 VStack(alignment: .leading, spacing: 1) {
-                    Label(kind.title, systemImage: kind.symbol).font(.caption.weight(.semibold))
+                    Label { Text(kind.title) } icon: { KindIcon(symbol: kind.symbol) }.font(.caption.weight(.semibold))
                     Text(time).font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
                     if !day.isEmpty { Text(day).font(.caption2) }
                 }
