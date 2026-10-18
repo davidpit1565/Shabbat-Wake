@@ -24,6 +24,12 @@ enum WidgetSync {
         NotificationCenter.default.post(name: .shabbatTimesUpdated, object: nil)
     }
 
+    static func updatePro(_ unlocked: Bool) {
+        guard SharedStore.load().proUnlocked != unlocked else { return }
+        SharedStore.update { $0.proUnlocked = unlocked }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     static func clearLocation() {
         SharedStore.update {
             $0.latitude = nil

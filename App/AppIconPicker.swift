@@ -61,6 +61,7 @@ struct AppIconPickerScreen: View {
                     Button { choose(option) } label: { cell(option) }
                         .buttonStyle(.plain)
                         .accessibilityLabel(option.title)
+                        .accessibilityValue(option.requiresPro && !pro.hasPro ? Text("Pro feature") : Text(""))
                         .accessibilityAddTraits(option == selected ? .isSelected : [])
                 }
             }

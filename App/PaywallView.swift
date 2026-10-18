@@ -27,6 +27,7 @@ struct PaywallView: View {
     private let benefits: [(symbol: String, title: LocalizedStringKey, detail: LocalizedStringKey)] = [
         ("bell.badge", "Several reminders", "Remind yourself more than once before candle lighting."),
         ("clock", "Your own times", "Choose how many minutes before, for each reminder."),
+        ("lock.rectangle", "Lock Screen widgets", "Candle lighting, Shabbat ends and your next alarm on the Lock Screen."),
         ("calendar.badge.clock", "Alarms for some weeks", "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own."),
         ("app.badge", "All app icons", "Pick any of the extra icons.")
     ]
@@ -35,64 +36,44 @@ struct PaywallView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
+                    Image(systemName: "star.circle.fill")
+                        .font(.system(size: 34))
+                        .foregroundStyle(.tint)
+                        .frame(width: 64, height: 64)
+                        .background(.tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(reason.headline).font(.system(size: 28, weight: .bold, design: .rounded))
+                        Text(reason.headline)
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .fixedSize(horizontal: false, vertical: true)
                         Text("One purchase, yours for good. No subscription, no account.")
                             .font(.subheadline).foregroundStyle(.secondary)
                     }
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 0) {
                         ForEach(0..<benefits.count, id: \.self) { index in
                             HStack(alignment: .top, spacing: 14) {
                                 Image(systemName: benefits[index].symbol)
-                                    .font(.title3).foregroundStyle(.tint).frame(width: 34)
+                                    .font(.title3).foregroundStyle(.tint).frame(width: 30)
                                     .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(benefits[index].title).font(.headline)
                                     Text(benefits[index].detail).font(.subheadline).foregroundStyle(.secondary)
                                 }
+                                Spacer(minLength: 0)
                             }
+                            .padding(16)
                             .accessibilityElement(children: .combine)
+                            if index < benefits.count - 1 { Divider().padding(.leading, 60) }
                         }
                     }
-                    Text("Always free: alarms that stop by themselves, Shabbat times, widgets and one reminder before candle lighting.")
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    Text("Always free: alarms that stop by themselves, Shabbat times, Home Screen widgets and one reminder before candle lighting.")
                         .font(.footnote).foregroundStyle(.secondary)
-
-                    if !ProStore.isEnforced {
-                        Label("Preview: everything is unlocked for now.", systemImage: "lock.open")
-                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-                    } else if pro.hasPro {
-                        Label("You have Pro. Thank you!", systemImage: "checkmark.seal.fill")
-                            .font(.headline).foregroundStyle(Color.green)
-                    } else {
-                        Button {
-                            Task { await pro.purchase() }
-                        } label: {
-                            Group {
-                                if pro.isPurchasing {
-                                    ProgressView()
-                                } else if let product = pro.lifetimeProduct {
-                                    Text("Unlock Pro · \(product.displayPrice)")
-                                } else {
-                                    Text("Unlock Pro")
-                                }
-                            }
-                            .font(.headline).frame(maxWidth: .infinity, minHeight: 28)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .disabled(pro.isPurchasing || pro.lifetimeProduct == nil)
-                        if pro.productUnavailable {
-                            Text("The purchase isn't available right now. Please try again later.")
-                                .font(.footnote).foregroundStyle(.secondary)
-                        }
-                    }
-                    if ProStore.isEnforced {
-                        Button("Restore purchases") { Task { await pro.restore() } }
-                            .frame(maxWidth: .infinity)
-                    }
                 }
                 .padding(20)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
+            .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
             .navigationBarTitleDisplayMode(.inline)
             .alert("Shabbat Waker Pro", isPresented: Binding(get: { pro.message != nil }, set: { if !$0 { pro.message = nil } })) {
@@ -103,6 +84,49 @@ struct PaywallView: View {
             .task { if pro.lifetimeProduct == nil { await pro.loadProduct() } }
         }
         .presentationDetents([.large])
+    }
+
+    /// One big action at the bottom, on a blurred bar, like the Habit Tracker app.
+    private var bottomBar: some View {
+        VStack(spacing: 8) {
+            if !ProStore.isEnforced {
+                Label("Preview: everything is unlocked for now.", systemImage: "lock.open")
+                    .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                Button { dismiss() } label: {
+                    Text("Close").font(.headline).frame(maxWidth: .infinity, minHeight: 28)
+                }
+                .buttonStyle(.borderedProminent).controlSize(.large)
+            } else if pro.hasPro {
+                Label("You have Pro. Thank you!", systemImage: "checkmark.seal.fill")
+                    .font(.headline).foregroundStyle(Color.green)
+            } else {
+                Button {
+                    Task { await pro.purchase() }
+                } label: {
+                    Group {
+                        if pro.isPurchasing {
+                            ProgressView()
+                        } else if let product = pro.lifetimeProduct {
+                            Text("Unlock Pro · \(product.displayPrice)")
+                        } else {
+                            Text("Unlock Pro")
+                        }
+                    }
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 28)
+                }
+                .buttonStyle(.borderedProminent).controlSize(.large)
+                .disabled(pro.isPurchasing || pro.lifetimeProduct == nil)
+                if pro.productUnavailable {
+                    Text("The purchase isn't available right now. Please try again later.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Button("Restore purchases") { Task { await pro.restore() } }
+                    .font(.subheadline)
+            }
+        }
+        .padding(.horizontal, 18).padding(.top, 12).padding(.bottom, 8)
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial)
     }
 }
 

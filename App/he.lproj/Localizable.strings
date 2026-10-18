@@ -212,7 +212,7 @@
 "Choose how many minutes before, for each reminder." = "בחר כמה דקות לפני, לכל תזכורת.";
 "All app icons" = "כל האייקונים";
 "Pick any of the extra icons." = "בחר כל אחד מהאייקונים הנוספים.";
-"Always free: alarms that stop by themselves, Shabbat times, widgets and one reminder before candle lighting." = "תמיד בחינם: התראות שנפסקות לבד, זמני שבת, ווידג'טים ותזכורת אחת לפני הדלקת נרות.";
+"Always free: alarms that stop by themselves, Shabbat times, Home Screen widgets and one reminder before candle lighting." = "תמיד בחינם: התראות שנפסקות לבד, זמני שבת, ווידג'טים למסך הבית ותזכורת אחת לפני הדלקת נרות.";;
 "Preview: everything is unlocked for now." = "תצוגה מקדימה: בינתיים הכול פתוח.";
 "You have Pro. Thank you!" = "יש לך Pro. תודה!";
 "Unlock Pro · %@" = "פתח את Pro · %@";
@@ -253,3 +253,6 @@
 "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own." = "קבע התראה ל-4, 8, 12 או 26 השבועות הקרובים, ואז היא מסתיימת לבד.";
 
 "Next holiday" = "החג הקרוב";
+
+"Lock Screen widgets" = "ווידג'טים למסך הנעילה";
+"Candle lighting, Shabbat ends and your next alarm on the Lock Screen." = "הדלקת נרות, צאת שבת וההתראה הבאה שלך על מסך הנעילה.";

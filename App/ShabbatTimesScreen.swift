@@ -215,5 +215,6 @@ struct ShabbatTimesScreen: View {
             Text(date?.formatted(in: locale, time: .shortened) ?? "—")
                 .font((prominent ? Font.title2 : Font.title3).monospacedDigit().weight(.semibold))
         }
+        .accessibilityElement(children: .combine)
     }
 }

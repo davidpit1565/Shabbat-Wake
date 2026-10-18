@@ -16,6 +16,7 @@ struct ShabbatWakeWidgetEntry: TimelineEntry {
     let placeName: String?
     let hasLocation: Bool
     var relevance: TimelineEntryRelevance? = nil
+    var hasPro: Bool = true
 
     static let placeholder = ShabbatWakeWidgetEntry(
         date: .now,
@@ -84,13 +85,42 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             candleLighting: upcoming.first { $0.category == "candles" },
             havdalah: upcoming.first { $0.category == "havdalah" },
             placeName: snapshot.placeName,
-            hasLocation: snapshot.latitude != nil
+            hasLocation: snapshot.latitude != nil,
+            hasPro: snapshot.proUnlocked ?? true
         )
         // Smart Stack: raise the widget in the hours before candle lighting.
         if let candle = entry.candleLighting?.date, candle.timeIntervalSince(date) <= 4 * 3600 {
             entry.relevance = TimelineEntryRelevance(score: 100, duration: max(60, candle.timeIntervalSince(date) + 1800))
         }
         return entry
+    }
+}
+
+private extension WidgetFamily {
+    var isLockScreen: Bool { self == .accessoryInline || self == .accessoryCircular || self == .accessoryRectangular }
+}
+
+/// Shown on the Lock Screen in place of a widget that needs Pro.
+private struct LockedWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            Label("Pro widget", systemImage: "lock.fill")
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                Image(systemName: "lock.fill")
+            }
+            .containerBackground(.background, for: .widget)
+        default:
+            VStack(alignment: .leading, spacing: 2) {
+                Label("Pro widget", systemImage: "lock.fill").font(.caption.weight(.semibold))
+                Text("Open Shabbat Waker to unlock Lock Screen widgets.").font(.caption2)
+            }
+            .containerBackground(.background, for: .widget)
+        }
     }
 }
 
@@ -115,6 +145,14 @@ struct ShabbatWakeWidgetView: View {
     }
 
     var body: some View {
+        if !entry.hasPro && family.isLockScreen {
+            LockedWidgetView()
+        } else {
+            content
+        }
+    }
+
+    @ViewBuilder private var content: some View {
         switch family {
         case .accessoryInline: inline
         case .accessoryCircular: circular
@@ -261,6 +299,14 @@ private struct SingleTimeWidgetView: View {
     private var date: Date? { kind.item(entry)?.date }
 
     var body: some View {
+        if !entry.hasPro && family.isLockScreen {
+            LockedWidgetView()
+        } else {
+            content
+        }
+    }
+
+    @ViewBuilder private var content: some View {
         switch family {
         case .accessoryInline:
             if let date { Label("\(date.dayAndTime)", systemImage: kind.symbol) } else { Label("—", systemImage: kind.symbol) }

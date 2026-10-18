@@ -136,5 +136,6 @@ struct PermissionsSheet: View {
                 .foregroundStyle(allowed ? Color.green : Color.secondary)
                 .accessibilityLabel(allowed ? Text("Allowed") : Text("Not allowed"))
         }
+        .accessibilityElement(children: .combine)
     }
 }
