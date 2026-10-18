@@ -1,10 +1,12 @@
 import SwiftUI
+import UserNotifications
 
 @main
 struct ShabbatWakeApp: App {
     @AppStorage("appearanceMode") private var appearanceMode = "system"
 
     init() {
+        UNUserNotificationCenter.current().delegate = NotificationPresenter.shared
         AppLanguage.applyDirection(for: AppLanguage.effectiveCode(for: AppLanguage.preference))
     }
 
@@ -21,6 +23,16 @@ struct ShabbatWakeApp: App {
         case "dark": return .dark
         default: return nil
         }
+    }
+}
+
+/// The ring gives a little when pressed, with a light tap.
+private struct RingPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.965 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .light), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 }
 
@@ -60,6 +72,8 @@ struct RootView: View {
     @StateObject private var reminders = ReminderStore()
     @State private var browserLink: InAppLink?
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
+    @AppStorage(TimeFormat.storageKey) private var timeFormat = "system"
+    @State private var editingAlarm: WakeAlarm?
     @Environment(\.scenePhase) private var scenePhase
 
     private var languageCode: String { AppLanguage.effectiveCode(for: preferredLanguage) }
@@ -68,7 +82,7 @@ struct RootView: View {
         // Set before the views below are created, so navigation and tab bars pick up the right direction.
         let _ = AppLanguage.applyDirection(for: languageCode)
         TabView(selection: $selectedTab) {
-            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times })
+            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times }, onOpenAlarm: openNextAlarm)
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
             AlarmListScreen(store: alarmStore, permissions: permissions, onAddAlarm: { showAddAlarm = true })
@@ -84,11 +98,12 @@ struct RootView: View {
         .tint(WakePalette.blue)
         .id(languageCode)
         .sheet(isPresented: $showAddAlarm) { AlarmEditorSheet(store: alarmStore, editing: nil) }
+        .sheet(item: $editingAlarm) { AlarmEditorSheet(store: alarmStore, editing: $0) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
         .sheet(item: $browserLink) { InAppBrowser(url: $0.url).ignoresSafeArea() }
         // Applied after the sheets so the sheets receive them too. A sheet only inherits what is set outside it.
         .environmentObject(pro)
-        .environment(\.locale, Locale(identifier: languageCode))
+        .environment(\.locale, TimeFormat.locale(language: languageCode, format: timeFormat))
         .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
         .environment(\.openURL, OpenURLAction { url in
             // Web links open inside the app; anything else (mail, settings) goes to the system.
@@ -101,11 +116,16 @@ struct RootView: View {
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
+            WidgetSync.updateTimeFormat(timeFormat)
             await pro.start()
             await TimesRefresher.refreshIfNeeded()
             await reminders.reschedule()
         }
         .onReceive(NotificationCenter.default.publisher(for: .shabbatTimesUpdated)) { _ in
+            Task { await reminders.reschedule() }
+        }
+        .onChange(of: timeFormat) { _, format in
+            WidgetSync.updateTimeFormat(format)
             Task { await reminders.reschedule() }
         }
         .onChange(of: languageCode) { _, code in
@@ -121,10 +141,23 @@ struct RootView: View {
     }
 }
 
+extension RootView {
+    /// Tapping the ring opens the alarm that rings next, in the Alarms tab; with no alarm it starts a new one.
+    func openNextAlarm() {
+        if let alarm = alarmStore.nextWake?.alarm {
+            selectedTab = .alarms
+            editingAlarm = alarm
+        } else {
+            showAddAlarm = true
+        }
+    }
+}
+
 struct HomeDashboard: View {
     @ObservedObject var alarmStore: AlarmStore
     var onAddAlarm: () -> Void
     var onOpenTimes: () -> Void
+    var onOpenAlarm: () -> Void
     @Environment(\.locale) private var locale
 
     @State private var nextShabbatTime: ShabbatTimeItem?
@@ -161,6 +194,7 @@ struct HomeDashboard: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
+                    Button(action: onOpenAlarm) {
                     ZStack {
                         LivingRing(primary: WakePalette.cyan, secondary: WakePalette.blue)
                             .frame(width: 252, height: 252)
@@ -186,7 +220,11 @@ struct HomeDashboard: View {
                         .frame(width: 170)
                     }
                     .frame(height: 260)
+                    .contentShape(Circle())
+                    }
+                    .buttonStyle(RingPressStyle())
                     .accessibilityElement(children: .combine)
+                    .accessibilityHint(Text("Opens this alarm"))
 
                     if alarmStore.nextWake != nil {
                         HStack(spacing: 8) {
@@ -291,6 +329,8 @@ private struct SettingsScreen: View {
     @State private var showPaywall = false
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
+    @AppStorage(TimeFormat.storageKey) private var timeFormat = "system"
+    @State private var testMessage: String?
     private var versionText: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
@@ -309,10 +349,24 @@ private struct SettingsScreen: View {
                     if ProStore.isEnforced {
                         Button { Task { await pro.restore() } } label: { Label("Restore purchases", systemImage: "arrow.clockwise") }
                     }
+                    if !ProStore.isEnforced {
+                        Toggle("Try as a free user", isOn: Binding(get: { pro.previewFree }, set: { pro.setPreviewFree($0) }))
+                        Text("While Pro is in preview everything is open. This shows the locked features so you can see how they behave.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
 #if DEBUG
                     Toggle("Show the locked state (testing)", isOn: $pro.debugLocked)
 #endif
                 }
+                Section {
+                    Button {
+                        Task {
+                            do { try await ShabbatAlarmService.scheduleTest(); testMessage = AppLanguage.text("The test alarm will ring in 10 seconds. Lock your phone and put it away.") }
+                            catch { testMessage = error.localizedDescription }
+                        }
+                    } label: { Label("Test the alarm", systemImage: "bell.badge") }
+                    if let testMessage { Text(testMessage).font(.footnote).foregroundStyle(.secondary) }
+                } header: { Text("Check that it rings") }
                 Section("Reminders") {
                     NavigationLink {
                         RemindersScreen(store: reminders)
@@ -321,6 +375,11 @@ private struct SettingsScreen: View {
                     }
                 }
                 Section("Display") {
+                    Picker("Time format", selection: $timeFormat) {
+                        Text("System").tag("system")
+                        Text("24-hour").tag("24h")
+                        Text("12-hour").tag("12h")
+                    }
                     Picker("Display mode", selection: $appearanceMode) {
                         Text("System").tag("system")
                         Text("Light").tag("light")

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The hero ring on the home screen: a calm, living instrument. Scanner ticks, slow counter-rotating arcs,
-/// a few orbiting points and a breathing core. It stands still when Reduce Motion is on.
+/// The hero ring on the home screen: a calm, living instrument. Scanner ticks, two slow counter-rotating arcs
+/// and a breathing core. It stands still when Reduce Motion is on.
 struct LivingRing: View {
     var primary: Color
     var secondary: Color
@@ -55,22 +55,6 @@ struct LivingRing: View {
         let pulse = 0.5 + 0.5 * sin(t * 1.7)
         fullRing(&gc, center: center, radius: radius * (0.84 + 0.006 * sin(t * 1.7)), width: 4, angle: t * 0.5, pulse: pulse, from: secondary, to: primary)
         fullRing(&gc, center: center, radius: radius * 0.75, width: 2, angle: -t * 0.8 + 1, pulse: 1 - pulse, from: primary, to: secondary)
-
-        // Fine dashed ring, drifting slowly.
-        gc.stroke(
-            circle(center, radius * 0.64),
-            with: .color(secondary.opacity(0.35)),
-            style: StrokeStyle(lineWidth: 1, dash: [1.5, 7], dashPhase: CGFloat(t * 6))
-        )
-
-        // Orbiting points with a soft halo.
-        for k in 0..<3 {
-            let angle = t * 0.9 + Double(k) * 2 * .pi / 3
-            let p = point(center, radius * 0.64, angle)
-            let halo = 7.0 + 2.0 * sin(t * 2 + Double(k))
-            gc.fill(Path(ellipseIn: CGRect(x: p.x - halo, y: p.y - halo, width: halo * 2, height: halo * 2)), with: .color(primary.opacity(0.18)))
-            gc.fill(Path(ellipseIn: CGRect(x: p.x - 2.2, y: p.y - 2.2, width: 4.4, height: 4.4)), with: .color(.white.opacity(0.9)))
-        }
     }
 
     private func fullRing(_ gc: inout GraphicsContext, center: CGPoint, radius: CGFloat, width: CGFloat, angle: Double, pulse: Double, from: Color, to: Color) {

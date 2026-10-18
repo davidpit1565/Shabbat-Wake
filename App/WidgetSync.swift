@@ -45,6 +45,13 @@ enum WidgetSync {
         WatchSync.shared.push()
     }
 
+    static func updateTimeFormat(_ format: String) {
+        guard SharedStore.load().timeFormat != format else { return }
+        SharedStore.update { $0.timeFormat = format }
+        WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
+    }
+
     static func clearLocation() {
         SharedStore.update {
             $0.latitude = nil

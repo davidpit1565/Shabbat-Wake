@@ -295,3 +295,14 @@
 "No alarm is set." = "Aucune alarme n’est programmée.";
 "Open Shabbat Waker once and allow location to get times." = "Ouvrez Shabbat Waker une fois et autorisez la localisation pour obtenir les horaires.";
 "Your alarm is ready" = "Votre alarme est prête";
+
+"Time format" = "Format de l'heure";
+"24-hour" = "24 heures";
+"12-hour" = "12 heures (AM/PM)";
+"Try as a free user" = "Essayer comme utilisateur gratuit";
+"While Pro is in preview everything is open. This shows the locked features so you can see how they behave." = "Tant que Pro est en aperçu, tout est ouvert. Cela affiche les fonctions verrouillées pour voir leur comportement.";
+"Test the alarm" = "Tester l'alarme";
+"Check that it rings" = "Vérifier qu'elle sonne";
+"The test alarm will ring in 10 seconds. Lock your phone and put it away." = "L'alarme de test sonnera dans 10 secondes. Verrouillez votre téléphone et posez-le.";
+"Test alarm" = "Alarme de test";
+"Opens this alarm" = "Ouvre cette alarme";

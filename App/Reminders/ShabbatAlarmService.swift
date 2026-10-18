@@ -108,9 +108,29 @@ enum ShabbatAlarmService {
             content.body = AppLanguage.text("Shabbat alarm")
             content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: soundFileName(for: alarm)))
             content.threadIdentifier = alarm.id.uuidString
+            content.interruptionLevel = .timeSensitive
             let trigger = UNCalendarNotificationTrigger(dateMatching: ring.components, repeats: ring.repeats)
             try await center.add(UNNotificationRequest(identifier: ring.id, content: content, trigger: trigger))
         }
+    }
+
+    /// Rings once, ten seconds from now, the same way a Shabbat alarm does. For checking sound and permissions by hand.
+    static func scheduleTest() async throws {
+        let center = UNUserNotificationCenter.current()
+        switch await ReminderScheduler.authorizationStatus() {
+        case .authorized, .provisional, .ephemeral: break
+        case .notDetermined:
+            guard await ReminderScheduler.requestAuthorization() else { throw ShabbatAlarmError.notificationsDenied }
+        default:
+            throw ShabbatAlarmError.notificationsDenied
+        }
+        let content = UNMutableNotificationContent()
+        content.title = AppLanguage.text("Test alarm")
+        content.body = AppLanguage.text("Shabbat alarm")
+        content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "ClassicWake_10s.wav"))
+        content.interruptionLevel = .timeSensitive
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
+        try await center.add(UNNotificationRequest(identifier: "shabbatWake.test", content: content, trigger: trigger))
     }
 
     static func cancel(id: UUID) async {
@@ -151,5 +171,14 @@ enum AlarmScheduler {
         } catch {
             if alarm.ringPlan == nil { throw error }
         }
+    }
+}
+
+/// Without this, a notification that arrives while the app is open makes no sound and shows nothing.
+final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
+    static let shared = NotificationPresenter()
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .list, .sound]
     }
 }

@@ -7,8 +7,9 @@ struct WatchEntry: TimelineEntry {
     let havdalah: Date?
     let alarm: Date?
     let languageCode: String?
+    var timeFormat: String? = nil
 
-    var locale: Locale { languageCode.map { Locale(identifier: $0) } ?? .current }
+    var locale: Locale { languageCode.map { TimeFormat.locale(language: $0, format: timeFormat) } ?? .current }
 }
 
 struct WatchProvider: TimelineProvider {
@@ -37,7 +38,8 @@ struct WatchProvider: TimelineProvider {
             candle: upcoming.first { $0.category == "candles" }?.date,
             havdalah: upcoming.first { $0.category == "havdalah" }?.date,
             alarm: snapshot.alarms.compactMap { $0.nextFireDate(after: date) }.min(),
-            languageCode: snapshot.languageCode
+            languageCode: snapshot.languageCode,
+            timeFormat: snapshot.timeFormat
         )
     }
 }

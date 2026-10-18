@@ -17,8 +17,9 @@ struct ShabbatWakeWidgetEntry: TimelineEntry {
     var relevance: TimelineEntryRelevance? = nil
     var hasPro: Bool = true
     var languageCode: String? = nil
+    var timeFormat: String? = nil
 
-    var locale: Locale { languageCode.map { Locale(identifier: $0) } ?? .current }
+    var locale: Locale { languageCode.map { TimeFormat.locale(language: $0, format: timeFormat) } ?? .current }
     var isRightToLeft: Bool { languageCode == "he" }
 
     static let placeholder = ShabbatWakeWidgetEntry(
@@ -86,7 +87,8 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             placeName: snapshot.placeName,
             hasLocation: snapshot.latitude != nil,
             hasPro: snapshot.proUnlocked ?? true,
-            languageCode: snapshot.languageCode
+            languageCode: snapshot.languageCode,
+            timeFormat: snapshot.timeFormat
         )
         // Smart Stack: raise the widget in the hours before candle lighting.
         if let candle = entry.candleLighting?.date, candle.timeIntervalSince(date) <= 4 * 3600 {

@@ -58,7 +58,7 @@ enum ReminderScheduler {
         guard status == .authorized || status == .provisional else { return }
 
         let candleTimes = times.filter { $0.category == "candles" }.map(\.date)
-        let locale = Locale(identifier: AppLanguage.effectiveCode(for: AppLanguage.preference))
+        let locale = TimeFormat.locale(language: AppLanguage.effectiveCode(for: AppLanguage.preference), format: UserDefaults.standard.string(forKey: TimeFormat.storageKey))
         let calendar = Calendar.current
         for item in ReminderPlanner.plan(reminders: reminders, candleTimes: candleTimes) {
             let content = UNMutableNotificationContent()

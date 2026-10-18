@@ -3,7 +3,7 @@ import Foundation
 
 /// What Siri answers. It reads the times and alarms the app keeps in the shared store, so it also works offline.
 enum IntentAnswers {
-    static var locale: Locale { Locale(identifier: AppLanguage.effectiveCode(for: AppLanguage.preference)) }
+    static var locale: Locale { TimeFormat.locale(language: AppLanguage.effectiveCode(for: AppLanguage.preference), format: UserDefaults.standard.string(forKey: TimeFormat.storageKey)) }
 
     static func nextTime(category: String, after now: Date = .now) -> Date? {
         SharedStore.load().times.first { $0.category == category && $0.date > now }?.date

@@ -46,7 +46,7 @@ final class WatchModel: NSObject, ObservableObject, WCSessionDelegate {
 struct WatchHome: View {
     @ObservedObject var model: WatchModel
 
-    private var locale: Locale { model.snapshot.languageCode.map { Locale(identifier: $0) } ?? .current }
+    private var locale: Locale { model.snapshot.languageCode.map { TimeFormat.locale(language: $0, format: model.snapshot.timeFormat) } ?? .current }
     private var upcoming: [ShabbatTimeItem] { model.snapshot.times.filter { $0.date > .now } }
     private var candle: Date? { upcoming.first { $0.category == "candles" }?.date }
     private var havdalah: Date? { upcoming.first { $0.category == "havdalah" }?.date }

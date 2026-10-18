@@ -30,6 +30,7 @@ struct RemindersScreen: View {
                         Button(role: .destructive) { Task { await store.delete(id: reminder.id) } } label: {
                             Label("Delete", systemImage: "trash")
                         }
+                        .tint(.red)
                     }
                 }
                 Button { addTapped() } label: {

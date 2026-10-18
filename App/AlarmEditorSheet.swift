@@ -68,10 +68,10 @@ struct AlarmEditorSheet: View {
                     Section {
                         Picker(selection: Binding(get: { weeksLimit }, set: { chooseWeeks($0) })) {
                             ForEach(weekChoices, id: \.self) { weeks in
-                                Text(weeks == 0 ? AppLanguage.text("Until I turn it off") : String(format: AppLanguage.text("For %d weeks"), weeks)).tag(weeks)
+                                Text(weeks == 0 ? AppLanguage.text("Until I turn it off") : String(format: AppLanguage.text("For %d weeks"), weeks) + " · PRO").tag(weeks)
                             }
                         } label: {
-                            HStack(spacing: 8) { Text("Repeat for"); ProBadge() }
+                            Text("Repeat for")
                         }
                     }
                 }
