@@ -82,7 +82,7 @@ struct RootView: View {
         .environment(\.locale, Locale(identifier: languageCode))
         .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
         .id(languageCode)
-        .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
+        .sheet(isPresented: $showAddAlarm) { AlarmEditorSheet(store: alarmStore, editing: nil) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
         .task {
             await permissions.checkOnLaunch()
@@ -202,106 +202,6 @@ struct HomeDashboard: View {
             .toolbar(.hidden, for: .navigationBar)
             .onAppear { nextShabbatTime = SharedStore.load().times.first { $0.date > .now } }
         }
-    }
-}
-
-private struct AddAlarmSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.locale) private var locale
-    @ObservedObject var store: AlarmStore
-    @State private var title = AppLanguage.text("Shabbat wake-up")
-    @State private var time = Date.now
-    @State private var repeatWeekly = true
-    @State private var weekdays: Set<Int> = [7]
-    @State private var soundID = "classic"
-    @State private var isSaving = false
-
-    private var canSave: Bool { !isSaving && (!repeatWeekly || !weekdays.isEmpty) }
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Alarm details") {
-                    TextField("Alarm name", text: $title)
-                    DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
-                    Toggle("Repeat weekly", isOn: $repeatWeekly)
-                    if repeatWeekly {
-                        WeekdayPicker(selection: $weekdays, locale: locale)
-                    }
-                    Picker("Alarm sound", selection: $soundID) {
-                        Text("Gentle Chime").tag("gentle")
-                        Text("Sunrise Sequence").tag("sunrise")
-                        Text("Classic Wake").tag("classic")
-                    }
-                }
-                Section {
-                    Text("Saving requests an Apple system alarm. The alarm will be saved only if iOS grants permission and scheduling succeeds.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-                if let error = store.lastError {
-                    Section("Could not schedule alarm") {
-                        Text(error)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
-                    }
-                }
-            }
-            .navigationTitle("New alarm")
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear { store.clearError() }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        isSaving = true
-                        Task {
-                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID)
-                            isSaving = false
-                            if saved { dismiss() }
-                        }
-                    }
-                    .disabled(!canSave)
-                }
-            }
-        }
-    }
-}
-
-private struct WeekdayPicker: View {
-    @Binding var selection: Set<Int>
-    let locale: Locale
-
-    private var calendar: Calendar {
-        var calendar = Calendar.current
-        calendar.locale = locale
-        return calendar
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                ForEach(1...7, id: \.self) { day in
-                    let isOn = selection.contains(day)
-                    Button {
-                        if isOn { selection.remove(day) } else { selection.insert(day) }
-                    } label: {
-                        Text(calendar.veryShortWeekdaySymbols[day - 1])
-                            .font(.subheadline.weight(.semibold))
-                            .frame(maxWidth: .infinity, minHeight: 38)
-                            .background(isOn ? WakePalette.blue : Color.secondary.opacity(0.15), in: Circle())
-                            .foregroundStyle(isOn ? Color.white : Color.primary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(calendar.weekdaySymbols[day - 1])
-                    .accessibilityAddTraits(isOn ? .isSelected : [])
-                }
-            }
-            if selection.isEmpty {
-                Text("Choose at least one day.")
-                    .font(.footnote).foregroundStyle(.red)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }
 
