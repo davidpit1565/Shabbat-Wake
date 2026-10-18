@@ -343,9 +343,9 @@ private struct WeekdayPicker: View {
 }
 
 private enum AppLinks {
-    /// Set these to the published URLs before submitting; the Settings screen shows a link only when one is set.
-    static let privacyPolicy: URL? = nil
-    static let support: URL? = nil
+    /// Published via GitHub Pages (Settings > Pages > main / root). The Settings screen shows a link only when one is set.
+    static let privacyPolicy: URL? = URL(string: "https://davidpit1565.github.io/Shabbat-Wake/privacy/")
+    static let support: URL? = URL(string: "https://davidpit1565.github.io/Shabbat-Wake/support/")
 }
 
 private struct PrivacyScreen: View {
