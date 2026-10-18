@@ -287,3 +287,10 @@
 "Payment is charged to your Apple ID when you confirm. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it in your Apple ID settings under Subscriptions." = "התשלום מחויב בחשבון ה-Apple ID שלך באישור. המנוי מתחדש אוטומטית אלא אם בוטל לפחות 24 שעות לפני סוף התקופה הנוכחית. אפשר לנהל או לבטל בהגדרות ה-Apple ID תחת מנויים.";
 "Terms of Use" = "תנאי שימוש";
 "Privacy Policy" = "מדיניות פרטיות";
+
+"In progress" = "מתקיים עכשיו";
+"Add a place" = "הוספת מקום";
+"Remove this place" = "הסרת המקום הזה";
+"Choose a place" = "בחירת מקום";
+"No places found." = "לא נמצאו מקומות.";
+"City or address" = "עיר או כתובת";

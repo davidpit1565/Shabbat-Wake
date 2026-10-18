@@ -337,4 +337,30 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertTrue(AppLanguage.isRightToLeft("he"))
         for code in ["en", "ru", "fr", "es"] { XCTAssertFalse(AppLanguage.isRightToLeft(code)) }
     }
+
+    func testSavedPlacesArePro() {
+        XCTAssertFalse(ProPolicy.canSavePlace(currentCount: 0, hasPro: false))
+        XCTAssertTrue(ProPolicy.canSavePlace(currentCount: 0, hasPro: true))
+        XCTAssertFalse(ProPolicy.canSavePlace(currentCount: ProPolicy.maxSavedPlaces, hasPro: true))
+    }
+
+    func testHebcalIsAskedForNamesInTheAppLanguage() {
+        func query(_ language: String) -> [String: String] {
+            let url = ShabbatTimesService.makeWeeksURL(latitude: 31.77, longitude: 35.21, timeZoneIdentifier: "Asia/Jerusalem", from: Date(timeIntervalSince1970: 1_790_000_000), weeks: 4, language: language)!
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            return Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.value ?? "") })
+        }
+        XCTAssertEqual(query("ru")["lg"], "ru")
+        XCTAssertEqual(query("fr")["lg"], "fr")
+        XCTAssertEqual(query("es")["lg"], "es")
+        XCTAssertNil(query("en")["lg"])
+        XCTAssertNil(query("he")["lg"])
+        XCTAssertEqual(query("en")["maj"], "on")
+    }
+
+    func testSavedPlaceSurvivesEncoding() throws {
+        let place = SavedPlace(name: "Paris, France", latitude: 48.85, longitude: 2.35, timeZoneIdentifier: "Europe/Paris")
+        let decoded = try JSONDecoder().decode(SavedPlace.self, from: JSONEncoder().encode(place))
+        XCTAssertEqual(decoded, place)
+    }
 }
