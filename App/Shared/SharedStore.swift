@@ -8,6 +8,8 @@ struct WidgetSnapshot: Codable, Equatable {
     var timeZoneIdentifier: String?
     var placeName: String?
     var times: [ShabbatTimeItem] = []
+    /// Whether Pro is unlocked, so Lock Screen widgets can follow it. Nil (older data) counts as unlocked.
+    var proUnlocked: Bool?
 }
 
 enum SharedStore {
