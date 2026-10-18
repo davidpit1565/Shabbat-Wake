@@ -227,3 +227,13 @@ extension Array where Element == ShabbatWeek {
         }
     }
 }
+
+extension ShabbatWeek {
+    /// "Parashat Lech-Lecha", a holiday name, or both, in the given app language.
+    func displayTitle(language: String) -> String {
+        let hebrew = language == "he"
+        let parasha = hebrew ? (parashaHebrew ?? parashaEnglish) : (parashaEnglish ?? parashaHebrew)
+        let holiday = hebrew ? (holidayHebrew ?? holidayEnglish) : (holidayEnglish ?? holidayHebrew)
+        return [parasha, holiday].compactMap { $0 }.joined(separator: " · ")
+    }
+}

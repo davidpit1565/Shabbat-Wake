@@ -114,6 +114,8 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             ).filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
             guard activeFetchID == fetchID else { return }
             weeks = fetched
+            let language = AppLanguage.effectiveCode(for: AppLanguage.preference)
+            WidgetSync.updateNextTitle(fetched.first?.displayTitle(language: language))
             WidgetSync.updateLocation(
                 latitude: latitude,
                 longitude: longitude,
@@ -268,9 +270,7 @@ struct ShabbatTimesScreen: View {
     }
 
     private func title(for week: ShabbatWeek) -> String {
-        let parasha = isHebrew ? (week.parashaHebrew ?? week.parashaEnglish) : (week.parashaEnglish ?? week.parashaHebrew)
-        let holiday = isHebrew ? (week.holidayHebrew ?? week.holidayEnglish) : (week.holidayEnglish ?? week.holidayHebrew)
-        return [parasha, holiday].compactMap { $0 }.joined(separator: " · ")
+        week.displayTitle(language: isHebrew ? "he" : "other")
     }
 
     /// "in 4 days", or "In progress" while Shabbat or the holiday is under way.
