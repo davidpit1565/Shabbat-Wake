@@ -1,4 +1,3 @@
-import ActivityKit
 import AlarmKit
 import SwiftUI
 import WidgetKit
@@ -17,6 +16,10 @@ struct ShabbatWakeWidgetEntry: TimelineEntry {
     let hasLocation: Bool
     var relevance: TimelineEntryRelevance? = nil
     var hasPro: Bool = true
+    var languageCode: String? = nil
+
+    var locale: Locale { languageCode.map { Locale(identifier: $0) } ?? .current }
+    var isRightToLeft: Bool { languageCode == "he" }
 
     static let placeholder = ShabbatWakeWidgetEntry(
         date: .now,
@@ -45,16 +48,12 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             let snapshot = SharedStore.load()
             let now = Date()
             var times = snapshot.times
-            if let latitude = snapshot.latitude, let longitude = snapshot.longitude {
+            // The app keeps about half a year of times (Shabbat and Yom Tov) in the shared store. Only when none is left
+            // does the widget ask Hebcal itself, and it never overwrites the stored list with that short answer.
+            if !times.contains(where: { $0.date > now }), let latitude = snapshot.latitude, let longitude = snapshot.longitude {
                 let zone = snapshot.timeZoneIdentifier ?? TimeZone.current.identifier
-                if var fetched = try? await ShabbatTimesService.fetch(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone), !fetched.isEmpty {
-                    if fetched.allSatisfy({ $0.date <= now }),
-                       let next = try? await ShabbatTimesService.fetch(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone, around: now.addingTimeInterval(24 * 3600)),
-                       !next.isEmpty {
-                        fetched = next
-                    }
+                if let fetched = try? await ShabbatTimesService.fetch(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone), !fetched.isEmpty {
                     times = fetched
-                    SharedStore.update { $0.times = fetched }
                 }
             }
 
@@ -86,7 +85,8 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             havdalah: upcoming.first { $0.category == "havdalah" },
             placeName: snapshot.placeName,
             hasLocation: snapshot.latitude != nil,
-            hasPro: snapshot.proUnlocked ?? true
+            hasPro: snapshot.proUnlocked ?? true,
+            languageCode: snapshot.languageCode
         )
         // Smart Stack: raise the widget in the hours before candle lighting.
         if let candle = entry.candleLighting?.date, candle.timeIntervalSince(date) <= 4 * 3600 {
@@ -125,8 +125,23 @@ private struct LockedWidgetView: View {
 }
 
 private extension Date {
-    var dayAndTime: String { formatted(.dateTime.weekday(.abbreviated).hour().minute()) }
-    var timeOnly: String { formatted(date: .omitted, time: .shortened) }
+    func dayAndTime(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).weekday(.abbreviated).hour().minute()) }
+    func timeOnly(_ locale: Locale) -> String { formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale)) }
+    func weekdayName(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).weekday(.wide)) }
+    func hourMinute(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).hour().minute()) }
+}
+
+/// The app's look on the Home Screen: deep blue with a cyan glow, whatever the system appearance.
+enum WidgetBrand {
+    static let cyan = Color(red: 89 / 255, green: 230 / 255, blue: 1)
+    static let blue = Color(red: 40 / 255, green: 116 / 255, blue: 1)
+
+    static var background: some View {
+        ZStack {
+            LinearGradient(colors: [Color(red: 0.04, green: 0.07, blue: 0.16), Color(red: 0.07, green: 0.19, blue: 0.43)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            RadialGradient(colors: [cyan.opacity(0.30), .clear], center: .topTrailing, startRadius: 4, endRadius: 170)
+        }
+    }
 }
 
 struct ShabbatWakeWidgetView: View {
@@ -145,11 +160,15 @@ struct ShabbatWakeWidgetView: View {
     }
 
     var body: some View {
-        if !entry.hasPro && family.isLockScreen {
-            LockedWidgetView()
-        } else {
-            content
+        Group {
+            if !entry.hasPro && family.isLockScreen {
+                LockedWidgetView()
+            } else {
+                content
+            }
         }
+        .environment(\.locale, entry.locale)
+        .environment(\.layoutDirection, entry.isRightToLeft ? .rightToLeft : .leftToRight)
     }
 
     @ViewBuilder private var content: some View {
@@ -165,12 +184,12 @@ struct ShabbatWakeWidgetView: View {
     private var alarmBlock: some View {
         VStack(alignment: .leading, spacing: 2) {
             Label("Next alarm", systemImage: "alarm.fill")
-                .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                .font(.caption2.weight(.semibold)).foregroundStyle(WidgetBrand.cyan)
             if let alarm = entry.nextAlarm {
-                Text(alarm.date.timeOnly)
+                Text(alarm.date.timeOnly(entry.locale))
                     .font(.system(size: 30, weight: .light, design: .rounded)).monospacedDigit()
                     .minimumScaleFactor(0.7)
-                Text(alarm.date.formatted(.dateTime.weekday(.wide)))
+                Text(alarm.date.weekdayName(entry.locale))
                     .font(.caption).foregroundStyle(.secondary)
             } else {
                 Text("No alarm set").font(.subheadline.weight(.semibold))
@@ -181,7 +200,7 @@ struct ShabbatWakeWidgetView: View {
     private var shabbatBlock: some View {
         VStack(alignment: .leading, spacing: 4) {
             Label("Shabbat", systemImage: "sun.horizon.fill")
-                .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                .font(.caption2.weight(.semibold)).foregroundStyle(WidgetBrand.cyan)
             if shabbatLines.isEmpty {
                 Text(emptyShabbatMessage)
                     .font(.caption).foregroundStyle(.secondary)
@@ -189,7 +208,7 @@ struct ShabbatWakeWidgetView: View {
                 ForEach(Array(shabbatLines.enumerated()), id: \.offset) { _, line in
                     VStack(alignment: .leading, spacing: 0) {
                         Text(line.label).font(.caption2).foregroundStyle(.secondary)
-                        Text(line.date.dayAndTime).font(.subheadline.weight(.semibold)).monospacedDigit()
+                        Text(line.date.dayAndTime(entry.locale)).font(.subheadline.weight(.semibold)).monospacedDigit()
                     }
                 }
             }
@@ -203,7 +222,7 @@ struct ShabbatWakeWidgetView: View {
             if let line = shabbatLines.first {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(line.label).font(.caption2).foregroundStyle(.secondary)
-                    Text(line.date.dayAndTime).font(.footnote.weight(.semibold)).monospacedDigit()
+                    Text(line.date.dayAndTime(entry.locale)).font(.footnote.weight(.semibold)).monospacedDigit()
                 }
             } else {
                 Text(emptyShabbatMessage)
@@ -211,7 +230,8 @@ struct ShabbatWakeWidgetView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .containerBackground(.background, for: .widget)
+        .containerBackground(for: .widget) { WidgetBrand.background }
+        .environment(\.colorScheme, .dark)
     }
 
     private var medium: some View {
@@ -222,20 +242,21 @@ struct ShabbatWakeWidgetView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .containerBackground(.background, for: .widget)
+        .containerBackground(for: .widget) { WidgetBrand.background }
+        .environment(\.colorScheme, .dark)
     }
 
     private var rectangular: some View {
         VStack(alignment: .leading, spacing: 2) {
             if let alarm = entry.nextAlarm {
-                Label(alarm.date.dayAndTime, systemImage: "alarm.fill").font(.headline)
+                Label(alarm.date.dayAndTime(entry.locale), systemImage: "alarm.fill").font(.headline)
             } else {
                 Label("No alarm set", systemImage: "alarm").font(.headline)
             }
             if let candle = entry.candleLighting {
-                Text("Candle lighting \(candle.date.dayAndTime)").font(.caption)
+                Text("Candle lighting \(candle.date.dayAndTime(entry.locale))").font(.caption)
             } else if let havdalah = entry.havdalah {
-                Text("Havdalah \(havdalah.date.dayAndTime)").font(.caption)
+                Text("Havdalah \(havdalah.date.dayAndTime(entry.locale))").font(.caption)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -244,7 +265,7 @@ struct ShabbatWakeWidgetView: View {
 
     @ViewBuilder private var inline: some View {
         if let alarm = entry.nextAlarm {
-            Label(alarm.date.dayAndTime, systemImage: "alarm.fill")
+            Label(alarm.date.dayAndTime(entry.locale), systemImage: "alarm.fill")
         } else {
             Label("No alarm set", systemImage: "alarm")
         }
@@ -256,7 +277,7 @@ struct ShabbatWakeWidgetView: View {
             VStack(spacing: 0) {
                 Image(systemName: "alarm.fill").font(.caption2)
                 if let alarm = entry.nextAlarm {
-                    Text(alarm.date.formatted(.dateTime.hour().minute()))
+                    Text(alarm.date.hourMinute(entry.locale))
                         .font(.caption.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.6)
                 } else {
                     Text("—").font(.caption)
@@ -287,7 +308,7 @@ private enum SingleTimeKind {
 
     var title: LocalizedStringKey { self == .candles ? "Candle lighting" : "Shabbat ends" }
     var symbol: String { self == .candles ? "flame.fill" : "moon.stars.fill" }
-    var tint: Color { self == .candles ? .orange : .indigo }
+    var tint: Color { self == .candles ? Color(red: 1, green: 0.72, blue: 0.42) : WidgetBrand.cyan }
     func item(_ entry: ShabbatWakeWidgetEntry) -> ShabbatTimeItem? { self == .candles ? entry.candleLighting : entry.havdalah }
 }
 
@@ -299,23 +320,27 @@ private struct SingleTimeWidgetView: View {
     private var date: Date? { kind.item(entry)?.date }
 
     var body: some View {
-        if !entry.hasPro && family.isLockScreen {
-            LockedWidgetView()
-        } else {
-            content
+        Group {
+            if !entry.hasPro && family.isLockScreen {
+                LockedWidgetView()
+            } else {
+                content
+            }
         }
+        .environment(\.locale, entry.locale)
+        .environment(\.layoutDirection, entry.isRightToLeft ? .rightToLeft : .leftToRight)
     }
 
     @ViewBuilder private var content: some View {
         switch family {
         case .accessoryInline:
-            if let date { Label("\(date.dayAndTime)", systemImage: kind.symbol) } else { Label("—", systemImage: kind.symbol) }
+            if let date { Label("\(date.dayAndTime(entry.locale))", systemImage: kind.symbol) } else { Label("—", systemImage: kind.symbol) }
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
                     Image(systemName: kind.symbol).font(.caption2)
-                    Text(date?.formatted(.dateTime.hour().minute()) ?? "—")
+                    Text(date?.hourMinute(entry.locale) ?? "—")
                         .font(.caption.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.6)
                 }
             }
@@ -323,8 +348,8 @@ private struct SingleTimeWidgetView: View {
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
                 Label(kind.title, systemImage: kind.symbol).font(.caption.weight(.semibold))
-                Text(date?.timeOnly ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
-                if let date { Text(date.formatted(.dateTime.weekday(.wide))).font(.caption2) }
+                Text(date?.timeOnly(entry.locale) ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
+                if let date { Text(date.weekdayName(entry.locale)).font(.caption2) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .containerBackground(.background, for: .widget)
@@ -334,13 +359,13 @@ private struct SingleTimeWidgetView: View {
                 Spacer(minLength: 0)
                 Label(kind.title, systemImage: kind.symbol)
                     .font(.system(size: medium ? 18 : 14, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                Text(date?.timeOnly ?? "--:--")
+                    .foregroundStyle(WidgetBrand.cyan)
+                Text(date?.timeOnly(entry.locale) ?? "--:--")
                     .font(.system(size: medium ? 64 : 42, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1).minimumScaleFactor(0.5)
                 if let date {
-                    Text(date.formatted(.dateTime.weekday(.wide)))
+                    Text(date.weekdayName(entry.locale))
                         .font(.system(size: medium ? 24 : 18, weight: .bold, design: .rounded))
                         .foregroundStyle(kind.tint)
                         .lineLimit(1).minimumScaleFactor(0.6)
@@ -351,7 +376,8 @@ private struct SingleTimeWidgetView: View {
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .containerBackground(.background, for: .widget)
+            .containerBackground(for: .widget) { WidgetBrand.background }
+            .environment(\.colorScheme, .dark)
         }
     }
 }
@@ -380,46 +406,11 @@ struct ShabbatEndsWidget: Widget {
     }
 }
 
-/// The Lock Screen / Dynamic Island presentation of a system alarm. AlarmKit requires the widget
-/// extension to provide it; without it the system alarm cannot present itself properly.
-@available(iOS 26.1, *)
-struct ShabbatWakeAlarmLiveActivity: Widget {
-    var body: some WidgetConfiguration {
-        ActivityConfiguration(for: AlarmAttributes<ShabbatWakeAlarmMetadata>.self) { context in
-            HStack(spacing: 12) {
-                Image(systemName: "alarm.fill").font(.title2).foregroundStyle(context.attributes.tintColor)
-                Text(context.attributes.metadata?.title ?? "")
-                    .font(.headline)
-                Spacer()
-            }
-            .padding()
-        } dynamicIsland: { context in
-            DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-                }
-                DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.metadata?.title ?? "").font(.headline)
-                }
-            } compactLeading: {
-                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-            } compactTrailing: {
-                EmptyView()
-            } minimal: {
-                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-            }
-        }
-    }
-}
-
 @main
 struct ShabbatWakeWidgetBundle: WidgetBundle {
     var body: some Widget {
         ShabbatWakeHomeWidget()
         CandleLightingWidget()
         ShabbatEndsWidget()
-        if #available(iOS 26.1, *) {
-            ShabbatWakeAlarmLiveActivity()
-        }
     }
 }

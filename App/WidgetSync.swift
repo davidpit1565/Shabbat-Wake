@@ -10,6 +10,7 @@ enum WidgetSync {
     static func updateAlarms(_ alarms: [WakeAlarm]) {
         SharedStore.update { $0.alarms = alarms }
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
     }
 
     static func updateLocation(latitude: Double, longitude: Double, timeZoneIdentifier: String, placeName: String?, times: [ShabbatTimeItem]) {
@@ -21,6 +22,7 @@ enum WidgetSync {
             $0.times = times
         }
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
         NotificationCenter.default.post(name: .shabbatTimesUpdated, object: nil)
     }
 
@@ -28,6 +30,19 @@ enum WidgetSync {
         guard SharedStore.load().proUnlocked != unlocked else { return }
         SharedStore.update { $0.proUnlocked = unlocked }
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
+    }
+
+    static func updateNextTitle(_ title: String?) {
+        guard SharedStore.load().nextTitle != title else { return }
+        SharedStore.update { $0.nextTitle = title }
+    }
+
+    static func updateLanguage(_ code: String) {
+        guard SharedStore.load().languageCode != code else { return }
+        SharedStore.update { $0.languageCode = code }
+        WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
     }
 
     static func clearLocation() {
@@ -39,5 +54,6 @@ enum WidgetSync {
             $0.times = []
         }
         WidgetCenter.shared.reloadAllTimelines()
+        WatchSync.shared.push()
     }
 }

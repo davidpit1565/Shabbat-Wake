@@ -10,6 +10,10 @@ struct WidgetSnapshot: Codable, Equatable {
     var times: [ShabbatTimeItem] = []
     /// Whether Pro is unlocked, so Lock Screen widgets can follow it. Nil (older data) counts as unlocked.
     var proUnlocked: Bool?
+    /// The language chosen inside the app (en, he, ru, fr, es), so widgets speak it too. Nil follows the iPhone.
+    var languageCode: String?
+    /// The parasha or holiday of the next Shabbat, in the app's language, for the home screen.
+    var nextTitle: String?
 }
 
 enum SharedStore {
@@ -23,6 +27,11 @@ enum SharedStore {
             return WidgetSnapshot()
         }
         return snapshot
+    }
+
+    /// Used on the Watch: the iPhone's snapshot replaces whatever was stored.
+    static func replace(_ snapshot: WidgetSnapshot) {
+        if let data = try? JSONEncoder().encode(snapshot) { defaults.set(data, forKey: key) }
     }
 
     static func update(_ change: (inout WidgetSnapshot) -> Void) {

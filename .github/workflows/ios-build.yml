@@ -37,9 +37,8 @@ jobs:
       - name: Validate widget extension plist and generated sounds
         run: |
           plutil -lint App/PrivacyInfo.xcprivacy App/Widgets/PrivacyInfo.xcprivacy
-          plutil -lint Config/ShabbatWake.entitlements Config/ShabbatWakeWidget.entitlements
-          plutil -lint App/en.lproj/Localizable.strings App/he.lproj/Localizable.strings App/en.lproj/InfoPlist.strings App/he.lproj/InfoPlist.strings
-          plutil -lint App/Widgets/en.lproj/Localizable.strings App/Widgets/he.lproj/Localizable.strings
+          for f in Config/*.entitlements; do plutil -lint "$f"; done
+          find App Watch -name "*.strings" | while read -r f; do plutil -lint "$f" || exit 1; done
           sips -g pixelWidth -g pixelHeight -g hasAlpha App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png | tee /tmp/icon.txt
           grep -q "pixelWidth: 1024" /tmp/icon.txt && grep -q "pixelHeight: 1024" /tmp/icon.txt && grep -q "hasAlpha: no" /tmp/icon.txt
           for f in App/Assets.xcassets/AppIcon*.appiconset/*.png; do
@@ -64,11 +63,17 @@ jobs:
           xcodebuild \
             -project ShabbatWake.xcodeproj \
             -scheme ShabbatWake \
-            -sdk iphonesimulator \
             -configuration Debug \
             -destination 'platform=iOS Simulator,name=iPhone 17' \
             CODE_SIGNING_ALLOWED=NO \
             test
+
+      - name: Check the Watch app is embedded in the iPhone app
+        if: always()
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
+          echo "APP=$APP"; ls -la "$APP/Watch" || true
+          find "$APP/Watch" -maxdepth 3 -name "*.appex" -o -maxdepth 3 -name "*.app" | head
 
       - name: List bundled alarm sounds
         if: always()

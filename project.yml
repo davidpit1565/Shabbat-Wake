@@ -39,7 +39,6 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Waker uses your location to calculate local Shabbat times. Without access, no times are shown."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Waker schedules the wake-up alarms you create using Apple system alarm features."
-        INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -53,6 +52,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
     dependencies:
       - target: ShabbatWakeWidget
+        embed: true
+      - target: ShabbatWakeWatch
         embed: true
     scheme:
       testTargets:
@@ -80,6 +81,72 @@ targets:
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
 
+  ShabbatWakeWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: Watch/App
+      - path: App/Shared
+        excludes:
+          - "ShabbatWakeAlarmMetadata.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.watchkitapp
+        PRODUCT_NAME: "Shabbat Waker"
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+        SUPPORTED_PLATFORMS: "watchos watchsimulator"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.shabbatwake.ios
+        INFOPLIST_KEY_WKApplication: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWatch.entitlements
+    dependencies:
+      - target: ShabbatWakeWatchWidget
+        embed: true
+
+  ShabbatWakeWatchWidget:
+    type: app-extension
+    platform: watchOS
+    deploymentTarget: "10.0"
+    info:
+      path: Config/WatchWidgetInfo.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    sources:
+      - path: Watch/Widget
+      - path: App/Shared
+        excludes:
+          - "ShabbatWakeAlarmMetadata.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.watchkitapp.widget
+        PRODUCT_NAME: "Shabbat Waker Watch Widget"
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+        SUPPORTED_PLATFORMS: "watchos watchsimulator"
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWatchWidget.entitlements
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
+        SKIP_INSTALL: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+
+  ShabbatWakeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: ShabbatWake
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.uitests
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+
   ShabbatWakeTests:
     type: bundle.unit-test
     platform: iOS
@@ -94,3 +161,14 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Shabbat Wake.app/Shabbat Wake"
         BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  ShabbatWakeScreenshots:
+    build:
+      targets:
+        ShabbatWake: all
+        ShabbatWakeUITests: [test]
+    test:
+      targets:
+        - ShabbatWakeUITests
+      storeKitConfiguration: Config/Pro.storekit

@@ -51,9 +51,10 @@ struct LivingRing: View {
             gc.stroke(tick, with: .color(primary.opacity(0.14 + 0.86 * glow)), style: StrokeStyle(lineWidth: i % 6 == 0 ? 2 : 1.2, lineCap: .round))
         }
 
-        // Two arcs turning against each other.
-        arc(&gc, center: center, radius: radius * 0.84, start: t * 0.45, length: 1.9, width: 3.2, from: secondary, to: primary)
-        arc(&gc, center: center, radius: radius * 0.74, start: -t * 0.70 + 1.0, length: 1.2, width: 2.2, from: primary, to: secondary)
+        // The main ring is a full circle whose colour travels round it and whose glow pulses like something alive.
+        let pulse = 0.5 + 0.5 * sin(t * 1.7)
+        fullRing(&gc, center: center, radius: radius * (0.84 + 0.006 * sin(t * 1.7)), width: 4, angle: t * 0.5, pulse: pulse, from: secondary, to: primary)
+        fullRing(&gc, center: center, radius: radius * 0.75, width: 2, angle: -t * 0.8 + 1, pulse: 1 - pulse, from: primary, to: secondary)
 
         // Fine dashed ring, drifting slowly.
         gc.stroke(
@@ -72,14 +73,16 @@ struct LivingRing: View {
         }
     }
 
-    private func arc(_ gc: inout GraphicsContext, center: CGPoint, radius: CGFloat, start: Double, length: Double, width: CGFloat, from: Color, to: Color) {
-        var path = Path()
-        path.addArc(center: center, radius: radius, startAngle: .radians(start), endAngle: .radians(start + length), clockwise: false)
-        gc.stroke(
-            path,
-            with: .linearGradient(Gradient(colors: [from.opacity(0.05), to]), startPoint: point(center, radius, start), endPoint: point(center, radius, start + length)),
-            style: StrokeStyle(lineWidth: width, lineCap: .round)
-        )
+    private func fullRing(_ gc: inout GraphicsContext, center: CGPoint, radius: CGFloat, width: CGFloat, angle: Double, pulse: Double, from: Color, to: Color) {
+        let path = circle(center, radius)
+        let shading = GraphicsContext.Shading.conicGradient(Gradient(colors: [from, to, from]), center: center, angle: .radians(angle))
+        var glow = gc
+        glow.opacity = 0.18 + 0.30 * pulse
+        glow.addFilter(.blur(radius: 7))
+        glow.stroke(path, with: shading, lineWidth: width * 3.5)
+        var line = gc
+        line.opacity = 0.78 + 0.22 * pulse
+        line.stroke(path, with: shading, lineWidth: width)
     }
 
     private func circle(_ center: CGPoint, _ radius: CGFloat) -> Path {

@@ -1,0 +1,89 @@
+name: Screenshots
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ["UITests/**", ".github/workflows/screenshots.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate sounds and project
+        run: |
+          python3 App/AlarmSoundGenerator.py
+          xcodegen generate
+
+      - name: Pick the largest iPhone simulator
+        run: |
+          xcrun simctl list devices available | grep -E "iPhone" || true
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[0-9] Pro Max" | tail -1 | grep -oE "[0-9A-F-]{36}")
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          echo "Using $UDID"
+
+      - name: Build for testing
+        run: |
+          xcodebuild build-for-testing \
+            -project ShabbatWake.xcodeproj -scheme ShabbatWakeScreenshots \
+            -configuration Debug \
+            -destination "id=$UDID" -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Prepare the simulator
+        run: |
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          xcrun simctl location "$UDID" set 31.7683,35.2137
+          APP=$(find build/Build/Products -maxdepth 2 -name "Shabbat Wake.app" | head -1)
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl privacy "$UDID" grant location com.shabbatwake.ios || true
+
+      - name: Take the screenshots in every language
+        run: |
+          mkdir -p out
+          for LANG in en he ru fr es; do
+            REGION=US; [ "$LANG" = "he" ] && REGION=IL
+            rm -rf "res-$LANG.xcresult"
+            xcodebuild test-without-building \
+              -project ShabbatWake.xcodeproj -scheme ShabbatWakeScreenshots \
+              -destination "id=$UDID" -derivedDataPath build \
+              -testLanguage "$LANG" -testRegion "$REGION" \
+              -resultBundlePath "res-$LANG.xcresult" \
+              CODE_SIGNING_ALLOWED=NO || echo "run for $LANG failed"
+            mkdir -p "raw-$LANG"
+            xcrun xcresulttool export attachments --path "res-$LANG.xcresult" --output-path "raw-$LANG" || true
+            python3 - "$LANG" <<'PY'
+          import json, os, shutil, sys
+          lang = sys.argv[1]
+          src = f"raw-{lang}"
+          manifest = os.path.join(src, "manifest.json")
+          if not os.path.exists(manifest):
+              print("no manifest for", lang); sys.exit(0)
+          for test in json.load(open(manifest)):
+              for att in test.get("attachments", []):
+                  name = att.get("suggestedHumanReadableName", "")
+                  clean = name.split("_")[0] if "_" in name else name
+                  shutil.copy(os.path.join(src, att["exportedFileName"]), f"out/{lang}-{clean}.png")
+          PY
+          done
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iphone-screenshots
+          path: out
+          if-no-files-found: error

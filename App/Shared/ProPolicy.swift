@@ -10,6 +10,13 @@ enum ProPolicy {
     /// Minutes before candle lighting a Pro user can choose from.
     static let reminderChoices = [10, 15, 18, 20, 30, 40, 45, 60, 90, 120]
 
+    /// Saved places besides the current location: none for free, several for Pro.
+    static let maxSavedPlaces = 10
+
+    static func canSavePlace(currentCount: Int, hasPro: Bool) -> Bool {
+        hasPro && currentCount < maxSavedPlaces
+    }
+
     static func canAddReminder(currentCount: Int, hasPro: Bool) -> Bool {
         hasPro ? currentCount < maxReminders : currentCount < freeReminderLimit
     }
