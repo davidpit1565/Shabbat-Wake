@@ -130,7 +130,10 @@ struct RootView: View {
         }
         .onChange(of: languageCode) { _, code in
             WidgetSync.updateLanguage(code)
-            Task { await reminders.reschedule() }
+            Task {
+                await reminders.reschedule()
+                await TimesRefresher.refreshForLanguage()
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {

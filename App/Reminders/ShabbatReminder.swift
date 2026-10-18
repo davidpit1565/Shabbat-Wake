@@ -151,4 +151,19 @@ enum TimesRefresher {
         UserDefaults.standard.set(Date.now, forKey: fetchedKey)
         WidgetSync.updateLocation(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone, placeName: snapshot.placeName, times: weeks.timeItems)
     }
+
+    /// After the language changes: asks Hebcal again in the new language, so the Torah portion or holiday name shown on
+    /// Home, in the widgets and on the Watch changes at once instead of staying in the old language.
+    static func refreshForLanguage() async {
+        let snapshot = SharedStore.load()
+        guard let latitude = snapshot.latitude, let longitude = snapshot.longitude, let zone = snapshot.timeZoneIdentifier else { return }
+        let language = AppLanguage.effectiveCode(for: AppLanguage.preference)
+        guard let weeks = try? await ShabbatTimesService.fetchWeeks(
+            latitude: latitude, longitude: longitude, timeZoneIdentifier: zone,
+            from: Date.now.addingTimeInterval(-24 * 3600), weeks: 27, language: language
+        ), !weeks.isEmpty else { return }
+        let upcoming = weeks.first { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
+        WidgetSync.updateNextTitle(upcoming?.displayTitle(language: language))
+        WidgetSync.updateLocation(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone, placeName: snapshot.placeName, times: weeks.timeItems)
+    }
 }
