@@ -97,6 +97,7 @@ targets:
         PRODUCT_NAME: "Shabbat Waker"
         TARGETED_DEVICE_FAMILY: "4"
         SDKROOT: watchos
+        SUPPORTED_PLATFORMS: "watchos watchsimulator"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
         INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.shabbatwake.ios
@@ -127,6 +128,7 @@ targets:
         PRODUCT_NAME: "Shabbat Waker Watch Widget"
         TARGETED_DEVICE_FAMILY: "4"
         SDKROOT: watchos
+        SUPPORTED_PLATFORMS: "watchos watchsimulator"
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWatchWidget.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
