@@ -101,7 +101,7 @@ enum ReadinessEvaluator {
         case .authorized:
             rows.append(.init(id: "alarm-permission", title: "Alarm permission", detail: "Allowed", status: .ok))
         case .denied:
-            rows.append(.init(id: "alarm-permission", title: "Alarm permission", detail: "Denied. Allow alarms for Shabbat Wake in iOS Settings.", status: .attention))
+            rows.append(.init(id: "alarm-permission", title: "Alarm permission", detail: "Denied. Allow alarms for Shabbat Waker in iOS Settings.", status: .attention))
         case .notDetermined:
             rows.append(.init(id: "alarm-permission", title: "Alarm permission", detail: "iOS will ask when you save your first alarm.", status: .info))
         case .unsupported:

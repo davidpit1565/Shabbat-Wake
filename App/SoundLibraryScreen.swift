@@ -75,7 +75,7 @@ struct SoundLibraryScreen: View {
             } header: {
                 Text("Original tones")
             } footer: {
-                Text("These tones were created for Shabbat Wake. Choose one when you create an alarm.")
+                Text("These tones were created for Shabbat Waker. Choose one when you create an alarm.")
             }
         }
         .navigationTitle("Sound library")

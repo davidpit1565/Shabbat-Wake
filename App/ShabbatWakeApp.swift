@@ -352,10 +352,10 @@ private struct PrivacyScreen: View {
     var body: some View {
         List {
             Section {
-                Text("Your alarms, sounds and preferences are stored on this device only. Shabbat Wake has no account, no analytics and no advertising.")
+                Text("Your alarms, sounds and preferences are stored on this device only. Shabbat Waker has no account, no analytics and no advertising.")
             }
             Section("Location") {
-                Text("If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Wake on any server.")
+                Text("If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Waker on any server.")
                 Text("You can turn location access off at any time in iOS Settings. Alarms keep working without it.")
             }
         }
@@ -406,6 +406,7 @@ private struct SettingsScreen: View {
                     if let url = AppLinks.support {
                         Link("Support", destination: url)
                     }
+                    Link("Shabbat times by Hebcal.com (CC BY 4.0)", destination: URL(string: "https://www.hebcal.com")!)
                     LabeledContent("Version", value: versionText)
                 }
             }

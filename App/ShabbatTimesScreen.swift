@@ -172,7 +172,7 @@ struct ShabbatTimesScreen: View {
                 } header: {
                     Text("Shabbat times")
                 } footer: {
-                    Text("Times come from Hebcal.com. Your approximate coordinates are sent to Hebcal to calculate them.")
+                    Text("Times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Your coordinates are sent to Hebcal to calculate them. Times are provided for convenience; customs differ, so confirm with your rabbi or local calendar.")
                 }
             }
             .navigationTitle("Shabbat times")

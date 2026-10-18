@@ -119,9 +119,9 @@ final class ShabbatWakeTests: XCTestCase {
     }
 
     func testAlarmSoundsAreBundledInTheApp() {
-        let bundle = Bundle(for: AlarmStore.self)
+        let bundle = Bundle.main
         for name in ["GentleChime", "SunriseSequence", "ClassicWake"] {
-            XCTAssertNotNil(bundle.url(forResource: name, withExtension: "wav"), "\(name).wav is missing from the app bundle")
+            XCTAssertNotNil(bundle.url(forResource: name, withExtension: "wav"), "\(name).wav is missing from \(bundle.bundlePath)")
         }
     }
 }

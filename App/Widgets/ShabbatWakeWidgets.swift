@@ -104,7 +104,7 @@ struct ShabbatWakeWidgetView: View {
     }
 
     private var emptyShabbatMessage: LocalizedStringKey {
-        entry.hasLocation ? "Times unavailable" : "Open Shabbat Wake to set your location"
+        entry.hasLocation ? "Times unavailable" : "Open Shabbat Waker to set your location"
     }
 
     var body: some View {
@@ -228,7 +228,7 @@ struct ShabbatWakeHomeWidget: Widget {
         StaticConfiguration(kind: kind, provider: ShabbatWakeWidgetProvider()) { entry in
             ShabbatWakeWidgetView(entry: entry)
         }
-        .configurationDisplayName("Shabbat Wake")
+        .configurationDisplayName("Shabbat Waker")
         .description("Your next alarm and this week's candle-lighting and havdalah times.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryInline, .accessoryCircular])
     }

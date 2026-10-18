@@ -101,9 +101,9 @@
 "Choose at least one day." = "בחר לפחות יום אחד.";
 "Classic Wake" = "השכמה קלאסית";
 "Could not get a reliable location. Try again." = "לא ניתן לקבל מיקום מהימן. נסה שוב.";
-"Denied. Allow alarms for Shabbat Wake in iOS Settings." = "נדחתה. אפשר התראות עבור Shabbat Wake בהגדרות iOS.";
+"Denied. Allow alarms for Shabbat Waker in iOS Settings." = "נדחתה. אפשר התראות עבור Shabbat Waker בהגדרות iOS.";
 "Gentle Chime" = "צלצול עדין";
-"If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Wake on any server." = "אם תאפשר גישה למיקום, הקואורדינטות שלך משמשות לחישוב זמני הדלקת נרות והבדלה. לשם כך הן נשלחות ל-Hebcal.com יחד עם אזור הזמן שלך. הן לא נשלחות לשום מקום אחר ואינן נשמרות על ידי Shabbat Wake בשום שרת.";
+"If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Waker on any server." = "אם תאפשר גישה למיקום, הקואורדינטות שלך משמשות לחישוב זמני הדלקת נרות והבדלה. לשם כך הן נשלחות ל-Hebcal.com יחד עם אזור הזמן שלך. הן לא נשלחות לשום מקום אחר ואינן נשמרות על ידי Shabbat Waker בשום שרת.";
 "Latitude" = "קו רוחב";
 "Live Activities" = "פעילויות חיות";
 "Location" = "מיקום";
@@ -135,11 +135,12 @@
 "Sound library and previews" = "ספריית צלילים ותצוגה מקדימה";
 "Sunrise Sequence" = "רצף זריחה";
 "Support" = "תמיכה";
-"These tones were created for Shabbat Wake. Choose one when you create an alarm." = "הצלילים האלה נוצרו עבור Shabbat Wake. בחר אחד בעת יצירת התראה.";
+"These tones were created for Shabbat Waker. Choose one when you create an alarm." = "הצלילים האלה נוצרו עבור Shabbat Waker. בחר אחד בעת יצירת התראה.";
 "This list reflects what iOS reports right now." = "הרשימה משקפת את מה ש-iOS מדווחת כרגע.";
-"Times come from Hebcal.com. Your approximate coordinates are sent to Hebcal to calculate them." = "הזמנים מגיעים מ-Hebcal.com. הקואורדינטות המשוערות שלך נשלחות ל-Hebcal לצורך החישוב.";
+"Times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Your coordinates are sent to Hebcal to calculate them. Times are provided for convenience; customs differ, so confirm with your rabbi or local calendar." = "זמנים מאת [Hebcal.com](https://www.hebcal.com), ברישיון CC BY 4.0. הקואורדינטות שלך נשלחות ל-Hebcal לצורך החישוב. הזמנים ניתנים לנוחות בלבד; המנהגים שונים, ולכן יש לוודא מול הרב או לוח הזמנים המקומי.";
 "Version" = "גרסה";
 "You can turn location access off at any time in iOS Settings. Alarms keep working without it." = "אפשר לכבות את הגישה למיקום בכל עת בהגדרות iOS. ההתראות ממשיכות לעבוד גם בלעדיה.";
-"Your alarms, sounds and preferences are stored on this device only. Shabbat Wake has no account, no analytics and no advertising." = "ההתראות, הצלילים וההעדפות שלך נשמרים במכשיר זה בלבד. ב-Shabbat Wake אין חשבון, אין ניתוח שימוש ואין פרסומות.";
+"Your alarms, sounds and preferences are stored on this device only. Shabbat Waker has no account, no analytics and no advertising." = "ההתראות, הצלילים וההעדפות שלך נשמרים במכשיר זה בלבד. ב-Shabbat Waker אין חשבון, אין ניתוח שימוש ואין פרסומות.";
 "iOS will ask when you save your first alarm." = "iOS תבקש אישור כשתשמור את ההתראה הראשונה.";
 "%lld active" = "%lld פעילות";
+"Shabbat times by Hebcal.com (CC BY 4.0)" = "זמני שבת מאת Hebcal.com (CC BY 4.0)";
