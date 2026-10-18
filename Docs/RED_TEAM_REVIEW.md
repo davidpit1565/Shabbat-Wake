@@ -12,11 +12,11 @@ This is an adversarial checklist, not a claim that every device-level scenario h
 | Location restricted by Screen Time / MDM | Error state implemented | Device test required |
 | Location temporarily unavailable | Error state implemented | Device test required |
 | Network unavailable / Hebcal fails | Clears times and displays an error | Add mocked network tests |
-| Wrong time zone or travel across time zones | Uses current device time zone and current location | Must test travel and timezone changes; current implementation does not persist/reconcile location changes in background |
+| Wrong time zone or travel across time zones | Uses reverse-geocoded location time zone when available, with device-zone fallback | Must test travel, missing geocoder timezone, and timezone changes on-device |
 | User denies AlarmKit authorization | Scheduling returns an error and the sheet stays open | Must verify on iOS 26+ device |
 | OS version before iOS 26 | Native scheduler returns unsupported | Must verify that UI communicates this clearly |
 | Sound resource missing | Preview fails silently today | Improve visible error state and validate bundled WAV files in CI |
-| Alarm disabled/deleted | Store requests system cancel | Verify system state and repeat alarm behavior on-device |
+| Alarm disabled/deleted | Store requests system cancel; overlapping toggle/delete operations for the same alarm are guarded | Verify system state and repeat alarm behavior on-device; add race-focused tests |
 | App killed / device reboot | Relies on OS AlarmKit scheduling | Must verify on device; no simulator claim |
 | Hebrew RTL layout | Basic locale override and Hebrew strings added | Full screen-by-screen RTL and truncation audit required |
 | VoiceOver / Dynamic Type | Not fully audited | Accessibility audit required |
@@ -28,7 +28,8 @@ This is an adversarial checklist, not a claim that every device-level scenario h
 - GitHub Actions now targets macOS 26 / Xcode 26 and runs an iPhone 17 simulator test action.
 - Earlier CI runs exposed a compile error in the location model; that access-control error was corrected.
 - Do not treat queued or in-progress Actions runs as passing.
-- Do not claim AlarmKit is operational until the Xcode 26 build passes and a physical iPhone confirms authorization, scheduling, cancellation, custom sound playback, and reboot behavior.
+- CI run 39080570171 completed successfully for commit 99becb0d, but subsequent AlarmStore and location-time-zone changes require a fresh green run.
+- Do not claim AlarmKit is operational until the latest Xcode 26 build passes and a physical iPhone confirms authorization, scheduling, cancellation, custom sound playback, and reboot behavior.
 
 ## Release blockers
 
