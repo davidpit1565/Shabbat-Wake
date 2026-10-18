@@ -79,7 +79,7 @@ struct PaywallView: View {
 
                     if ProStore.isEnforced && !pro.hasPro { plans }
 
-                    Text("Always free: alarms that stop by themselves, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting.")
+                    Text("Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting.")
                         .font(.footnote).foregroundStyle(.secondary)
                     if ProStore.isEnforced { legal }
                 }

@@ -77,8 +77,8 @@ struct AlarmEditorSheet: View {
                 }
                 Section {
                     Picker("Ring style", selection: $stopsByItself) {
-                        Text("Stops by itself").tag(true)
-                        Text("Until I stop it").tag(false)
+                        Text("Several rings").tag(true)
+                        Text("One ring").tag(false)
                     }
                     .pickerStyle(.segmented)
                     if stopsByItself {
@@ -89,9 +89,6 @@ struct AlarmEditorSheet: View {
                             Picker("Minutes between rings", selection: $plan.intervalMinutes) {
                                 ForEach(RingPlan.intervalChoices, id: \.self) { Text("\($0)").tag($0) }
                             }
-                        }
-                        Picker("Seconds per ring", selection: $plan.seconds) {
-                            ForEach(RingPlan.secondChoices, id: \.self) { Text("\($0)").tag($0) }
                         }
                         Text(summary)
                             .font(.footnote).foregroundStyle(.secondary)
@@ -104,7 +101,7 @@ struct AlarmEditorSheet: View {
                     Text("How it rings")
                 } footer: {
                     Text(stopsByItself
-                         ? "Rings as a notification and stops by itself, even if nobody touches the phone. It follows the silent switch, so keep the phone off silent."
+                         ? "Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop."
                          : "Apple's system alarm. It rings through silent mode and keeps ringing until it is stopped.")
                 }
                 if let error = store.lastError {
@@ -131,9 +128,9 @@ struct AlarmEditorSheet: View {
 
     private var summary: String {
         if plan.count == 1 {
-            return String(format: AppLanguage.text("Rings once for %d seconds, then stops."), plan.seconds)
+            return AppLanguage.text("Rings once, until you stop it.")
         }
-        return String(format: AppLanguage.text("Rings %d times, every %d minutes, %d seconds each. Then it stops."), plan.count, plan.intervalMinutes, plan.seconds)
+        return String(format: AppLanguage.text("Rings %d times, every %d minutes. Stop each ring when it sounds."), plan.count, plan.intervalMinutes)
     }
 
     private func chooseWeeks(_ weeks: Int) {

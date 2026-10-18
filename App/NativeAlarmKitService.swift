@@ -4,17 +4,13 @@ import Foundation
 import SwiftUI
 
 enum NativeAlarmKitService {
+    private static let weekdayMap: [Int: Locale.Weekday] = [
+        1: .sunday, 2: .monday, 3: .tuesday, 4: .wednesday,
+        5: .thursday, 6: .friday, 7: .saturday
+    ]
+
     static func schedule(_ alarm: WakeAlarm) async throws {
         guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
-        let manager = AlarmManager.shared
-        if manager.authorizationState != .authorized {
-            let state = try await manager.requestAuthorization()
-            guard state == .authorized else { throw NativeAlarmKitError.permissionDenied }
-        }
-        let weekdayMap: [Int: Locale.Weekday] = [
-            1: .sunday, 2: .monday, 3: .tuesday, 4: .wednesday,
-            5: .thursday, 6: .friday, 7: .saturday
-        ]
         let recurrence: Alarm.Schedule.Relative.Recurrence
         if alarm.repeatsWeekly && !alarm.weekdays.isEmpty {
             recurrence = .weekly(alarm.weekdays.sorted().compactMap { weekdayMap[$0] })
@@ -25,18 +21,49 @@ enum NativeAlarmKitService {
             time: .init(hour: alarm.hour, minute: alarm.minute),
             repeats: recurrence
         ))
+        try await submit(id: alarm.id, title: alarm.title, soundID: alarm.soundID, schedule: schedule)
+    }
+
+    /// One ring of a "several rings" alarm: its own system alarm, at a fixed date or repeating on one weekday.
+    static func scheduleRing(id: UUID, alarm: WakeAlarm, ring: PlannedRing) async throws {
+        guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
+        let schedule: Alarm.Schedule
+        if ring.repeats, let weekday = ring.components.weekday, let day = weekdayMap[weekday] {
+            schedule = .relative(.init(
+                time: .init(hour: ring.components.hour ?? 0, minute: ring.components.minute ?? 0),
+                repeats: .weekly([day])
+            ))
+        } else {
+            schedule = .fixed(ring.fireDate)
+        }
+        try await submit(id: id, title: alarm.title, soundID: alarm.soundID, schedule: schedule)
+    }
+
+    /// A one-off alarm about a minute from now, for checking by hand that the alarm really sounds.
+    static func scheduleTest() async throws {
+        guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
+        try await submit(id: UUID(), title: AppLanguage.text("Test alarm"), soundID: "classic", schedule: .fixed(Date().addingTimeInterval(65)))
+    }
+
+    @available(iOS 26.1, *)
+    private static func submit(id: UUID, title: String, soundID: String, schedule: Alarm.Schedule) async throws {
+        let manager = AlarmManager.shared
+        if manager.authorizationState != .authorized {
+            let state = try await manager.requestAuthorization()
+            guard state == .authorized else { throw NativeAlarmKitError.permissionDenied }
+        }
         let presentation = AlarmPresentation(
-            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: alarm.title)),
+            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: title)),
             countdown: nil,
             paused: nil
         )
         let attributes = AlarmAttributes(
             presentation: presentation,
-            metadata: ShabbatWakeAlarmMetadata(title: alarm.title),
+            metadata: ShabbatWakeAlarmMetadata(title: title),
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
         let sound: AlertConfiguration.AlertSound
-        switch alarm.soundID {
+        switch soundID {
         case "gentle": sound = .named("GentleChime.wav")
         case "sunrise": sound = .named("SunriseSequence.wav")
         default: sound = .named("ClassicWake.wav")
@@ -46,7 +73,7 @@ enum NativeAlarmKitService {
             attributes: attributes,
             sound: sound
         )
-        _ = try await manager.schedule(id: alarm.id, configuration: configuration)
+        _ = try await manager.schedule(id: id, configuration: configuration)
     }
 
     static func cancel(id: UUID) async throws {

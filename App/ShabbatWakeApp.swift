@@ -364,7 +364,7 @@ private struct SettingsScreen: View {
                 Section {
                     Button {
                         Task {
-                            do { try await ShabbatAlarmService.scheduleTest(); testMessage = AppLanguage.text("The test alarm will ring in 10 seconds. Lock your phone and put it away.") }
+                            do { try await NativeAlarmKitService.scheduleTest(); testMessage = AppLanguage.text("The test alarm will ring in about a minute. Lock your phone and put it away.") }
                             catch { testMessage = error.localizedDescription }
                         }
                     } label: { Label("Test the alarm", systemImage: "bell.badge") }

@@ -161,13 +161,19 @@ final class AlarmStore: ObservableObject {
         let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
             (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
         }.value
-        // Shabbat alarms are notifications; schedule them again so later weeks and repeats stay covered.
-        for alarm in alarms where alarm.isEnabled && alarm.ringPlan != nil && !busyAlarmIDs.contains(alarm.id) && alarm.nextFireDate() != nil {
-            do { try await ShabbatAlarmService.schedule(alarm) } catch { lastError = error.localizedDescription }
+        guard let scheduled = scheduledOrNil, state == .authorized else {
+            systemAlarmIDs = scheduledOrNil ?? []
+            return
         }
-        let ringIDs = await ShabbatAlarmService.pendingAlarmIDs()
-        systemAlarmIDs = (scheduledOrNil ?? []).union(ringIDs)
-        guard let scheduled = scheduledOrNil, state == .authorized else { return }
+        // "Several rings" alarms are one system alarm per ring. Schedule them again only when a ring has gone missing,
+        // so a ring that is sounding right now is never cancelled.
+        for alarm in alarms where alarm.isEnabled && alarm.ringPlan != nil && !busyAlarmIDs.contains(alarm.id) && alarm.nextFireDate() != nil {
+            if !ShabbatAlarmService.isComplete(alarm, scheduled: scheduled) {
+                do { try await ShabbatAlarmService.schedule(alarm) } catch { lastError = error.localizedDescription }
+            }
+        }
+        let latest = (try? NativeAlarmKitService.scheduledAlarmIDs()) ?? scheduled
+        systemAlarmIDs = latest.union(ShabbatAlarmService.alarmIDs(scheduled: latest))
         // Weekly alarms that iOS no longer knows about (for example after restoring a backup) are scheduled again.
         let missing = alarms.filter { $0.isEnabled && $0.ringPlan == nil && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
         for alarm in missing {
