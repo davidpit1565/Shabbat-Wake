@@ -6,6 +6,40 @@ enum SupportContact {
     static let email = "davidpit2008@gmail.com"
 }
 
+/// Where feedback is sent: a small relay that emails the developer, so the person never leaves the app.
+/// It is the same relay the developer's Bet-El app uses; the subject carries "[Shabbat Waker]" so the messages can be told apart.
+enum FeedbackRelay {
+    static let url = URL(string: "https://us-central1-bet-el-e6812.cloudfunctions.net/sendFeedback")!
+    static let maxLength = 500
+
+    enum Outcome { case sent, failed }
+
+    static func send(name: String, email: String, subject: String, message: String) async -> Outcome {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 20
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        let payload: [String: String] = [
+            "name": name,
+            // The relay requires an address; people who leave it empty are sent as anonymous.
+            "email": email.isEmpty ? "anonymous@shabbat-waker.app" : email,
+            "subject": "[Shabbat Waker \(version) (\(build))] \(subject)",
+            "message": String(message.prefix(maxLength))
+        ]
+        guard let body = try? JSONSerialization.data(withJSONObject: payload) else { return .failed }
+        request.httpBody = body
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            return (response as? HTTPURLResponse)?.statusCode == 200 ? .sent : .failed
+        } catch {
+            return .failed
+        }
+    }
+}
+
 private struct MailComposer: UIViewControllerRepresentable {
     let subject: String
     let body: String
@@ -33,69 +67,115 @@ private struct MailComposer: UIViewControllerRepresentable {
     }
 }
 
+/// Name, title, message, then one big Send button at the bottom.
 struct FeedbackScreen: View {
+    private enum Field { case name, email, title, message }
+
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("feedbackName") private var name = ""
+    @State private var email = ""
+    @State private var title = ""
     @State private var message = ""
+    @State private var isSending = false
+    @State private var failed = false
+    @State private var sent = false
     @State private var showComposer = false
-    @State private var showFallbackError = false
-    @FocusState private var focused: Bool
+    @FocusState private var focus: Field?
 
-    private var subject: String {
-        let info = Bundle.main.infoDictionary
-        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "Shabbat Waker feedback (\(version) build \(build))"
-    }
-
-    private var fullBody: String {
-        "\(message)\n\n—\niOS \(UIDevice.current.systemVersion)"
+    private var canSend: Bool {
+        !isSending
+        && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        && !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        && !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var body: some View {
-        Form {
-            Section {
-                TextEditor(text: $message)
-                    .frame(minHeight: 180)
-                    .focused($focused)
-            } header: {
-                Text("Your message")
-            } footer: {
-                Text("Opens an email to the Shabbat Waker team. Nothing is sent until you press Send in the email.")
-            }
-            Section {
-                Button {
-                    send()
-                } label: {
-                    Label("Send feedback", systemImage: "paperplane.fill")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                field("Your name", text: $name, focus: .name)
+                field("Your email (optional, so we can reply)", text: $email, focus: .email, keyboard: .emailAddress)
+                field("Title", text: $title, focus: .title)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Your message").font(.footnote.weight(.semibold)).foregroundStyle(.secondary)
+                    TextEditor(text: $message)
+                        .focused($focus, equals: .message)
+                        .frame(minHeight: 170)
+                        .padding(8)
+                        .scrollContentBackground(.hidden)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .onChange(of: message) { _, value in
+                            if value.count > FeedbackRelay.maxLength { message = String(value.prefix(FeedbackRelay.maxLength)) }
+                        }
+                    Text("\(message.count)/\(FeedbackRelay.maxLength)")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                if failed {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Could not send right now. Check your connection and try again.")
+                            .font(.footnote).foregroundStyle(.red)
+                        if MFMailComposeViewController.canSendMail() {
+                            Button("Send by email instead") { showComposer = true }
+                                .font(.footnote.weight(.semibold))
+                        }
+                    }
+                }
             }
+            .padding(20)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Color(uiColor: .systemGroupedBackground))
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Button {
+                send()
+            } label: {
+                Group {
+                    if isSending { ProgressView() } else { Label("Send feedback", systemImage: "paperplane.fill") }
+                }
+                .font(.headline).frame(maxWidth: .infinity, minHeight: 28)
+            }
+            .buttonStyle(.borderedProminent).controlSize(.large)
+            .disabled(!canSend)
+            .padding(.horizontal, 18).padding(.top, 12).padding(.bottom, 8)
+            .background(.ultraThinMaterial)
         }
         .navigationTitle("Send feedback")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showComposer) {
-            MailComposer(subject: subject, body: fullBody) { showComposer = false }
+            MailComposer(subject: "[Shabbat Waker] \(title)", body: "\(message)\n\n—\n\(name)\niOS \(UIDevice.current.systemVersion)") { showComposer = false }
                 .ignoresSafeArea()
         }
-        .alert("No email account is set up on this iPhone.", isPresented: $showFallbackError) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Write to \(SupportContact.email)")
+        .alert("Thank you! Your feedback was sent.", isPresented: $sent) {
+            Button("OK") { dismiss() }
+        }
+    }
+
+    private func field(_ label: LocalizedStringKey, text: Binding<String>, focus target: Field, keyboard: UIKeyboardType = .default) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).font(.footnote.weight(.semibold)).foregroundStyle(.secondary)
+            TextField("", text: text)
+                .focused($focus, equals: target)
+                .keyboardType(keyboard)
+                .textInputAutocapitalization(keyboard == .emailAddress ? .never : .sentences)
+                .autocorrectionDisabled(keyboard == .emailAddress)
+                .accessibilityLabel(Text(label))
+                .padding(14)
+                .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
 
     private func send() {
-        focused = false
-        if MFMailComposeViewController.canSendMail() {
-            showComposer = true
-            return
-        }
-        var components = URLComponents()
-        components.scheme = "mailto"
-        components.path = SupportContact.email
-        components.queryItems = [URLQueryItem(name: "subject", value: subject), URLQueryItem(name: "body", value: fullBody)]
-        guard let url = components.url else { showFallbackError = true; return }
-        UIApplication.shared.open(url) { opened in
-            if !opened { showFallbackError = true }
+        focus = nil
+        failed = false
+        isSending = true
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        Task {
+            let outcome = await FeedbackRelay.send(name: trimmedName, email: trimmedEmail, subject: trimmedTitle, message: trimmedMessage)
+            isSending = false
+            if outcome == .sent { sent = true } else { failed = true }
         }
     }
 }

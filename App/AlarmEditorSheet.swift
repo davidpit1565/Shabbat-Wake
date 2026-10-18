@@ -71,7 +71,7 @@ struct AlarmEditorSheet: View {
                                 Text(weeks == 0 ? AppLanguage.text("Until I turn it off") : String(format: AppLanguage.text("For %d weeks"), weeks)).tag(weeks)
                             }
                         } label: {
-                            HStack(spacing: 8) { Text("Repeat for"); if !pro.hasPro { ProBadge() } }
+                            HStack(spacing: 8) { Text("Repeat for"); ProBadge() }
                         }
                     }
                 }

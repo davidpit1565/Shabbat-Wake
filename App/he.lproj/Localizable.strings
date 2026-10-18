@@ -256,3 +256,15 @@
 
 "Lock Screen widgets" = "ווידג'טים למסך הנעילה";
 "Candle lighting, Shabbat ends and your next alarm on the Lock Screen." = "הדלקת נרות, צאת שבת וההתראה הבאה שלך על מסך הנעילה.";
+
+"Your name" = "השם שלך";
+"Your email (optional, so we can reply)" = "האימייל שלך (לא חובה, כדי שנוכל להשיב)";
+"Title" = "כותרת";
+"Could not send right now. Check your connection and try again." = "לא ניתן לשלוח כרגע. בדוק את החיבור ונסה שוב.";
+"Send by email instead" = "שלח באימייל במקום";
+"Thank you! Your feedback was sent." = "תודה! המשוב שלך נשלח.";
+"Buy · %@" = "קנה · %@";
+"Feedback" = "משוב";
+"Credits" = "קרדיטים";
+"When you send feedback, the name, email and message you type are sent to the developer. Nothing else is sent." = "כשאתה שולח משוב, השם, האימייל וההודעה שכתבת נשלחים למפתח. שום דבר אחר לא נשלח.";
+"Shabbat times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Customs differ between communities, so confirm with your rabbi or local calendar." = "זמני שבת מאת [Hebcal.com](https://www.hebcal.com), ברישיון CC BY 4.0. המנהגים שונים בין קהילות, ולכן יש לוודא מול הרב או לוח הזמנים המקומי.";
