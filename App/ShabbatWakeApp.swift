@@ -99,11 +99,16 @@ struct RootView: View {
         .task {
             await permissions.checkOnLaunch()
             await alarmStore.refreshFromSystem()
+            WidgetSync.updateLanguage(languageCode)
             await pro.start()
             await TimesRefresher.refreshIfNeeded()
             await reminders.reschedule()
         }
         .onReceive(NotificationCenter.default.publisher(for: .shabbatTimesUpdated)) { _ in
+            Task { await reminders.reschedule() }
+        }
+        .onChange(of: languageCode) { _, code in
+            WidgetSync.updateLanguage(code)
             Task { await reminders.reschedule() }
         }
         .onChange(of: scenePhase) { _, phase in
