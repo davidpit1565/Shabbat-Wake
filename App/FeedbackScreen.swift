@@ -6,34 +6,40 @@ enum SupportContact {
     static let email = "davidpit2008@gmail.com"
 }
 
-/// Where feedback is sent: a small relay that emails the developer, so the person never leaves the app.
-/// It is the same relay the developer's Bet-El app uses; the subject carries "[Shabbat Waker]" so the messages can be told apart.
+/// Where feedback is sent: a form service that emails the developer, so the person never leaves the app.
+/// The access key belongs to the developer's Web3Forms account (it is meant to be public); the subject carries
+/// "[Shabbat Waker]" so the messages can be told apart. With no key the screen offers the Mail app instead.
 enum FeedbackRelay {
-    static let url = URL(string: "https://us-central1-bet-el-e6812.cloudfunctions.net/sendFeedback")!
+    static let url = URL(string: "https://api.web3forms.com/submit")!
+    static let accessKey = ""
     static let maxLength = 500
 
     enum Outcome { case sent, failed }
 
     static func send(name: String, email: String, subject: String, message: String) async -> Outcome {
+        guard !accessKey.isEmpty else { return .failed }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 20
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
-        let payload: [String: String] = [
+        var payload: [String: String] = [
+            "access_key": accessKey,
             "name": name,
-            // The relay requires an address; people who leave it empty are sent as anonymous.
-            "email": email.isEmpty ? "anonymous@shabbat-waker.app" : email,
             "subject": "[Shabbat Waker \(version) (\(build))] \(subject)",
             "message": String(message.prefix(maxLength))
         ]
+        if !email.isEmpty { payload["email"] = email }
         guard let body = try? JSONSerialization.data(withJSONObject: payload) else { return .failed }
         request.httpBody = body
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
-            return (response as? HTTPURLResponse)?.statusCode == 200 ? .sent : .failed
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return .failed }
+            let result = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            return (result?["success"] as? Bool) == true ? .sent : .failed
         } catch {
             return .failed
         }
