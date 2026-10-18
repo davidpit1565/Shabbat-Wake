@@ -39,7 +39,6 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Waker uses your location to calculate local Shabbat times. Without access, no times are shown."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Waker schedules the wake-up alarms you create using Apple system alarm features."
-        INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

@@ -1,4 +1,3 @@
-import ActivityKit
 import AlarmKit
 import SwiftUI
 import WidgetKit
@@ -407,46 +406,11 @@ struct ShabbatEndsWidget: Widget {
     }
 }
 
-/// The Lock Screen / Dynamic Island presentation of a system alarm. AlarmKit requires the widget
-/// extension to provide it; without it the system alarm cannot present itself properly.
-@available(iOS 26.1, *)
-struct ShabbatWakeAlarmLiveActivity: Widget {
-    var body: some WidgetConfiguration {
-        ActivityConfiguration(for: AlarmAttributes<ShabbatWakeAlarmMetadata>.self) { context in
-            HStack(spacing: 12) {
-                Image(systemName: "alarm.fill").font(.title2).foregroundStyle(context.attributes.tintColor)
-                Text(context.attributes.metadata?.title ?? "")
-                    .font(.headline)
-                Spacer()
-            }
-            .padding()
-        } dynamicIsland: { context in
-            DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-                }
-                DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.metadata?.title ?? "").font(.headline)
-                }
-            } compactLeading: {
-                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-            } compactTrailing: {
-                EmptyView()
-            } minimal: {
-                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
-            }
-        }
-    }
-}
-
 @main
 struct ShabbatWakeWidgetBundle: WidgetBundle {
     var body: some Widget {
         ShabbatWakeHomeWidget()
         CandleLightingWidget()
         ShabbatEndsWidget()
-        if #available(iOS 26.1, *) {
-            ShabbatWakeAlarmLiveActivity()
-        }
     }
 }
