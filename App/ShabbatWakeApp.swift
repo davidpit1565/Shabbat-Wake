@@ -59,7 +59,7 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeDashboard(onAddAlarm: { showAddAlarm = true })
+            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
             AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
@@ -83,10 +83,23 @@ struct RootView: View {
 }
 
 struct HomeDashboard: View {
+    @ObservedObject var alarmStore: AlarmStore
     var onAddAlarm: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animateHalo = false
-    private let sampleTime = "07:00"
+    private var nextAlarm: WakeAlarm? {
+        alarmStore.alarms.filter(\.isEnabled).sorted {
+            ($0.hour, $0.minute) < ($1.hour, $1.minute)
+        }.first
+    }
+    private var nextAlarmTime: String {
+        guard let alarm = nextAlarm else { return "— —" }
+        var components = DateComponents()
+        components.hour = alarm.hour
+        components.minute = alarm.minute
+        let date = Calendar.current.date(from: components) ?? .now
+        return date.formatted(date: .omitted, time: .shortened)
+    }
 
     var body: some View {
         NavigationStack {
@@ -121,7 +134,7 @@ struct HomeDashboard: View {
                             Circle().stroke(WakePalette.cyan.opacity(0.12), lineWidth: 1)
                                 .frame(width: 208, height: 208)
                             VStack(spacing: 7) {
-                                Text(sampleTime)
+                                Text(nextAlarmTime)
                                     .font(.system(size: 47, weight: .light, design: .rounded))
                                     .monospacedDigit()
                                     .contentTransition(.numericText())
@@ -129,7 +142,7 @@ struct HomeDashboard: View {
                                 Text("NEXT WAKE-UP")
                                     .font(.caption2.weight(.semibold)).tracking(2.2)
                                     .foregroundStyle(.secondary)
-                                Text("Sample schedule · not yet set")
+                                Text(nextAlarm?.title ?? "No alarm scheduled")
                                     .font(.caption2).foregroundStyle(.secondary)
                             }
                             .rotationEffect(.degrees(0)) // Time and text stay stationary; only the perimeter may move.
@@ -162,7 +175,7 @@ struct HomeDashboard: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
 
                         HStack(spacing: 12) {
-                            StatusTile(title: "ALARMS", value: "Not set", symbol: "alarm")
+                            StatusTile(title: "ALARMS", value: nextAlarm == nil ? "Not set" : "Scheduled", symbol: "alarm")
                             StatusTile(title: "READINESS", value: "Not checked", symbol: "checkmark.shield")
                         }
 
