@@ -1,34 +1,35 @@
 # Implementation Status — Shabbat Wake
 
-Updated: 18 October 2026.
+Updated: 18 October 2026 (TestFlight-readiness pass).
 
 ## Current status
-**Implementation baseline: complete for the current repository scope. CI: green on the latest commit. Release: pending final real-device verification and App Store preparation.**
+**Code: ready to archive and install on a device. Not yet verified on hardware. Not yet ready for App Store submission** (store assets and legal pages outstanding, see below).
 
-The latest GitHub Actions iOS Build workflow (run 39082693808, commit ec960ffc) completed successfully. This confirms the repository's automated build/test workflow passed for the current code. It does not establish that AlarmKit, custom audio, location-based zmanim, widgets, or Live Activities behave correctly on a physical iPhone.
+CI (GitHub Actions, Xcode 26) builds the app and widget extension and runs the unit tests. That proves it compiles and the date/scheduling logic is right. It does not prove an alarm rings, the custom sounds play, or widgets render on a phone. Those checks are listed in `TESTFLIGHT_RUNBOOK.md`.
 
-## Implemented in the repository
-- [x] SwiftUI app entry and main screen.
-- [x] XcodeGen project specification and GitHub Actions workflow.
-- [x] AlarmKit scheduling adapter, authorization handling, cancellation, sound selection, and error reporting.
-- [x] Local persistence for alarm definitions.
-- [x] Guards against overlapping toggle/delete operations for the same alarm.
-- [x] Location permission flow before requesting Shabbat times; denied/error states clear displayed times.
-- [x] Shabbat time requests use the reverse-geocoded location time zone when available, with device time zone fallback.
-- [x] Widget extension source and Live Activity source.
-- [x] Generated WAV sound assets and workflow asset checks.
-- [x] Privacy policy draft, App Store metadata draft, release checklist, and Red Team risk tracking.
+## Implemented
+- SwiftUI app: Home, Alarms, Shabbat times, Readiness, Settings (English + Hebrew, RTL, light/dark).
+- AlarmKit scheduling with authorization handling, cancellation, custom sounds; weekday picker (default Saturday); one-time and weekly alarms; reconciliation with what iOS actually has scheduled.
+- Shabbat times via Hebcal for the device location, using the location's time zone; fail-closed when location is denied or the network fails.
+- Widgets: Home Screen (small, medium) and Lock Screen (rectangular, inline, circular) showing next alarm and candle lighting/havdalah; the widget refreshes itself from Hebcal. Live Activity / Dynamic Island for alarms within 8 hours.
+- Readiness screen driven by live iOS state (alarm permission, scheduled alarms, location, Live Activities, bundled sounds).
+- App icon, privacy manifests (app and widget), export-compliance key, version numbers, App Group entitlements.
 
-## Remaining release gates — do not mark these as verified yet
-- [ ] On a physical supported iPhone, verify AlarmKit authorization, scheduling, repeat, cancellation, custom sound playback, app termination, and reboot behavior.
-- [ ] Confirm the bundled WAV files are accepted and played by native AlarmKit on-device.
-- [ ] Validate candle-lighting and havdalah times against trusted references across multiple locations, dates, and time zones.
-- [ ] Test location/time-zone changes, stale network responses, offline behavior, and denied/restricted permission paths.
-- [ ] Verify widget gallery, Lock Screen widgets, Live Activities, and Dynamic Island on supported physical devices.
-- [ ] Complete Hebrew/English localization, RTL, VoiceOver, Dynamic Type, contrast, and Reduce Motion audit.
-- [ ] Expand unit/UI and mocked-network tests beyond the current baseline.
-- [ ] Finalize public privacy-policy/support URLs, operator/contact details, and App Store privacy disclosures.
-- [ ] Final icon assets, signing/archive, TestFlight installation, physical-device verification, and App Store Connect validation.
+## Still required before TestFlight is meaningful
+- [ ] Device checks 1-16 in `TESTFLIGHT_RUNBOOK.md`.
+- [ ] Choose final bundle ID / App Group / name (changing later is costly).
 
-## Release decision
-The source and automated CI baseline are in good shape, and the latest CI run is green. The app is **not yet verified as release-ready** until the device-dependent checks above are completed. A successful CI or simulator build alone does not prove that a system alarm, its audio, or widgets work reliably on a real device.
+## Still required before App Store submission
+- [ ] Public privacy-policy and support URLs; operator/contact details; set `AppLinks` in `ShabbatWakeApp.swift`.
+- [ ] Screenshots from a physical device.
+- [ ] App Privacy answers in App Store Connect (see runbook section 6).
+- [ ] Hebrew/RTL, VoiceOver and Dynamic Type audit on device.
+- [ ] Decide the minimum iOS version (see below).
+
+## Known limitations (deliberate for v1)
+- iOS 26.1+ is needed to create alarms (AlarmKit). The project still declares iOS 17 as the deployment target, so older iPhones can install the app but see "System alarms require iOS 26.1 or later". Raising `deploymentTarget` to 26.1 in `project.yml` is the honest alternative.
+- No manual city selection: Shabbat times need Location permission.
+- Candle-lighting uses Hebcal's default (18 minutes before sunset) and havdalah uses 8.5 degrees. There is no per-community setting (for example Jerusalem 40 minutes).
+- No edit-alarm screen (delete and re-create).
+- Widget text follows the iPhone language, not the in-app language switch.
+- Hebrew calendar date screen was removed (it was not reachable from the UI).

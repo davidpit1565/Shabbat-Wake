@@ -56,10 +56,11 @@ struct RootView: View {
     @State private var showAddAlarm = false
     @StateObject private var alarmStore = AlarmStore()
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true })
+            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .calendar })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
             AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
@@ -79,26 +80,34 @@ struct RootView: View {
         .environment(\.locale, Locale(identifier: preferredLanguage == "system" ? Locale.current.identifier : preferredLanguage))
         .environment(\.layoutDirection, preferredLanguage == "he" ? .rightToLeft : .leftToRight)
         .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
+        .task { await alarmStore.refreshFromSystem() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await alarmStore.refreshFromSystem() } }
+        }
     }
 }
 
 struct HomeDashboard: View {
     @ObservedObject var alarmStore: AlarmStore
     var onAddAlarm: () -> Void
+    var onOpenTimes: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animateHalo = false
-    private var nextAlarm: WakeAlarm? {
-        alarmStore.alarms.filter(\.isEnabled).sorted {
-            ($0.hour, $0.minute) < ($1.hour, $1.minute)
-        }.first
-    }
+    private var nextAlarm: WakeAlarm? { alarmStore.nextWake?.alarm }
     private var nextAlarmTime: String {
-        guard let alarm = nextAlarm else { return "— —" }
-        var components = DateComponents()
-        components.hour = alarm.hour
-        components.minute = alarm.minute
-        let date = Calendar.current.date(from: components) ?? .now
+        guard let date = alarmStore.nextWake?.date else { return "— —" }
         return date.formatted(date: .omitted, time: .shortened)
+    }
+    private var nextAlarmDay: String? {
+        guard let date = alarmStore.nextWake?.date else { return nil }
+        return date.formatted(.dateTime.weekday(.wide))
+    }
+    private var alarmsTileValue: LocalizedStringKey {
+        let active = alarmStore.alarms.filter(\.isEnabled).count
+        return active == 0 ? "Not set" : "\(active) active"
+    }
+    private var nextShabbatTime: ShabbatTimeItem? {
+        SharedStore.load().times.first { $0.date > .now }
     }
 
     var body: some View {
@@ -138,12 +147,18 @@ struct HomeDashboard: View {
                                     .font(.system(size: 47, weight: .light, design: .rounded))
                                     .monospacedDigit()
                                     .contentTransition(.numericText())
-                                    .accessibilityLabel("Example next alarm time, 7 AM")
+                                    .accessibilityLabel(alarmStore.nextWake == nil ? Text("No alarm scheduled") : Text("Next alarm \(nextAlarmDay ?? "") \(nextAlarmTime)"))
                                 Text("NEXT WAKE-UP")
                                     .font(.caption2.weight(.semibold)).tracking(2.2)
                                     .foregroundStyle(.secondary)
-                                Text(nextAlarm?.title ?? "No alarm scheduled")
-                                    .font(.caption2).foregroundStyle(.secondary)
+                                Group {
+                                    if let alarm = nextAlarm {
+                                        Text("\(alarm.title) · \(nextAlarmDay ?? "")")
+                                    } else {
+                                        Text("No alarm scheduled")
+                                    }
+                                }
+                                .font(.caption2).foregroundStyle(.secondary)
                             }
                             .rotationEffect(.degrees(0)) // Time and text stay stationary; only the perimeter may move.
                             Circle().fill(.white).frame(width: 6, height: 6)
@@ -158,25 +173,34 @@ struct HomeDashboard: View {
                         }
                         .accessibilityElement(children: .combine)
 
-                        HStack(spacing: 13) {
-                            Image(systemName: "sun.horizon.fill")
-                                .font(.title2).foregroundStyle(WakePalette.cyan)
-                                .frame(width: 46, height: 46)
-                                .background(WakePalette.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 15))
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Shabbat timing").font(.subheadline.weight(.semibold))
-                                Text("Choose your location to calculate times")
-                                    .font(.caption).foregroundStyle(.secondary)
+                        Button(action: onOpenTimes) {
+                            HStack(spacing: 13) {
+                                Image(systemName: "sun.horizon.fill")
+                                    .font(.title2).foregroundStyle(WakePalette.cyan)
+                                    .frame(width: 46, height: 46)
+                                    .background(WakePalette.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 15))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Shabbat timing").font(.subheadline.weight(.semibold))
+                                    if let item = nextShabbatTime {
+                                        Text("\(item.title) · \(item.date.formatted(.dateTime.weekday(.abbreviated).hour().minute()))")
+                                            .font(.caption).foregroundStyle(.secondary)
+                                    } else {
+                                        Text("Choose your location to calculate times")
+                                            .font(.caption).foregroundStyle(.secondary)
+                                    }
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.tertiary)
                             }
-                            Spacer(minLength: 0)
-                            Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.tertiary)
+                            .padding(15)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                            .foregroundStyle(.primary)
                         }
-                        .padding(15)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .buttonStyle(.plain)
 
                         HStack(spacing: 12) {
-                            StatusTile(title: "ALARMS", value: nextAlarm == nil ? "Not set" : "Scheduled", symbol: "alarm")
-                            StatusTile(title: "READINESS", value: "Not checked", symbol: "checkmark.shield")
+                            StatusTile(title: "ALARMS", value: alarmsTileValue, symbol: "alarm")
+                            StatusTile(title: "READINESS", value: ReadinessEvaluator.summary(for: alarmStore), symbol: "checkmark.shield")
                         }
 
                         Button(action: onAddAlarm) {
@@ -218,25 +242,19 @@ private struct StatusTile: View {
     }
 }
 
-private struct PlaceholderScreen: View {
-    let title: LocalizedStringKey
-    let symbol: String
-    let detail: LocalizedStringKey
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(title, systemImage: symbol, description: Text(detail))
-                .navigationTitle(title)
-        }
-    }
-}
-
 private struct AddAlarmSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @ObservedObject var store: AlarmStore
-    @State private var title = "Shabbat wake-up"
+    @State private var title = String(localized: "Shabbat wake-up")
     @State private var time = Date.now
     @State private var repeatWeekly = true
+    @State private var weekdays: Set<Int> = [7]
     @State private var soundID = "classic"
+    @State private var isSaving = false
+
+    private var canSave: Bool { !isSaving && (!repeatWeekly || !weekdays.isEmpty) }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -244,6 +262,9 @@ private struct AddAlarmSheet: View {
                     TextField("Alarm name", text: $title)
                     DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
                     Toggle("Repeat weekly", isOn: $repeatWeekly)
+                    if repeatWeekly {
+                        WeekdayPicker(selection: $weekdays, locale: locale)
+                    }
                     Picker("Alarm sound", selection: $soundID) {
                         Text("Gentle Chime").tag("gentle")
                         Text("Sunrise Sequence").tag("sunrise")
@@ -251,8 +272,6 @@ private struct AddAlarmSheet: View {
                     }
                 }
                 Section {
-                    Label("Saved on this device", systemImage: "internaldrive")
-                        .font(.footnote).foregroundStyle(.secondary)
                     Text("Saving requests an Apple system alarm. The alarm will be saved only if iOS grants permission and scheduling succeeds.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
@@ -266,24 +285,93 @@ private struct AddAlarmSheet: View {
             }
             .navigationTitle("New alarm")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { store.clearError() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        isSaving = true
                         Task {
-                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: repeatWeekly ? Set(1...7) : [], soundID: soundID)
+                            let saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID)
+                            isSaving = false
                             if saved { dismiss() }
                         }
                     }
+                    .disabled(!canSave)
                 }
             }
         }
     }
 }
 
+private struct WeekdayPicker: View {
+    @Binding var selection: Set<Int>
+    let locale: Locale
+
+    private var calendar: Calendar {
+        var calendar = Calendar.current
+        calendar.locale = locale
+        return calendar
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                ForEach(1...7, id: \.self) { day in
+                    let isOn = selection.contains(day)
+                    Button {
+                        if isOn { selection.remove(day) } else { selection.insert(day) }
+                    } label: {
+                        Text(calendar.veryShortWeekdaySymbols[day - 1])
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 38)
+                            .background(isOn ? WakePalette.blue : Color.secondary.opacity(0.15), in: Circle())
+                            .foregroundStyle(isOn ? Color.white : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(calendar.weekdaySymbols[day - 1])
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
+                }
+            }
+            if selection.isEmpty {
+                Text("Choose at least one day.")
+                    .font(.footnote).foregroundStyle(.red)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private enum AppLinks {
+    /// Published via GitHub Pages (Settings > Pages > main / root). The Settings screen shows a link only when one is set.
+    static let privacyPolicy: URL? = URL(string: "https://davidpit1565.github.io/Shabbat-Wake/privacy/")
+    static let support: URL? = URL(string: "https://davidpit1565.github.io/Shabbat-Wake/support/")
+}
+
+private struct PrivacyScreen: View {
+    var body: some View {
+        List {
+            Section {
+                Text("Your alarms, sounds and preferences are stored on this device only. Shabbat Waker has no account, no analytics and no advertising.")
+            }
+            Section("Location") {
+                Text("If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Waker on any server.")
+                Text("You can turn location access off at any time in iOS Settings. Alarms keep working without it.")
+            }
+        }
+        .navigationTitle("Privacy")
+    }
+}
+
 private struct SettingsScreen: View {
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
+    private var versionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
     var body: some View {
         NavigationStack {
             Form {
@@ -303,14 +391,30 @@ private struct SettingsScreen: View {
                     Text("Choose English or Hebrew. Some system-provided labels may follow the iPhone language.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
+                Section("Icon") {
+                    NavigationLink {
+                        AppIconPickerScreen()
+                    } label: {
+                        Label("App icon", systemImage: "app.badge")
+                    }
+                }
                 Section("Sound") {
                     NavigationLink {
                         SoundLibraryScreen()
                     } label: {
                         Label("Sound library and previews", systemImage: "music.note.list")
                     }
-                    Text("Choose a sound for preview; the selected tone is used by supported system alarms.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Section("About") {
+                    NavigationLink("Privacy") { PrivacyScreen() }
+                    if let url = AppLinks.privacyPolicy {
+                        Link("Privacy policy", destination: url)
+                    }
+                    if let url = AppLinks.support {
+                        Link("Support", destination: url)
+                    }
+                    Link("Shabbat times by Hebcal.com (CC BY 4.0)", destination: URL(string: "https://www.hebcal.com")!)
+                    LabeledContent("Version", value: versionText)
                 }
             }
             .navigationTitle("Settings")

@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Shabbat Waker";
+"NSLocationWhenInUseUsageDescription" = "Shabbat Waker משתמשת במיקום שלך כדי לחשב זמני שבת מקומיים. ללא גישה לא יוצגו זמנים.";
+"NSAlarmKitUsageDescription" = "Shabbat Waker מתזמנת את התראות ההשכמה שאתה יוצר באמצעות התראות המערכת של Apple.";

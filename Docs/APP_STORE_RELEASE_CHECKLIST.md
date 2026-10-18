@@ -62,9 +62,8 @@ This is a living release gate, not a statement that the app is ready for review.
 
 ## Current known blockers
 
-- The repository currently contains starter SwiftUI source and product documentation, not yet a verified, complete Xcode project.
-- Alarm scheduling is not connected in the starter source.
-- Hebrew localization/RTL is not implemented end-to-end yet.
-- Widget/Live Activity targets and production icon assets are not verified yet.
-- Privacy policy contains required operator/contact placeholders.
-- No Xcode build, simulator run, physical-device test, or App Store Connect submission has been verified by this checklist.
+See `IMPLEMENTATION_STATUS.md` for the current list and `TESTFLIGHT_RUNBOOK.md` for the device checks. In short:
+
+- Nothing in this checklist has been verified on a physical iPhone yet.
+- Privacy policy contains operator/contact placeholders and is not published; support URL does not exist.
+- Screenshots, final name check, and App Store Connect record are not done.
