@@ -54,6 +54,8 @@ targets:
     dependencies:
       - target: ShabbatWakeWidget
         embed: true
+      - target: ShabbatWakeWatch
+        embed: true
     scheme:
       testTargets:
         - ShabbatWakeTests
@@ -75,6 +77,57 @@ targets:
         PRODUCT_NAME: "Shabbat Wake Widget"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWidget.entitlements
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
+        SKIP_INSTALL: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+
+  ShabbatWakeWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: Watch/App
+      - path: App/Shared
+        excludes:
+          - "ShabbatWakeAlarmMetadata.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.watchkitapp
+        PRODUCT_NAME: "Shabbat Waker"
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.shabbatwake.ios
+        INFOPLIST_KEY_WKApplication: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWatch.entitlements
+    dependencies:
+      - target: ShabbatWakeWatchWidget
+        embed: true
+
+  ShabbatWakeWatchWidget:
+    type: app-extension
+    platform: watchOS
+    deploymentTarget: "10.0"
+    info:
+      path: Config/WatchWidgetInfo.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    sources:
+      - path: Watch/Widget
+      - path: App/Shared
+        excludes:
+          - "ShabbatWakeAlarmMetadata.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.watchkitapp.widget
+        PRODUCT_NAME: "Shabbat Waker Watch Widget"
+        TARGETED_DEVICE_FAMILY: "4"
+        SDKROOT: watchos
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWatchWidget.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
         SKIP_INSTALL: YES
