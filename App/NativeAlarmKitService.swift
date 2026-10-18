@@ -32,7 +32,7 @@ enum NativeAlarmKitService {
         )
         let attributes = AlarmAttributes(
             presentation: presentation,
-            metadata: ShabbatWakeAlarmMetadata(),
+            metadata: ShabbatWakeAlarmMetadata(title: alarm.title),
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
         let sound: AlertConfiguration.AlertSound
@@ -79,8 +79,6 @@ enum NativeAlarmKitService {
         return try await manager.requestAuthorization() == .authorized
     }
 }
-
-private struct ShabbatWakeAlarmMetadata: AlarmMetadata, Codable, Hashable {}
 
 enum NativeAlarmKitError: LocalizedError {
     case unsupported

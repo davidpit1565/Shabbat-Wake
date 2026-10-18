@@ -68,7 +68,6 @@ targets:
     sources:
       - path: App/Widgets
       - path: App/Shared
-      - path: App/ShabbatWakeLiveActivityAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget

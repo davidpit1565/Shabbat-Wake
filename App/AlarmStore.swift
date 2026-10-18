@@ -37,7 +37,6 @@ final class AlarmStore: ObservableObject {
             alarm.isEnabled = true
             alarm.armedAt = .now
             alarms.append(alarm)
-            LiveActivityManager.start(for: alarm)
             save()
             lastError = nil
             return true
@@ -68,7 +67,6 @@ final class AlarmStore: ObservableObject {
             try await NativeAlarmKitService.schedule(updated)
             systemAlarmIDs.insert(id)
             if let current = alarms.firstIndex(where: { $0.id == id }) { alarms[current] = updated }
-            LiveActivityManager.start(for: updated)
             save()
             lastError = nil
             return true
@@ -95,7 +93,6 @@ final class AlarmStore: ObservableObject {
                 } else {
                     try await NativeAlarmKitService.cancel(id: alarmID)
                     systemAlarmIDs.remove(alarmID)
-                    LiveActivityManager.end(alarmID: alarmID)
                 }
                 guard let index = alarms.firstIndex(where: { $0.id == alarmID }) else {
                     // If the local record disappeared while scheduling, clean up any system alarm.
@@ -105,7 +102,6 @@ final class AlarmStore: ObservableObject {
                 alarms[index].isEnabled = shouldEnable
                 if shouldEnable {
                     alarms[index].armedAt = .now
-                    LiveActivityManager.start(for: alarms[index])
                 }
                 save()
                 lastError = nil
@@ -129,7 +125,6 @@ final class AlarmStore: ObservableObject {
                 try await NativeAlarmKitService.cancel(id: alarm.id)
                 systemAlarmIDs.remove(alarm.id)
                 alarms.removeAll { $0.id == alarm.id }
-                LiveActivityManager.end(alarmID: alarm.id)
                 save()
                 lastError = nil
             } catch {
