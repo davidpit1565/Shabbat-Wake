@@ -44,7 +44,7 @@ final class ScreenshotTests: XCTestCase {
         shot("2-alarms")
 
         // The editor for the first alarm. A row of a list is tapped by position.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.24)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.24)).tap()
         sleep(3)
         shot("5-editor")
         app.swipeDown(velocity: .fast)
