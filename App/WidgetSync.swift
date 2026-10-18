@@ -30,6 +30,11 @@ enum WidgetSync {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
+    static func updateNextTitle(_ title: String?) {
+        guard SharedStore.load().nextTitle != title else { return }
+        SharedStore.update { $0.nextTitle = title }
+    }
+
     static func updateLanguage(_ code: String) {
         guard SharedStore.load().languageCode != code else { return }
         SharedStore.update { $0.languageCode = code }

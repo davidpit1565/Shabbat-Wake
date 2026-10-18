@@ -12,6 +12,8 @@ struct WidgetSnapshot: Codable, Equatable {
     var proUnlocked: Bool?
     /// The language chosen inside the app (en, he, ru, fr, es), so widgets speak it too. Nil follows the iPhone.
     var languageCode: String?
+    /// The parasha or holiday of the next Shabbat, in the app's language, for the home screen.
+    var nextTitle: String?
 }
 
 enum SharedStore {

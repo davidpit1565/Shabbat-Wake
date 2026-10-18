@@ -127,11 +127,19 @@ struct HomeDashboard: View {
     @Environment(\.locale) private var locale
 
     @State private var nextShabbatTime: ShabbatTimeItem?
+    @State private var nextTitle: String?
 
     private var nextAlarmTime: String {
         guard let date = alarmStore.nextWake?.date else { return "— —" }
         return date.formatted(in: locale, time: .shortened)
     }
+    private func relative(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = locale
+        formatter.unitsStyle = .full
+        return formatter.localizedString(for: date, relativeTo: .now)
+    }
+
     private var nextAlarmDay: String? {
         guard let date = alarmStore.nextWake?.date else { return nil }
         return date.formatted(Date.FormatStyle(locale: locale).weekday(.wide))
@@ -179,29 +187,46 @@ struct HomeDashboard: View {
                     .frame(height: 260)
                     .accessibilityElement(children: .combine)
 
+                    if alarmStore.nextWake != nil {
+                        HStack(spacing: 8) {
+                            Circle().fill(Color.green).frame(width: 9, height: 9)
+                                .shadow(color: .green.opacity(0.8), radius: 5)
+                            Text("Your alarm is ready")
+                                .font(.subheadline).foregroundStyle(Color.green)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .accessibilityElement(children: .combine)
+                    }
+
                     Button(action: onOpenTimes) {
-                        HStack(spacing: 13) {
-                            Image(systemName: "sun.horizon.fill")
-                                .font(.title2).foregroundStyle(WakePalette.cyan)
-                                .frame(width: 46, height: 46)
-                                .background(WakePalette.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 15))
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Shabbat times").font(.subheadline.weight(.semibold))
+                        HStack(alignment: .center, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(nextShabbatTime?.category == "havdalah" ? "Shabbat ends" : "Candle lighting")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Text(nextShabbatTime.map { $0.date.formatted(in: locale, time: .shortened) } ?? "—")
+                                    .font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
+                            }
+                            Spacer(minLength: 8)
+                            VStack(alignment: .trailing, spacing: 6) {
+                                if let title = nextTitle, !title.isEmpty {
+                                    Text(title).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                                }
                                 if let item = nextShabbatTime {
-                                    Text("\(item.category == "candles" ? AppLanguage.text("Candle lighting") : AppLanguage.text("Shabbat ends")) · \(item.date.formatted(Date.FormatStyle(locale: locale).weekday(.abbreviated).hour().minute()))")
-                                        .font(.caption).foregroundStyle(.secondary)
+                                    Text(relative(item.date))
+                                        .font(.caption.weight(.semibold))
+                                        .padding(.horizontal, 10).padding(.vertical, 4)
+                                        .background(WakePalette.cyan.opacity(0.15), in: Capsule())
+                                        .foregroundStyle(WakePalette.cyan)
                                 } else {
                                     Text("Choose your location to calculate times")
-                                        .font(.caption).foregroundStyle(.secondary)
+                                        .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
                                 }
                             }
-                            Spacer(minLength: 0)
-                            Image(systemName: locale.identifier.hasPrefix("he") ? "chevron.left" : "chevron.right")
-                                .font(.caption.weight(.bold)).foregroundStyle(.tertiary)
                         }
-                        .padding(15)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .padding(16)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
                         .foregroundStyle(.primary)
+                        .accessibilityElement(children: .combine)
                     }
                     .buttonStyle(.plain)
 
@@ -223,7 +248,11 @@ struct HomeDashboard: View {
                 }.ignoresSafeArea()
             }
             .toolbar(.hidden, for: .navigationBar)
-            .onAppear { nextShabbatTime = SharedStore.load().times.first { $0.date > .now } }
+            .onAppear {
+                let snapshot = SharedStore.load()
+                nextShabbatTime = snapshot.times.first { $0.date > .now }
+                nextTitle = snapshot.nextTitle
+            }
         }
     }
 }
