@@ -48,6 +48,11 @@ struct AlarmListScreen: View {
                                             .monospacedDigit()
                                         Text(alarm.title)
                                             .font(.subheadline.weight(.medium))
+                                        if let plan = alarm.ringPlan {
+                                            Text(String(format: AppLanguage.text("Stops by itself · %d × %d s"), plan.count, plan.seconds))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
                                         if alarm.repeatsWeekly {
                                             Text("Repeats: \(alarm.repeatSummary(locale: locale))")
                                                 .font(.caption)
