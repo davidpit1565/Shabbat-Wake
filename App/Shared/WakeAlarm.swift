@@ -13,12 +13,14 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
     /// When the system alarm was last scheduled. One-time alarms count from here.
     var armedAt: Date?
 
-    var timeLabel: String {
+    var timeLabel: String { timeLabel(in: .current) }
+
+    func timeLabel(in locale: Locale) -> String {
         var components = DateComponents()
         components.hour = hour
         components.minute = minute
         let date = Calendar.current.date(from: components) ?? .now
-        return date.formatted(date: .omitted, time: .shortened)
+        return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
     }
 
     /// The next moment this alarm will ring, or nil if it is disabled or a one-time alarm that already rang.

@@ -4,6 +4,10 @@ import SwiftUI
 struct ShabbatWakeApp: App {
     @AppStorage("appearanceMode") private var appearanceMode = "system"
 
+    init() {
+        AppLanguage.applyDirection(for: AppLanguage.effectiveCode(for: AppLanguage.preference))
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -21,32 +25,28 @@ struct ShabbatWakeApp: App {
 }
 
 private enum WakePalette {
-    static let navy = Color(red: 7 / 255, green: 16 / 255, blue: 32 / 255)
-    static let panel = Color(red: 16 / 255, green: 36 / 255, blue: 64 / 255)
     static let blue = Color(red: 40 / 255, green: 116 / 255, blue: 1)
     static let cyan = Color(red: 89 / 255, green: 230 / 255, blue: 1)
     static let silver = Color(red: 201 / 255, green: 216 / 255, blue: 236 / 255)
 }
 
 private enum MainTab: String, CaseIterable, Identifiable {
-    case home, alarms, calendar, readiness, settings
+    case home, alarms, times, settings
     var id: String { rawValue }
     var title: LocalizedStringKey {
         switch self {
         case .home: "Home"
         case .alarms: "Alarms"
-        case .calendar: "Calendar"
-        case .readiness: "Readiness"
+        case .times: "Shabbat times"
         case .settings: "Settings"
         }
     }
     var symbol: String {
         switch self {
-        case .home: "circle.dashed.inset.filled"
+        case .home: "house"
         case .alarms: "alarm"
-        case .calendar: "calendar"
-        case .readiness: "checkmark.shield"
-        case .settings: "slider.horizontal.3"
+        case .times: "calendar"
+        case .settings: "gearshape"
         }
     }
 }
@@ -58,27 +58,29 @@ struct RootView: View {
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     @Environment(\.scenePhase) private var scenePhase
 
+    private var languageCode: String { AppLanguage.effectiveCode(for: preferredLanguage) }
+
     var body: some View {
+        // Set before the views below are created, so navigation and tab bars pick up the right direction.
+        let _ = AppLanguage.applyDirection(for: languageCode)
         TabView(selection: $selectedTab) {
-            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .calendar })
+            HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
             AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.alarms.title, systemImage: MainTab.alarms.symbol) }
                 .tag(MainTab.alarms)
             ShabbatTimesScreen()
-                .tabItem { Label(MainTab.calendar.title, systemImage: MainTab.calendar.symbol) }
-                .tag(MainTab.calendar)
-            ReadinessScreen(store: alarmStore)
-                .tabItem { Label(MainTab.readiness.title, systemImage: MainTab.readiness.symbol) }
-                .tag(MainTab.readiness)
+                .tabItem { Label(MainTab.times.title, systemImage: MainTab.times.symbol) }
+                .tag(MainTab.times)
             SettingsScreen()
                 .tabItem { Label(MainTab.settings.title, systemImage: MainTab.settings.symbol) }
                 .tag(MainTab.settings)
         }
         .tint(WakePalette.blue)
-        .environment(\.locale, Locale(identifier: preferredLanguage == "system" ? Locale.current.identifier : preferredLanguage))
-        .environment(\.layoutDirection, preferredLanguage == "he" ? .rightToLeft : .leftToRight)
+        .environment(\.locale, Locale(identifier: languageCode))
+        .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
+        .id(languageCode)
         .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
         .task { await alarmStore.refreshFromSystem() }
         .onChange(of: scenePhase) { _, phase in
@@ -91,127 +93,97 @@ struct HomeDashboard: View {
     @ObservedObject var alarmStore: AlarmStore
     var onAddAlarm: () -> Void
     var onOpenTimes: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animateHalo = false
-    private var nextAlarm: WakeAlarm? { alarmStore.nextWake?.alarm }
+    @Environment(\.locale) private var locale
+
+    private var nextShabbatTime: ShabbatTimeItem? {
+        SharedStore.load().times.first { $0.date > .now }
+    }
+
     private var nextAlarmTime: String {
         guard let date = alarmStore.nextWake?.date else { return "— —" }
-        return date.formatted(date: .omitted, time: .shortened)
+        return date.formatted(in: locale, time: .shortened)
     }
     private var nextAlarmDay: String? {
         guard let date = alarmStore.nextWake?.date else { return nil }
-        return date.formatted(.dateTime.weekday(.wide))
-    }
-    private var alarmsTileValue: LocalizedStringKey {
-        let active = alarmStore.alarms.filter(\.isEnabled).count
-        return active == 0 ? "Not set" : "\(active) active"
-    }
-    private var nextShabbatTime: ShabbatTimeItem? {
-        SharedStore.load().times.first { $0.date > .now }
+        return date.formatted(Date.FormatStyle(locale: locale).weekday(.wide))
     }
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 22) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
-                                .font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                            Text("Shabbat, in sync.")
-                                .font(.system(.largeTitle, design: .rounded, weight: .semibold))
-                        }
-                        Spacer()
-                        Image(systemName: "sparkle")
-                            .font(.title2.weight(.medium))
-                            .foregroundStyle(WakePalette.cyan)
-                            .padding(12)
-                            .background(.ultraThinMaterial, in: Circle())
+                VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(Date.now.formatted(in: locale, date: .complete))
+                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                        Text(Date.now.hebrewDateString(in: locale))
+                            .font(.subheadline).foregroundStyle(.secondary)
+                        Text("Ready for Shabbat.")
+                            .font(.system(.largeTitle, design: .rounded, weight: .semibold))
+                            .padding(.top, 4)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    VStack(spacing: 18) {
-                        ZStack {
-                            Circle().fill(WakePalette.blue.opacity(animateHalo ? 0.15 : 0.07))
-                                .frame(width: 260, height: 260).blur(radius: 28)
-                            Circle().stroke(WakePalette.silver.opacity(0.16), lineWidth: 1)
-                                .frame(width: 230, height: 230)
-                            Circle().trim(from: 0.06, to: 0.78)
-                                .stroke(AngularGradient(colors: [WakePalette.cyan, WakePalette.blue, WakePalette.silver.opacity(0.25)], center: .center), style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                                .frame(width: 230, height: 230)
-                                .rotationEffect(.degrees(-90))
-                                .shadow(color: WakePalette.blue.opacity(0.55), radius: 12)
-                            Circle().stroke(WakePalette.cyan.opacity(0.12), lineWidth: 1)
-                                .frame(width: 208, height: 208)
-                            VStack(spacing: 7) {
-                                Text(nextAlarmTime)
-                                    .font(.system(size: 47, weight: .light, design: .rounded))
-                                    .monospacedDigit()
-                                    .contentTransition(.numericText())
-                                    .accessibilityLabel(alarmStore.nextWake == nil ? Text("No alarm scheduled") : Text("Next alarm \(nextAlarmDay ?? "") \(nextAlarmTime)"))
-                                Text("NEXT WAKE-UP")
-                                    .font(.caption2.weight(.semibold)).tracking(2.2)
-                                    .foregroundStyle(.secondary)
-                                Group {
-                                    if let alarm = nextAlarm {
-                                        Text("\(alarm.title) · \(nextAlarmDay ?? "")")
-                                    } else {
-                                        Text("No alarm scheduled")
-                                    }
+                    ZStack {
+                        Circle().stroke(WakePalette.silver.opacity(0.18), lineWidth: 1)
+                            .frame(width: 240, height: 240)
+                        Circle()
+                            .stroke(AngularGradient(colors: [WakePalette.cyan, WakePalette.blue, WakePalette.cyan], center: .center), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                            .frame(width: 222, height: 222)
+                        VStack(spacing: 7) {
+                            Text(nextAlarmTime)
+                                .font(.system(size: 47, weight: .light, design: .rounded))
+                                .monospacedDigit()
+                                .accessibilityLabel(alarmStore.nextWake == nil ? Text("No alarm scheduled") : Text("Next alarm \(nextAlarmDay ?? "") \(nextAlarmTime)"))
+                            Text("NEXT WAKE-UP")
+                                .font(.caption2.weight(.semibold)).tracking(2.2)
+                                .foregroundStyle(.secondary)
+                            Group {
+                                if let alarm = alarmStore.nextWake?.alarm {
+                                    Text("\(alarm.title) · \(nextAlarmDay ?? "")")
+                                } else {
+                                    Text("No alarm scheduled")
                                 }
-                                .font(.caption2).foregroundStyle(.secondary)
                             }
-                            .rotationEffect(.degrees(0)) // Time and text stay stationary; only the perimeter may move.
-                            Circle().fill(.white).frame(width: 6, height: 6)
-                                .shadow(color: WakePalette.cyan, radius: 8)
-                                .offset(y: -116)
-                                .rotationEffect(.degrees(animateHalo ? 28 : 0))
+                            .font(.caption2).foregroundStyle(.secondary)
                         }
-                        .frame(height: 270)
-                        .onAppear {
-                            guard !reduceMotion else { return }
-                            withAnimation(.easeInOut(duration: 3.8).repeatForever(autoreverses: true)) { animateHalo = true }
-                        }
-                        .accessibilityElement(children: .combine)
-
-                        Button(action: onOpenTimes) {
-                            HStack(spacing: 13) {
-                                Image(systemName: "sun.horizon.fill")
-                                    .font(.title2).foregroundStyle(WakePalette.cyan)
-                                    .frame(width: 46, height: 46)
-                                    .background(WakePalette.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 15))
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Shabbat timing").font(.subheadline.weight(.semibold))
-                                    if let item = nextShabbatTime {
-                                        Text("\(item.title) · \(item.date.formatted(.dateTime.weekday(.abbreviated).hour().minute()))")
-                                            .font(.caption).foregroundStyle(.secondary)
-                                    } else {
-                                        Text("Choose your location to calculate times")
-                                            .font(.caption).foregroundStyle(.secondary)
-                                    }
-                                }
-                                Spacer(minLength: 0)
-                                Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.tertiary)
-                            }
-                            .padding(15)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
-                            .foregroundStyle(.primary)
-                        }
-                        .buttonStyle(.plain)
-
-                        HStack(spacing: 12) {
-                            StatusTile(title: "ALARMS", value: alarmsTileValue, symbol: "alarm")
-                            StatusTile(title: "READINESS", value: ReadinessEvaluator.summary(for: alarmStore), symbol: "checkmark.shield")
-                        }
-
-                        Button(action: onAddAlarm) {
-                            Label("Create an alarm", systemImage: "plus")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity).padding(.vertical, 16)
-                                .background(LinearGradient(colors: [WakePalette.cyan, WakePalette.blue], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 17))
-                                .foregroundStyle(.white)
-                        }
-                        .buttonStyle(.plain)
                     }
+                    .frame(height: 260)
+                    .accessibilityElement(children: .combine)
+
+                    Button(action: onOpenTimes) {
+                        HStack(spacing: 13) {
+                            Image(systemName: "sun.horizon.fill")
+                                .font(.title2).foregroundStyle(WakePalette.cyan)
+                                .frame(width: 46, height: 46)
+                                .background(WakePalette.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 15))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Shabbat times").font(.subheadline.weight(.semibold))
+                                if let item = nextShabbatTime {
+                                    Text("\(item.category == "candles" ? AppLanguage.text("Candle lighting") : AppLanguage.text("Shabbat ends")) · \(item.date.formatted(Date.FormatStyle(locale: locale).weekday(.abbreviated).hour().minute()))")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                } else {
+                                    Text("Choose your location to calculate times")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: locale.identifier.hasPrefix("he") ? "chevron.left" : "chevron.right")
+                                .font(.caption.weight(.bold)).foregroundStyle(.tertiary)
+                        }
+                        .padding(15)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .foregroundStyle(.primary)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onAddAlarm) {
+                        Label("Create an alarm", systemImage: "plus")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity).padding(.vertical, 16)
+                            .background(LinearGradient(colors: [WakePalette.cyan, WakePalette.blue], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 17))
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(20)
             }
@@ -226,27 +198,11 @@ struct HomeDashboard: View {
     }
 }
 
-private struct StatusTile: View {
-    let title: LocalizedStringKey
-    let value: LocalizedStringKey
-    let symbol: String
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: symbol).foregroundStyle(WakePalette.cyan)
-            Text(title).font(.caption2.weight(.semibold)).tracking(1.2).foregroundStyle(.secondary)
-            Text(value).font(.subheadline.weight(.semibold))
-        }
-        .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
-        .padding(14)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
-    }
-}
-
 private struct AddAlarmSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
     @ObservedObject var store: AlarmStore
-    @State private var title = String(localized: "Shabbat wake-up")
+    @State private var title = AppLanguage.text("Shabbat wake-up")
     @State private var time = Date.now
     @State private var repeatWeekly = true
     @State private var weekdays: Set<Int> = [7]
@@ -375,11 +331,16 @@ private struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Appearance") {
-                    Picker("Appearance", selection: $appearanceMode) {
+                Section("Display") {
+                    Picker("Display mode", selection: $appearanceMode) {
                         Text("System").tag("system")
                         Text("Light").tag("light")
                         Text("Dark").tag("dark")
+                    }
+                    NavigationLink {
+                        AppIconPickerScreen()
+                    } label: {
+                        Label("App icon", systemImage: "app.badge")
                     }
                 }
                 Section("Language") {
@@ -387,15 +348,6 @@ private struct SettingsScreen: View {
                         Text("System language").tag("system")
                         Text("English").tag("en")
                         Text("עברית").tag("he")
-                    }
-                    Text("Choose English or Hebrew. Some system-provided labels may follow the iPhone language.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-                Section("Icon") {
-                    NavigationLink {
-                        AppIconPickerScreen()
-                    } label: {
-                        Label("App icon", systemImage: "app.badge")
                     }
                 }
                 Section("Sound") {
@@ -406,6 +358,11 @@ private struct SettingsScreen: View {
                     }
                 }
                 Section("About") {
+                    NavigationLink {
+                        FeedbackScreen()
+                    } label: {
+                        Label("Send feedback", systemImage: "envelope")
+                    }
                     NavigationLink("Privacy") { PrivacyScreen() }
                     if let url = AppLinks.privacyPolicy {
                         Link("Privacy policy", destination: url)

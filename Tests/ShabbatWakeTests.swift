@@ -124,4 +124,41 @@ final class ShabbatWakeTests: XCTestCase {
             XCTAssertNotNil(bundle.url(forResource: name, withExtension: "wav"), "\(name).wav is missing from \(bundle.bundlePath)")
         }
     }
+
+    func testWeeksAreBuiltFromCandlesParashaAndHavdalah() throws {
+        let json = """
+        {"items":[
+          {"title":"Candle lighting: 17:18","date":"2026-10-23T17:18:00+03:00","category":"candles","hebrew":"הדלקת נרות"},
+          {"title":"Parashat Lech-Lecha","date":"2026-10-24","category":"parashat","hebrew":"פרשת לך־לך"},
+          {"title":"Havdalah: 18:34","date":"2026-10-24T18:34:00+03:00","category":"havdalah","hebrew":"הבדלה"},
+          {"title":"Candle lighting: 16:11","date":"2026-10-30T16:11:00+02:00","category":"candles","hebrew":"הדלקת נרות"},
+          {"title":"Parashat Vayera","date":"2026-10-31","category":"parashat","hebrew":"פרשת וירא"},
+          {"title":"Havdalah: 17:28","date":"2026-10-31T17:28:00+02:00","category":"havdalah","hebrew":"הבדלה"}
+        ]}
+        """
+        let weeks = try ShabbatTimesService.parseWeeks(Data(json.utf8), timeZoneIdentifier: "Asia/Jerusalem")
+        XCTAssertEqual(weeks.count, 2)
+        XCTAssertEqual(weeks[0].parashaEnglish, "Parashat Lech-Lecha")
+        XCTAssertEqual(weeks[0].parashaHebrew, "פרשת לך־לך")
+        XCTAssertEqual(weeks[0].id, "2026-10-24")
+        let candle = ISO8601DateFormatter().date(from: "2026-10-23T17:18:00+03:00")
+        let havdalah = ISO8601DateFormatter().date(from: "2026-10-24T18:34:00+03:00")
+        XCTAssertEqual(weeks[0].candleLighting, candle)
+        XCTAssertEqual(weeks[0].havdalah, havdalah)
+        XCTAssertEqual(weeks[1].parashaEnglish, "Parashat Vayera")
+    }
+
+    func testLongerCandleLightingCustomsForJerusalemAndHaifa() {
+        XCTAssertEqual(ShabbatTimesService.candleLightingMinutes(latitude: 31.7683, longitude: 35.2137), 40)
+        XCTAssertEqual(ShabbatTimesService.candleLightingMinutes(latitude: 32.7940, longitude: 34.9896), 30)
+        XCTAssertNil(ShabbatTimesService.candleLightingMinutes(latitude: 32.0853, longitude: 34.7818))
+        XCTAssertNil(ShabbatTimesService.candleLightingMinutes(latitude: 40.7128, longitude: -74.0060))
+    }
+
+    func testLanguageChoiceDecidesDirection() {
+        XCTAssertEqual(AppLanguage.effectiveCode(for: "he"), "he")
+        XCTAssertEqual(AppLanguage.effectiveCode(for: "en"), "en")
+        XCTAssertTrue(AppLanguage.isRightToLeft("he"))
+        XCTAssertFalse(AppLanguage.isRightToLeft("en"))
+    }
 }

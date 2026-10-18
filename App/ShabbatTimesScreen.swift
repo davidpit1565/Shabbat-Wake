@@ -5,9 +5,8 @@ import UIKit
 @MainActor
 final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
     @Published private(set) var authorization: CLAuthorizationStatus
-    @Published private(set) var location: CLLocation?
     @Published private(set) var placeName: String?
-    @Published private(set) var times: [ShabbatTimeItem] = []
+    @Published private(set) var weeks: [ShabbatWeek] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     private let manager = CLLocationManager()
@@ -25,9 +24,9 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         case .notDetermined: manager.requestWhenInUseAuthorization()
         case .authorizedAlways, .authorizedWhenInUse: manager.requestLocation()
         case .denied, .restricted:
-            errorMessage = String(localized: "Location access is required to calculate local Shabbat times. Enable it in Settings.")
+            errorMessage = AppLanguage.text("Location access is required to calculate local Shabbat times. Enable it in Settings.")
         @unknown default:
-            errorMessage = String(localized: "Location permission status is unavailable.")
+            errorMessage = AppLanguage.text("Location permission status is unavailable.")
         }
     }
 
@@ -36,26 +35,25 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         if authorization == .authorizedAlways || authorization == .authorizedWhenInUse {
             manager.requestLocation()
         } else if authorization == .denied || authorization == .restricted {
-            location = nil
-            times = []
+            weeks = []
+            placeName = nil
             WidgetSync.clearLocation()
-            errorMessage = String(localized: "Location access is required. No local times will be calculated without it.")
+            errorMessage = AppLanguage.text("Location access is required. No local times will be calculated without it.")
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let latest = locations.last, latest.horizontalAccuracy >= 0, latest.horizontalAccuracy < 20000 else {
-            errorMessage = String(localized: "Could not get a reliable location. Try again.")
+            errorMessage = AppLanguage.text("Could not get a reliable location. Try again.")
             return
         }
-        location = latest
         Task { await fetchTimes(for: latest) }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        errorMessage = String(localized: "Could not get your location. Check Location Services and try again.")
+        errorMessage = AppLanguage.text("Could not get your location. Check Location Services and try again.")
         isLoading = false
-        times = []
+        weeks = []
     }
 
     func refresh() { requestLocation() }
@@ -65,48 +63,46 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         activeFetchID = fetchID
         isLoading = true
         errorMessage = nil
-        times = []
+        weeks = []
         placeName = nil
         do {
-            let geocoder = CLGeocoder()
-            let placemarks = try? await geocoder.reverseGeocodeLocation(location)
+            let placemarks = try? await CLGeocoder().reverseGeocodeLocation(location)
             guard activeFetchID == fetchID else { return }
-            let name = placemarks?.first.map { mark in
-                [mark.locality, mark.administrativeArea, mark.isoCountryCode]
-                    .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
-            }
-            placeName = name
-            let locationTimeZone = placemarks?.first?.timeZone?.identifier ?? TimeZone.current.identifier
-            var fetched = try await ShabbatTimesService.fetch(
+            let mark = placemarks?.first
+            let name = [mark?.locality, mark?.administrativeArea].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+            placeName = name.isEmpty ? nil : name
+            let zone = mark?.timeZone?.identifier ?? TimeZone.current.identifier
+            // Start from yesterday so the Shabbat that is under way right now is still listed.
+            let start = Date.now.addingTimeInterval(-24 * 3600)
+            let fetched = try await ShabbatTimesService.fetchWeeks(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude,
-                timeZoneIdentifier: locationTimeZone
-            )
-            if !fetched.isEmpty, fetched.allSatisfy({ $0.date <= .now }) {
-                // This week's Shabbat is over; show the coming one.
-                fetched = try await ShabbatTimesService.fetch(
-                    latitude: location.coordinate.latitude,
-                    longitude: location.coordinate.longitude,
-                    timeZoneIdentifier: locationTimeZone,
-                    around: Date.now.addingTimeInterval(24 * 60 * 60)
-                )
-            }
+                timeZoneIdentifier: zone,
+                from: start,
+                weeks: 27
+            ).filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
             guard activeFetchID == fetchID else { return }
-            times = fetched
+            weeks = fetched
+            let items = fetched.flatMap { week -> [ShabbatTimeItem] in
+                var list: [ShabbatTimeItem] = []
+                if let candle = week.candleLighting { list.append(ShabbatTimeItem(id: week.id + "c", title: "Candle lighting", date: candle, category: "candles")) }
+                if let havdalah = week.havdalah { list.append(ShabbatTimeItem(id: week.id + "h", title: "Havdalah", date: havdalah, category: "havdalah")) }
+                return list
+            }
             WidgetSync.updateLocation(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude,
-                timeZoneIdentifier: locationTimeZone,
-                placeName: name,
-                times: fetched
+                timeZoneIdentifier: zone,
+                placeName: placeName,
+                times: items
             )
-            if times.isEmpty {
-                errorMessage = String(localized: "No Shabbat times were returned for this location and date range.")
+            if fetched.isEmpty {
+                errorMessage = AppLanguage.text("No Shabbat times were returned for this location and date range.")
             }
         } catch {
             guard activeFetchID == fetchID else { return }
-            errorMessage = String(localized: "Shabbat times could not be loaded. Check your connection and try again.")
-            times = []
+            errorMessage = AppLanguage.text("Shabbat times could not be loaded. Check your connection and try again.")
+            weeks = []
         }
         guard activeFetchID == fetchID else { return }
         isLoading = false
@@ -115,10 +111,12 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
 
 struct ShabbatTimesScreen: View {
     @StateObject private var model = ShabbatLocationModel()
+    @Environment(\.locale) private var locale
 
     private var isAuthorized: Bool {
         model.authorization == .authorizedAlways || model.authorization == .authorizedWhenInUse
     }
+    private var isHebrew: Bool { locale.identifier.hasPrefix("he") }
 
     var body: some View {
         NavigationStack {
@@ -143,34 +141,32 @@ struct ShabbatTimesScreen: View {
                         }
                     }
                 }
-                if let location = model.location {
-                    Section("Current location") {
-                        LabeledContent("Latitude", value: location.coordinate.latitude.formatted(.number.precision(.fractionLength(4))))
-                        LabeledContent("Longitude", value: location.coordinate.longitude.formatted(.number.precision(.fractionLength(4))))
-                        if let placeName = model.placeName { LabeledContent("Area", value: placeName) }
+
+                if model.isLoading {
+                    Section { ProgressView("Loading times for your location…") }
+                } else if model.weeks.isEmpty {
+                    Section {
+                        ContentUnavailableView("Times unavailable", systemImage: "sun.horizon", description: Text(model.errorMessage ?? AppLanguage.text("Allow location access to calculate times.")))
                     }
-                }
-                Section {
-                    if model.isLoading {
-                        ProgressView("Loading times for your location…")
-                    } else if model.times.isEmpty {
-                        ContentUnavailableView("Times unavailable", systemImage: "sun.horizon", description: Text(model.errorMessage ?? "Allow location access to calculate times."))
-                    } else {
-                        ForEach(model.times) { item in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(item.title).font(.headline)
-                                    Text(item.date.formatted(date: .complete, time: .omitted)).font(.caption).foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Text(item.date.formatted(date: .omitted, time: .shortened))
-                                    .font(.title3.monospacedDigit().weight(.semibold))
-                            }
-                            .padding(.vertical, 3)
+                } else {
+                    if let first = model.weeks.first {
+                        Section {
+                            weekRow(first, prominent: true)
+                        } header: {
+                            Text(model.placeName.map { "\(AppLanguage.text("This Shabbat")) · \($0)" } ?? AppLanguage.text("This Shabbat"))
                         }
                     }
-                } header: {
-                    Text("Shabbat times")
+                    if model.weeks.count > 1 {
+                        Section("Coming Shabbatot") {
+                            ForEach(model.weeks.dropFirst()) { week in
+                                weekRow(week, prominent: false)
+                            }
+                        }
+                    }
+                }
+
+                Section {
+                    EmptyView()
                 } footer: {
                     Text("Times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Your coordinates are sent to Hebcal to calculate them. Times are provided for convenience; customs differ, so confirm with your rabbi or local calendar.")
                 }
@@ -192,6 +188,35 @@ struct ShabbatTimesScreen: View {
                 if model.authorization == .notDetermined { model.requestLocation() }
                 else if isAuthorized { model.refresh() }
             }
+        }
+    }
+
+    private func weekRow(_ week: ShabbatWeek, prominent: Bool) -> some View {
+        let portion = isHebrew ? (week.parashaHebrew ?? week.parashaEnglish) : (week.parashaEnglish ?? week.parashaHebrew)
+        return VStack(alignment: .leading, spacing: prominent ? 12 : 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                if let portion {
+                    Text(portion).font(prominent ? .title3.weight(.semibold) : .headline)
+                }
+                Text(week.shabbatDay.formatted(in: locale, date: .complete))
+                    .font(.caption).foregroundStyle(.secondary)
+                Text(week.shabbatDay.hebrewDateString(in: locale))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(spacing: 24) {
+                timeColumn("Candle lighting", symbol: "flame", date: week.candleLighting, prominent: prominent)
+                timeColumn("Shabbat ends", symbol: "moon.stars", date: week.havdalah, prominent: prominent)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func timeColumn(_ title: LocalizedStringKey, symbol: String, date: Date?, prominent: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Label(title, systemImage: symbol)
+                .font(.caption).foregroundStyle(.secondary)
+            Text(date?.formatted(in: locale, time: .shortened) ?? "—")
+                .font((prominent ? Font.title2 : Font.title3).monospacedDigit().weight(.semibold))
         }
     }
 }
