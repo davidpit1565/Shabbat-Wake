@@ -38,7 +38,7 @@ jobs:
         run: |
           xcodebuild build-for-testing \
             -project ShabbatWake.xcodeproj -scheme ShabbatWakeScreenshots \
-            -sdk iphonesimulator -configuration Debug \
+            -configuration Debug \
             -destination "id=$UDID" -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO
 
@@ -60,7 +60,7 @@ jobs:
             rm -rf "res-$LANG.xcresult"
             xcodebuild test-without-building \
               -project ShabbatWake.xcodeproj -scheme ShabbatWakeScreenshots \
-              -sdk iphonesimulator -destination "id=$UDID" -derivedDataPath build \
+              -destination "id=$UDID" -derivedDataPath build \
               -testLanguage "$LANG" -testRegion "$REGION" \
               -resultBundlePath "res-$LANG.xcresult" \
               CODE_SIGNING_ALLOWED=NO || echo "run for $LANG failed"

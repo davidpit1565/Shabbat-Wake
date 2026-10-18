@@ -63,7 +63,6 @@ jobs:
           xcodebuild \
             -project ShabbatWake.xcodeproj \
             -scheme ShabbatWake \
-            -sdk iphonesimulator \
             -configuration Debug \
             -destination 'platform=iOS Simulator,name=iPhone 17' \
             CODE_SIGNING_ALLOWED=NO \
