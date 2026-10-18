@@ -320,3 +320,11 @@
 "The test alarm will ring in 10 seconds. Lock your phone and put it away." = "התראת הבדיקה תצלצל בעוד 10 שניות. נעל את הטלפון והנח אותו בצד.";
 "Test alarm" = "התראת בדיקה";
 "Opens this alarm" = "פותח את ההתראה הזו";
+
+"Several rings" = "כמה צלצולים";
+"One ring" = "צלצול אחד";
+"Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop." = "כל צלצול הוא שעון מעורר אמיתי של אפל. הוא נשמע גם במצב שקט ובריכוז, ונעצר כשלוחצים עצור.";
+"Rings once, until you stop it." = "מצלצל פעם אחת, עד שתעצור אותו.";
+"Rings %d times, every %d minutes. Stop each ring when it sounds." = "מצלצל %d פעמים, כל %d דקות. עצור כל צלצול כשהוא נשמע.";
+"%d rings, every %d min" = "%d צלצולים, כל %d דק׳";
+"The test alarm will ring in about a minute. Lock your phone and put it away." = "שעון הבדיקה יצלצל בעוד כדקה. נעל את הטלפון והנח אותו בצד.";

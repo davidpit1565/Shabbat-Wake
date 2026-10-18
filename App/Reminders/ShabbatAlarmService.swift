@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import UserNotifications
 
@@ -71,11 +72,12 @@ enum ShabbatAlarmError: LocalizedError {
     }
 }
 
-/// Shabbat alarms ring as notifications with a short sound, so they stop by themselves even if the phone stays in a drawer.
-/// iOS plays a notification sound for at most 30 seconds, and it follows the ringer switch.
+/// A "several rings" alarm is a handful of Apple system alarms, one per ring, so every ring sounds like a real alarm:
+/// through the silent switch and Focus, with the phone locked. Each ring is stopped with its Stop button.
 enum ShabbatAlarmService {
-    /// iOS keeps 64 pending notifications per app; reminders use up to 20, alarms up to 40.
+    /// How many system alarms one app keeps for rings.
     static let budget = 40
+    private static let registryKey = "shabbatWake.ringAlarmIDs.v1"
 
     static func soundFileName(for alarm: WakeAlarm) -> String {
         let plan = (alarm.ringPlan ?? .standard).normalized()
@@ -88,67 +90,66 @@ enum ShabbatAlarmService {
         return "\(tone)_\(plan.seconds)s.wav"
     }
 
-    static func schedule(_ alarm: WakeAlarm) async throws {
-        let center = UNUserNotificationCenter.current()
-        switch await ReminderScheduler.authorizationStatus() {
-        case .authorized, .provisional, .ephemeral: break
-        case .notDetermined:
-            guard await ReminderScheduler.requestAuthorization() else { throw ShabbatAlarmError.notificationsDenied }
-        default:
-            throw ShabbatAlarmError.notificationsDenied
-        }
-        let others = await pendingRequests().filter { !$0.identifier.contains(alarm.id.uuidString) }.count
-        let rings = RingPlanner.rings(for: alarm)
-        guard !rings.isEmpty else { throw ShabbatAlarmError.nothingToSchedule }
-        guard others + rings.count <= budget else { throw ShabbatAlarmError.tooManyRings }
-        await cancel(id: alarm.id)
-        for ring in rings {
-            let content = UNMutableNotificationContent()
-            content.title = alarm.title
-            content.body = AppLanguage.text("Shabbat alarm")
-            content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: soundFileName(for: alarm)))
-            content.threadIdentifier = alarm.id.uuidString
-            content.interruptionLevel = .timeSensitive
-            let trigger = UNCalendarNotificationTrigger(dateMatching: ring.components, repeats: ring.repeats)
-            try await center.add(UNNotificationRequest(identifier: ring.id, content: content, trigger: trigger))
-        }
+    /// The same ring always gets the same alarm ID, so it can be found again to be cancelled.
+    static func ringUUID(_ ringID: String) -> UUID {
+        var bytes = Array(SHA256.hash(data: Data(ringID.utf8)).prefix(16))
+        bytes[6] = (bytes[6] & 0x0f) | 0x50
+        bytes[8] = (bytes[8] & 0x3f) | 0x80
+        return UUID(uuid: (bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+                           bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]))
     }
 
-    /// Rings once, ten seconds from now, the same way a Shabbat alarm does. For checking sound and permissions by hand.
-    static func scheduleTest() async throws {
-        let center = UNUserNotificationCenter.current()
-        switch await ReminderScheduler.authorizationStatus() {
-        case .authorized, .provisional, .ephemeral: break
-        case .notDetermined:
-            guard await ReminderScheduler.requestAuthorization() else { throw ShabbatAlarmError.notificationsDenied }
-        default:
-            throw ShabbatAlarmError.notificationsDenied
+    private static var registry: [String: [String]] {
+        get { UserDefaults.standard.dictionary(forKey: registryKey) as? [String: [String]] ?? [:] }
+        set { UserDefaults.standard.set(newValue, forKey: registryKey) }
+    }
+
+    static func schedule(_ alarm: WakeAlarm) async throws {
+        let rings = RingPlanner.rings(for: alarm)
+        guard !rings.isEmpty else { throw ShabbatAlarmError.nothingToSchedule }
+        guard rings.count <= budget else { throw ShabbatAlarmError.tooManyRings }
+        await cancel(id: alarm.id)
+        var scheduled: [UUID] = []
+        do {
+            for ring in rings {
+                let id = ringUUID(ring.id)
+                try await NativeAlarmKitService.scheduleRing(id: id, alarm: alarm, ring: ring)
+                scheduled.append(id)
+            }
+        } catch {
+            for id in scheduled { try? await NativeAlarmKitService.cancel(id: id) }
+            throw error
         }
-        let content = UNMutableNotificationContent()
-        content.title = AppLanguage.text("Test alarm")
-        content.body = AppLanguage.text("Shabbat alarm")
-        content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "ClassicWake_10s.wav"))
-        content.interruptionLevel = .timeSensitive
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
-        try await center.add(UNNotificationRequest(identifier: "shabbatWake.test", content: content, trigger: trigger))
+        var all = registry
+        all[alarm.id.uuidString] = scheduled.map(\.uuidString)
+        registry = all
     }
 
     static func cancel(id: UUID) async {
+        var all = registry
+        for text in all[id.uuidString] ?? [] {
+            if let ring = UUID(uuidString: text) { try? await NativeAlarmKitService.cancel(id: ring) }
+        }
+        all[id.uuidString] = nil
+        registry = all
+        // Older builds rang as notifications; clear any that are still pending.
         let center = UNUserNotificationCenter.current()
-        let ids = await pendingRequests().map(\.identifier).filter { $0.hasPrefix(RingPlanner.idPrefix + id.uuidString) }
-        center.removePendingNotificationRequests(withIdentifiers: ids)
+        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(RingPlanner.idPrefix + id.uuidString) }
+        center.removePendingNotificationRequests(withIdentifiers: pending)
     }
 
-    static func pendingAlarmIDs() async -> Set<UUID> {
-        Set(await pendingRequests().compactMap { request -> UUID? in
-            guard request.identifier.hasPrefix(RingPlanner.idPrefix) else { return nil }
-            let rest = request.identifier.dropFirst(RingPlanner.idPrefix.count)
-            return UUID(uuidString: String(rest.prefix(36)))
+    /// Whether every ring this alarm needs is still known to the system. Used to decide if it must be scheduled again.
+    static func isComplete(_ alarm: WakeAlarm, scheduled: Set<UUID>) -> Bool {
+        let expected = RingPlanner.rings(for: alarm).map { ringUUID($0.id) }
+        return !expected.isEmpty && expected.allSatisfy(scheduled.contains)
+    }
+
+    /// Alarms that have at least one ring scheduled.
+    static func alarmIDs(scheduled: Set<UUID>) -> Set<UUID> {
+        Set(registry.compactMap { key, rings -> UUID? in
+            guard rings.contains(where: { UUID(uuidString: $0).map(scheduled.contains) ?? false }) else { return nil }
+            return UUID(uuidString: key)
         })
-    }
-
-    private static func pendingRequests() async -> [UNNotificationRequest] {
-        await UNUserNotificationCenter.current().pendingNotificationRequests().filter { $0.identifier.hasPrefix(RingPlanner.idPrefix) }
     }
 }
 

@@ -306,3 +306,11 @@
 "The test alarm will ring in 10 seconds. Lock your phone and put it away." = "L'alarme de test sonnera dans 10 secondes. Verrouillez votre téléphone et posez-le.";
 "Test alarm" = "Alarme de test";
 "Opens this alarm" = "Ouvre cette alarme";
+
+"Several rings" = "Plusieurs sonneries";
+"One ring" = "Une sonnerie";
+"Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop." = "Chaque sonnerie est une vraie alarme Apple. Elle sonne même en mode silencieux et en Concentration, et s'arrête quand vous appuyez sur Stop.";
+"Rings once, until you stop it." = "Sonne une fois, jusqu'à ce que vous l'arrêtiez.";
+"Rings %d times, every %d minutes. Stop each ring when it sounds." = "Sonne %d fois, toutes les %d minutes. Arrêtez chaque sonnerie quand elle retentit.";
+"%d rings, every %d min" = "%d sonneries, toutes les %d min";
+"The test alarm will ring in about a minute. Lock your phone and put it away." = "L'alarme de test sonnera dans environ une minute. Verrouillez votre téléphone et posez-le.";
