@@ -69,7 +69,8 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
                 [mark.locality, mark.administrativeArea, mark.isoCountryCode]
                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
             }
-            guard let url = makeURL(location: location) else { throw URLError(.badURL) }
+            let locationTimeZone = placemarks?.first?.timeZone?.identifier ?? TimeZone.current.identifier
+            guard let url = makeURL(location: location, timeZoneIdentifier: locationTimeZone) else { throw URLError(.badURL) }
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -90,13 +91,13 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         isLoading = false
     }
 
-    private func makeURL(location: CLLocation) -> URL? {
+    private func makeURL(location: CLLocation, timeZoneIdentifier: String) -> URL? {
         var components = URLComponents(string: "https://www.hebcal.com/shabbat")
         components?.queryItems = [
             URLQueryItem(name: "cfg", value: "json"),
             URLQueryItem(name: "latitude", value: String(location.coordinate.latitude)),
             URLQueryItem(name: "longitude", value: String(location.coordinate.longitude)),
-            URLQueryItem(name: "tzid", value: TimeZone.current.identifier),
+            URLQueryItem(name: "tzid", value: timeZoneIdentifier),
             URLQueryItem(name: "M", value: "on")
         ]
         return components?.url
