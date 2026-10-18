@@ -55,6 +55,7 @@ struct RootView: View {
     @State private var selectedTab: MainTab = .home
     @State private var showAddAlarm = false
     @StateObject private var alarmStore = AlarmStore()
+    @StateObject private var permissions = PermissionGate()
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     @Environment(\.scenePhase) private var scenePhase
 
@@ -82,9 +83,16 @@ struct RootView: View {
         .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
         .id(languageCode)
         .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
-        .task { await alarmStore.refreshFromSystem() }
+        .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
+        .task {
+            permissions.checkOnLaunch()
+            await alarmStore.refreshFromSystem()
+        }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await alarmStore.refreshFromSystem() } }
+            if phase == .active {
+                permissions.refresh()
+                Task { await alarmStore.refreshFromSystem() }
+            }
         }
     }
 }

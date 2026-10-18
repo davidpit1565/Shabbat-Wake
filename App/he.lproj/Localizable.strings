@@ -172,3 +172,9 @@
 "Write to %@" = "כתוב אל %@";
 "Preview %@" = "תצוגה מקדימה: %@";
 "Stop %@" = "עצור: %@";
+"Allow what the app needs" = "אשר את מה שהאפליקציה צריכה";
+"So your wake-up alarms can ring." = "כדי שהתראות ההשכמה שלך יוכלו לצלצל.";
+"To calculate Shabbat times for where you are." = "כדי לחשב זמני שבת למקום שבו אתה נמצא.";
+"Allow" = "אפשר";
+"Not now" = "לא עכשיו";
+"Not allowed" = "לא מאושר";
