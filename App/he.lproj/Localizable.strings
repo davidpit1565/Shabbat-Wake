@@ -144,3 +144,13 @@
 "iOS will ask when you save your first alarm." = "iOS תבקש אישור כשתשמור את ההתראה הראשונה.";
 "%lld active" = "%lld פעילות";
 "Shabbat times by Hebcal.com (CC BY 4.0)" = "זמני שבת מאת Hebcal.com (CC BY 4.0)";
+"Icon" = "אייקון";
+"App icon" = "אייקון האפליקציה";
+"Default" = "ברירת מחדל";
+"Classic" = "קלאסי";
+"Minimal" = "מינימלי";
+"Sunrise" = "זריחה";
+"Time & Light" = "זמן ואור";
+"Glass" = "זכוכית";
+"Premium Tech" = "טכנולוגיה פרימיום";
+"The icon could not be changed." = "לא ניתן היה לשנות את האייקון.";

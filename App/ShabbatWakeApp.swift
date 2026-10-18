@@ -391,6 +391,13 @@ private struct SettingsScreen: View {
                     Text("Choose English or Hebrew. Some system-provided labels may follow the iPhone language.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
+                Section("Icon") {
+                    NavigationLink {
+                        AppIconPickerScreen()
+                    } label: {
+                        Label("App icon", systemImage: "app.badge")
+                    }
+                }
                 Section("Sound") {
                     NavigationLink {
                         SoundLibraryScreen()
