@@ -294,3 +294,16 @@
 "Choose a place" = "בחירת מקום";
 "No places found." = "לא נמצאו מקומות.";
 "City or address" = "עיר או כתובת";
+
+"Next candle lighting" = "הדלקת הנרות הבאה";
+"Tells you when the next candle lighting is." = "אומר לך מתי הדלקת הנרות הבאה.";
+"When Shabbat ends" = "מתי יוצאת שבת";
+"Tells you when Shabbat ends." = "אומר לך מתי יוצאת שבת.";
+"My next alarm" = "ההתראה הבאה שלי";
+"Tells you when your next alarm rings." = "אומר לך מתי ההתראה הבאה שלך תצלצל.";
+"Next alarm" = "ההתראה הבאה";
+"Candle lighting is on %@ at %@." = "הדלקת הנרות היא ב%@ בשעה %@.";
+"Shabbat ends on %@ at %@." = "שבת יוצאת ב%@ בשעה %@.";
+"Your next alarm is on %@ at %@." = "ההתראה הבאה שלך היא ב%@ בשעה %@.";
+"No alarm is set." = "לא מוגדרת התראה.";
+"Open Shabbat Waker once and allow location to get times." = "פתח את Shabbat Waker פעם אחת ואשר מיקום כדי לקבל זמנים.";

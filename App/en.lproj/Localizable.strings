@@ -153,3 +153,17 @@
 "Choose a place" = "Choose a place";
 "No places found." = "No places found.";
 "City or address" = "City or address";
+
+"Next candle lighting" = "Next candle lighting";
+"Tells you when the next candle lighting is." = "Tells you when the next candle lighting is.";
+"When Shabbat ends" = "When Shabbat ends";
+"Tells you when Shabbat ends." = "Tells you when Shabbat ends.";
+"My next alarm" = "My next alarm";
+"Tells you when your next alarm rings." = "Tells you when your next alarm rings.";
+"Candle lighting" = "Candle lighting";
+"Next alarm" = "Next alarm";
+"Candle lighting is on %@ at %@." = "Candle lighting is on %@ at %@.";
+"Shabbat ends on %@ at %@." = "Shabbat ends on %@ at %@.";
+"Your next alarm is on %@ at %@." = "Your next alarm is on %@ at %@.";
+"No alarm is set." = "No alarm is set.";
+"Open Shabbat Waker once and allow location to get times." = "Open Shabbat Waker once and allow location to get times.";
