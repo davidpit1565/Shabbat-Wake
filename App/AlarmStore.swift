@@ -47,6 +47,38 @@ final class AlarmStore: ObservableObject {
         }
     }
 
+    /// Changes an existing alarm. The system alarm is replaced; if the new one cannot be scheduled the old one is put back.
+    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String) async -> Bool {
+        guard let index = alarms.firstIndex(where: { $0.id == id }), !busyAlarmIDs.contains(id) else { return false }
+        busyAlarmIDs.insert(id)
+        defer { busyAlarmIDs.remove(id) }
+        let previous = alarms[index]
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
+        var updated = previous
+        updated.title = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppLanguage.text("Wake-up") : title
+        updated.hour = parts.hour ?? previous.hour
+        updated.minute = parts.minute ?? previous.minute
+        updated.repeatsWeekly = repeatsWeekly
+        updated.weekdays = repeatsWeekly ? weekdays : []
+        updated.soundID = soundID
+        updated.isEnabled = true
+        updated.armedAt = .now
+        do {
+            try? await NativeAlarmKitService.cancel(id: id)
+            try await NativeAlarmKitService.schedule(updated)
+            systemAlarmIDs.insert(id)
+            if let current = alarms.firstIndex(where: { $0.id == id }) { alarms[current] = updated }
+            LiveActivityManager.start(for: updated)
+            save()
+            lastError = nil
+            return true
+        } catch {
+            if previous.isEnabled { try? await NativeAlarmKitService.schedule(previous) }
+            lastError = error.localizedDescription
+            return false
+        }
+    }
+
     func toggle(_ alarm: WakeAlarm) {
         guard let current = alarms.first(where: { $0.id == alarm.id }) else { return }
         let alarmID = current.id

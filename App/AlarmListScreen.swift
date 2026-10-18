@@ -6,6 +6,8 @@ struct AlarmListScreen: View {
     @ObservedObject var permissions: PermissionGate
     let onAddAlarm: () -> Void
     @Environment(\.locale) private var locale
+    @State private var editingAlarm: WakeAlarm?
+    @State private var alarmToDelete: WakeAlarm?
 
     private var permissionState: NativeAlarmKitService.AuthorizationState { permissions.alarm }
 
@@ -56,6 +58,8 @@ struct AlarmListScreen: View {
                                                 .foregroundStyle(.secondary)
                                         }
                                     }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { editingAlarm = alarm }
                                     Spacer()
                                     Toggle("Enabled", isOn: Binding(
                                         get: { alarm.isEnabled },
@@ -66,10 +70,24 @@ struct AlarmListScreen: View {
                                     .accessibilityLabel("\(alarm.title), \(alarm.timeLabel(in: locale))")
                                 }
                                 .padding(.vertical, 6)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        alarmToDelete = alarm
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                    Button {
+                                        editingAlarm = alarm
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
                             }
-                            .onDelete(perform: store.delete)
                         } footer: {
-                            Text("Alarms are handed to iOS system alarms. Swipe left on an alarm to delete it.")
+                            Text("Swipe an alarm to edit or delete it, or tap it to edit.")
                         }
                         if let error = store.lastError {
                             Section {
@@ -83,6 +101,13 @@ struct AlarmListScreen: View {
                 }
             }
             .navigationTitle("Alarms")
+            .sheet(item: $editingAlarm) { alarm in
+                AlarmEditorSheet(store: store, editing: alarm)
+            }
+            .confirmationDialog("Delete this alarm?", isPresented: Binding(get: { alarmToDelete != nil }, set: { if !$0 { alarmToDelete = nil } }), titleVisibility: .visible, presenting: alarmToDelete) { alarm in
+                Button("Delete", role: .destructive) { store.delete(alarm) }
+                Button("Cancel", role: .cancel) {}
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onAddAlarm) {

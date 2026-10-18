@@ -178,3 +178,8 @@
 "Allow" = "אפשר";
 "Not now" = "לא עכשיו";
 "Not allowed" = "לא מאושר";
+"Delete" = "מחק";
+"Edit" = "עריכה";
+"Delete this alarm?" = "למחוק את ההתראה?";
+"Edit alarm" = "עריכת התראה";
+"Swipe an alarm to edit or delete it, or tap it to edit." = "החלק התראה כדי לערוך או למחוק, או לחץ עליה כדי לערוך.";
