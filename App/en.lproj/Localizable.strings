@@ -71,7 +71,7 @@
 "Choose how many minutes before, for each reminder." = "Choose how many minutes before, for each reminder.";
 "All app icons" = "All app icons";
 "Pick any of the extra icons." = "Pick any of the extra icons.";
-"Always free: alarms that stop by themselves, Shabbat times, widgets and one reminder before candle lighting." = "Always free: alarms that stop by themselves, Shabbat times, widgets and one reminder before candle lighting.";
+"Always free: alarms that stop by themselves, Shabbat times, Home Screen widgets and one reminder before candle lighting." = "Always free: alarms that stop by themselves, Shabbat times, Home Screen widgets and one reminder before candle lighting.";
 "Preview: everything is unlocked for now." = "Preview: everything is unlocked for now.";
 "You have Pro. Thank you!" = "You have Pro. Thank you!";
 "Unlock Pro · %@" = "Unlock Pro · %@";
@@ -112,3 +112,6 @@
 "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own." = "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own.";
 
 "Next holiday" = "Next holiday";
+
+"Lock Screen widgets" = "Lock Screen widgets";
+"Candle lighting, Shabbat ends and your next alarm on the Lock Screen." = "Candle lighting, Shabbat ends and your next alarm on the Lock Screen.";

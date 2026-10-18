@@ -31,6 +31,7 @@ final class ProStore: ObservableObject {
     init() {
         owned = UserDefaults.standard.bool(forKey: Self.ownedKey)
         hasPro = !Self.isEnforced || owned
+        WidgetSync.updatePro(hasPro)
     }
 
     func start() async {
@@ -114,8 +115,9 @@ final class ProStore: ObservableObject {
 
     private func recompute() {
 #if DEBUG
-        if debugLocked { hasPro = false; return }
+        if debugLocked { hasPro = false; WidgetSync.updatePro(false); return }
 #endif
         hasPro = !Self.isEnforced || owned
+        WidgetSync.updatePro(hasPro)
     }
 }

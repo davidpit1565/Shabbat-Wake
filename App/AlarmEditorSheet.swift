@@ -181,7 +181,7 @@ struct WeekdayPicker: View {
                     } label: {
                         Text(calendar.veryShortWeekdaySymbols[day - 1])
                             .font(.subheadline.weight(.semibold))
-                            .frame(maxWidth: .infinity, minHeight: 38)
+                            .frame(maxWidth: .infinity, minHeight: 44)
                             .background(isOn ? Color.accentColor : Color.secondary.opacity(0.15), in: Circle())
                             .foregroundStyle(isOn ? Color.white : Color.primary)
                     }

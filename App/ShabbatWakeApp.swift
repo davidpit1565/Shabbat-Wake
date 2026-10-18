@@ -148,6 +148,8 @@ struct HomeDashboard: View {
                             Text(nextAlarmTime)
                                 .font(.system(size: 47, weight: .light, design: .rounded))
                                 .monospacedDigit()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
                                 .accessibilityLabel(alarmStore.nextWake == nil ? Text("No alarm scheduled") : Text("Next alarm \(nextAlarmDay ?? "") \(nextAlarmTime)"))
                             Text("NEXT WAKE-UP")
                                 .font(.caption2.weight(.semibold)).tracking(2.2)
