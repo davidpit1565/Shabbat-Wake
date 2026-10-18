@@ -97,7 +97,7 @@ struct RootView: View {
             return .handled
         })
         .task {
-            await permissions.checkOnLaunch()
+            if !ScreenshotMode.isOn { await permissions.checkOnLaunch() }
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)

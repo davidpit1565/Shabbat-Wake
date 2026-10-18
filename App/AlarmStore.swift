@@ -156,6 +156,7 @@ final class AlarmStore: ObservableObject {
 
     /// Compares saved alarms with what iOS actually has scheduled. Call whenever the app becomes active.
     func refreshFromSystem() async {
+        if ScreenshotMode.isOn { return }
         expireFinishedAlarms()
         let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
             (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
@@ -191,6 +192,7 @@ final class AlarmStore: ObservableObject {
     }
 
     private func load() {
+        if ScreenshotMode.isOn { alarms = ScreenshotMode.sampleAlarms; return }
         guard let data = UserDefaults.standard.data(forKey: storageKey) else { return }
         do { alarms = try JSONDecoder().decode([WakeAlarm].self, from: data) }
         catch { lastError = AppLanguage.text("Saved alarms could not be read.") }

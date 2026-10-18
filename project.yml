@@ -134,6 +134,19 @@ targets:
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
 
+  ShabbatWakeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: ShabbatWake
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.uitests
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+
   ShabbatWakeTests:
     type: bundle.unit-test
     platform: iOS
@@ -148,3 +161,14 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Shabbat Wake.app/Shabbat Wake"
         BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  ShabbatWakeScreenshots:
+    build:
+      targets:
+        ShabbatWake: all
+        ShabbatWakeUITests: [test]
+    test:
+      targets:
+        - ShabbatWakeUITests
+      storeKitConfiguration: Config/Pro.storekit
