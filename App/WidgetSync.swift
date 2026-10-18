@@ -30,6 +30,12 @@ enum WidgetSync {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
+    static func updateLanguage(_ code: String) {
+        guard SharedStore.load().languageCode != code else { return }
+        SharedStore.update { $0.languageCode = code }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     static func clearLocation() {
         SharedStore.update {
             $0.latitude = nil

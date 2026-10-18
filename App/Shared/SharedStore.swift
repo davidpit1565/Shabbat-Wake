@@ -10,6 +10,8 @@ struct WidgetSnapshot: Codable, Equatable {
     var times: [ShabbatTimeItem] = []
     /// Whether Pro is unlocked, so Lock Screen widgets can follow it. Nil (older data) counts as unlocked.
     var proUnlocked: Bool?
+    /// The language chosen inside the app (en, he, ru, fr, es), so widgets speak it too. Nil follows the iPhone.
+    var languageCode: String?
 }
 
 enum SharedStore {
