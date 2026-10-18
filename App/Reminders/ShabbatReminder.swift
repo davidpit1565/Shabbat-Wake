@@ -15,8 +15,8 @@ struct PlannedReminder: Equatable {
 }
 
 enum ReminderPlanner {
-    /// iOS keeps at most 64 pending notifications per app; stay below it.
-    static let pendingLimit = 60
+    /// iOS keeps at most 64 pending notifications per app; reminders use up to 20 and Shabbat alarms up to 40.
+    static let pendingLimit = 20
 
     /// The notifications to schedule: for each reminder and each upcoming candle lighting, soonest first.
     static func plan(reminders: [ShabbatReminder], candleTimes: [Date], now: Date = .now, limit: Int = pendingLimit) -> [PlannedReminder] {

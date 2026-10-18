@@ -191,4 +191,90 @@ final class ShabbatWakeTests: XCTestCase {
         let reminders = [ShabbatReminder(minutesBefore: 30)]
         XCTAssertTrue(ReminderPlanner.plan(reminders: reminders, candleTimes: [now.addingTimeInterval(30 * 60)], now: now).isEmpty)
     }
+
+    // MARK: Shabbat alarms (rings that stop by themselves)
+
+    private func ringAlarm(weekdays: Set<Int> = [], repeats: Bool = false, weeks: Int? = nil, plan: RingPlan = RingPlan(count: 3, intervalMinutes: 5, seconds: 15), armed: Date) -> WakeAlarm {
+        var alarm = WakeAlarm(title: "Shabbat", hour: 7, minute: 0, repeatsWeekly: repeats, weekdays: weekdays, ringPlan: plan, weeksLimit: weeks)
+        alarm.armedAt = armed
+        return alarm
+    }
+
+    func testOneTimeShabbatAlarmRingsTheChosenNumberOfTimes() {
+        let now = date(23, 20)                          // Friday evening
+        let alarm = ringAlarm(armed: now)
+        let rings = RingPlanner.rings(for: alarm, now: now, calendar: calendar)
+        XCTAssertEqual(rings.count, 3)
+        XCTAssertEqual(rings.map(\.fireDate), [date(24, 7, 0), date(24, 7, 5), date(24, 7, 10)])
+        XCTAssertTrue(rings.allSatisfy { !$0.repeats })
+        XCTAssertEqual(Set(rings.map(\.id)).count, 3)
+    }
+
+    func testRingsAlreadyInThePastAreDropped() {
+        let armed = date(23, 20)
+        let alarm = ringAlarm(armed: armed)
+        let rings = RingPlanner.rings(for: alarm, now: date(24, 7, 6), calendar: calendar)
+        XCTAssertEqual(rings.map(\.fireDate), [date(24, 7, 10)])
+    }
+
+    func testWeeklyShabbatAlarmUsesRepeatingTriggersPerDay() {
+        let now = date(20, 9)                           // Tuesday
+        let alarm = ringAlarm(weekdays: [7, 1], repeats: true, armed: now)
+        let rings = RingPlanner.rings(for: alarm, now: now, calendar: calendar)
+        XCTAssertEqual(rings.count, 6)
+        XCTAssertTrue(rings.allSatisfy(\.repeats))
+        let saturday = rings.filter { $0.components.weekday == 7 }
+        XCTAssertEqual(saturday.map { $0.components.minute }, [0, 5, 10])
+    }
+
+    func testRingsCrossingMidnightMoveToTheNextWeekday() {
+        var alarm = ringAlarm(weekdays: [7], repeats: true, plan: RingPlan(count: 3, intervalMinutes: 15, seconds: 10), armed: date(20, 9))
+        alarm.hour = 23; alarm.minute = 50
+        let rings = RingPlanner.rings(for: alarm, now: date(20, 9), calendar: calendar)
+        XCTAssertEqual(rings.map { $0.components.weekday }, [7, 1, 1])
+        XCTAssertEqual(rings.map { $0.components.minute }, [50, 5, 20])
+    }
+
+    func testAlarmLimitedToWeeksStopsAfterThem() {
+        let armed = date(20, 9)
+        let alarm = ringAlarm(weekdays: [7], repeats: true, weeks: 2, plan: RingPlan(count: 1, intervalMinutes: 5, seconds: 10), armed: armed)
+        let rings = RingPlanner.rings(for: alarm, now: armed, calendar: calendar)
+        XCTAssertEqual(rings.map(\.fireDate), [date(24, 7), calendar.date(byAdding: .day, value: 7, to: date(24, 7))!])
+        XCTAssertNotNil(alarm.nextFireDate(after: armed, calendar: calendar))
+        XCTAssertNil(alarm.nextFireDate(after: date(24, 8).addingTimeInterval(8 * 86400), calendar: calendar))
+    }
+
+    func testRingPlannerStaysWithinBudgetAndIgnoresPlainAlarms() {
+        let armed = date(20, 9)
+        let big = ringAlarm(weekdays: [7], repeats: true, weeks: 26, plan: RingPlan(count: 10, intervalMinutes: 1, seconds: 10), armed: armed)
+        XCTAssertLessThanOrEqual(RingPlanner.rings(for: big, now: armed, calendar: calendar).count, ShabbatAlarmService.budget)
+        var plain = WakeAlarm(title: "x", hour: 7, minute: 0, repeatsWeekly: false, weekdays: [])
+        plain.armedAt = armed
+        XCTAssertTrue(RingPlanner.rings(for: plain, now: armed, calendar: calendar).isEmpty)
+    }
+
+    func testRingPlanValuesAreKeptInsideWhatTheAppOffers() {
+        let odd = RingPlan(count: 99, intervalMinutes: 7, seconds: 45).normalized()
+        XCTAssertEqual(odd, RingPlan(count: 10, intervalMinutes: 5, seconds: 15))
+        XCTAssertEqual(RingPlan(count: 0, intervalMinutes: 1, seconds: 10).normalized().count, 1)
+    }
+
+    func testOldSavedAlarmsStillDecodeAsSystemAlarms() throws {
+        let json = #"{"id":"11111111-1111-1111-1111-111111111111","title":"Old","hour":7,"minute":0,"repeatsWeekly":false,"weekdays":[],"isEnabled":true,"soundID":"classic","createdAt":0}"#
+        let alarm = try JSONDecoder().decode(WakeAlarm.self, from: Data(json.utf8))
+        XCTAssertNil(alarm.ringPlan)
+        XCTAssertNil(alarm.weeksLimit)
+    }
+
+    func testShabbatAlarmSoundFilesMatchTheChosenLength() {
+        var alarm = WakeAlarm(title: "x", hour: 7, minute: 0, repeatsWeekly: false, weekdays: [], soundID: "gentle", ringPlan: RingPlan(count: 2, intervalMinutes: 5, seconds: 20))
+        XCTAssertEqual(ShabbatAlarmService.soundFileName(for: alarm), "GentleChime_20s.wav")
+        alarm.soundID = "classic"; alarm.ringPlan = RingPlan(count: 2, intervalMinutes: 5, seconds: 10)
+        XCTAssertEqual(ShabbatAlarmService.soundFileName(for: alarm), "ClassicWake_10s.wav")
+        for tone in ["ClassicWake", "GentleChime", "SunriseSequence"] {
+            for seconds in RingPlan.secondChoices {
+                XCTAssertNotNil(Bundle.main.url(forResource: "\(tone)_\(seconds)s", withExtension: "wav"), "\(tone)_\(seconds)s.wav is not in the app")
+            }
+        }
+    }
 }

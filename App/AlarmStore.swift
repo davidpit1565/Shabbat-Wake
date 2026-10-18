@@ -21,7 +21,7 @@ final class AlarmStore: ObservableObject {
             .min { $0.date < $1.date }
     }
 
-    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic") async -> Bool {
+    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic", ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
         var alarm = WakeAlarm(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppLanguage.text("Wake-up") : title,
@@ -29,10 +29,13 @@ final class AlarmStore: ObservableObject {
             minute: parts.minute ?? 0,
             repeatsWeekly: repeatsWeekly,
             weekdays: repeatsWeekly ? weekdays : [],
-            soundID: soundID
+            soundID: soundID,
+            ringPlan: ringPlan?.normalized(),
+            weeksLimit: repeatsWeekly ? weeksLimit : nil
         )
+        alarm.armedAt = .now
         do {
-            try await NativeAlarmKitService.schedule(alarm)
+            try await AlarmScheduler.schedule(alarm)
             systemAlarmIDs.insert(alarm.id)
             alarm.isEnabled = true
             alarm.armedAt = .now
@@ -47,7 +50,7 @@ final class AlarmStore: ObservableObject {
     }
 
     /// Changes an existing alarm. The system alarm is replaced; if the new one cannot be scheduled the old one is put back.
-    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String) async -> Bool {
+    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String, ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
         guard let index = alarms.firstIndex(where: { $0.id == id }), !busyAlarmIDs.contains(id) else { return false }
         busyAlarmIDs.insert(id)
         defer { busyAlarmIDs.remove(id) }
@@ -60,18 +63,20 @@ final class AlarmStore: ObservableObject {
         updated.repeatsWeekly = repeatsWeekly
         updated.weekdays = repeatsWeekly ? weekdays : []
         updated.soundID = soundID
+        updated.ringPlan = ringPlan?.normalized()
+        updated.weeksLimit = repeatsWeekly ? weeksLimit : nil
         updated.isEnabled = true
         updated.armedAt = .now
         do {
-            try? await NativeAlarmKitService.cancel(id: id)
-            try await NativeAlarmKitService.schedule(updated)
+            try? await AlarmScheduler.cancel(previous)
+            try await AlarmScheduler.schedule(updated)
             systemAlarmIDs.insert(id)
             if let current = alarms.firstIndex(where: { $0.id == id }) { alarms[current] = updated }
             save()
             lastError = nil
             return true
         } catch {
-            if previous.isEnabled { try? await NativeAlarmKitService.schedule(previous) }
+            if previous.isEnabled { try? await AlarmScheduler.schedule(previous) }
             lastError = error.localizedDescription
             return false
         }
@@ -87,16 +92,18 @@ final class AlarmStore: ObservableObject {
             defer { busyAlarmIDs.remove(alarmID) }
             do {
                 if shouldEnable {
-                    guard let latest = alarms.first(where: { $0.id == alarmID }) else { return }
-                    try await NativeAlarmKitService.schedule(latest)
+                    guard var latest = alarms.first(where: { $0.id == alarmID }) else { return }
+                    latest.isEnabled = true
+                    latest.armedAt = .now
+                    try await AlarmScheduler.schedule(latest)
                     systemAlarmIDs.insert(alarmID)
                 } else {
-                    try await NativeAlarmKitService.cancel(id: alarmID)
+                    try await AlarmScheduler.cancel(current)
                     systemAlarmIDs.remove(alarmID)
                 }
                 guard let index = alarms.firstIndex(where: { $0.id == alarmID }) else {
                     // If the local record disappeared while scheduling, clean up any system alarm.
-                    if shouldEnable { try? await NativeAlarmKitService.cancel(id: alarmID) }
+                    if shouldEnable { try? await AlarmScheduler.cancel(current) }
                     return
                 }
                 alarms[index].isEnabled = shouldEnable
@@ -122,7 +129,7 @@ final class AlarmStore: ObservableObject {
         Task {
             defer { busyAlarmIDs.remove(alarm.id) }
             do {
-                try await NativeAlarmKitService.cancel(id: alarm.id)
+                try await AlarmScheduler.cancel(alarm)
                 systemAlarmIDs.remove(alarm.id)
                 alarms.removeAll { $0.id == alarm.id }
                 save()
@@ -153,11 +160,15 @@ final class AlarmStore: ObservableObject {
         let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
             (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
         }.value
-        guard let scheduled = scheduledOrNil else { return }
-        systemAlarmIDs = scheduled
-        guard state == .authorized else { return }
+        // Shabbat alarms are notifications; schedule them again so later weeks and repeats stay covered.
+        for alarm in alarms where alarm.isEnabled && alarm.ringPlan != nil && !busyAlarmIDs.contains(alarm.id) && alarm.nextFireDate() != nil {
+            do { try await ShabbatAlarmService.schedule(alarm) } catch { lastError = error.localizedDescription }
+        }
+        let ringIDs = await ShabbatAlarmService.pendingAlarmIDs()
+        systemAlarmIDs = (scheduledOrNil ?? []).union(ringIDs)
+        guard let scheduled = scheduledOrNil, state == .authorized else { return }
         // Weekly alarms that iOS no longer knows about (for example after restoring a backup) are scheduled again.
-        let missing = alarms.filter { $0.isEnabled && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
+        let missing = alarms.filter { $0.isEnabled && $0.ringPlan == nil && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
         for alarm in missing {
             do {
                 try await NativeAlarmKitService.schedule(alarm)

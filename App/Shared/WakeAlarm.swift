@@ -1,5 +1,26 @@
 import Foundation
 
+/// How a Shabbat alarm rings: a few short rings that stop by themselves, so nobody has to touch the phone.
+struct RingPlan: Codable, Equatable {
+    var count: Int
+    var intervalMinutes: Int
+    var seconds: Int
+
+    static let countChoices = Array(1...10)
+    static let intervalChoices = [1, 2, 3, 5, 10, 15]
+    static let secondChoices = [10, 15, 20, 30]
+    static let standard = RingPlan(count: 3, intervalMinutes: 5, seconds: 15)
+
+    /// Keeps every value inside what the app offers, so saved or imported data cannot produce an odd schedule.
+    func normalized() -> RingPlan {
+        RingPlan(
+            count: min(max(count, 1), 10),
+            intervalMinutes: RingPlan.intervalChoices.contains(intervalMinutes) ? intervalMinutes : 5,
+            seconds: RingPlan.secondChoices.contains(seconds) ? seconds : 15
+        )
+    }
+}
+
 struct WakeAlarm: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
     var title: String
@@ -12,6 +33,10 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
     var createdAt: Date = .now
     /// When the system alarm was last scheduled. One-time alarms count from here.
     var armedAt: Date?
+    /// Set for a "Shabbat alarm": rings a few times and stops by itself. Nil means a normal system alarm.
+    var ringPlan: RingPlan?
+    /// For weekly alarms: stop repeating after this many weeks. Nil repeats until switched off.
+    var weeksLimit: Int?
 
     var timeLabel: String { timeLabel(in: .current) }
 
@@ -32,11 +57,14 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
         base.minute = minute
         base.second = 0
         if repeatsWeekly && !weekdays.isEmpty {
-            return weekdays.compactMap { weekday -> Date? in
+            let next = weekdays.compactMap { weekday -> Date? in
                 var components = base
                 components.weekday = weekday
                 return calendar.nextDate(after: now, matching: components, matchingPolicy: .nextTime)
             }.min()
+            guard let fire = next else { return nil }
+            if let weeks = weeksLimit, fire >= (armedAt ?? createdAt).addingTimeInterval(Double(weeks) * 7 * 86400) { return nil }
+            return fire
         }
         let armed = armedAt ?? createdAt
         guard let fire = calendar.nextDate(after: armed, matching: base, matchingPolicy: .nextTime), fire > now else {
