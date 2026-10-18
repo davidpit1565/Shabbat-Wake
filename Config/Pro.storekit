@@ -4,27 +4,71 @@
 
   ],
   "products" : [
-    {
-      "displayPrice" : "9.99",
-      "familyShareable" : false,
-      "internalID" : "6741000001",
-      "localizations" : [
-        {
-          "description" : "Several reminders before candle lighting, your own times and every app icon. One purchase.",
-          "displayName" : "Shabbat Waker Pro",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "com.shabbatwake.ios.pro.lifetime",
-      "referenceName" : "Pro (lifetime)",
-      "type" : "NonConsumable"
-    }
+
   ],
   "settings" : {
 
   },
   "subscriptionGroups" : [
+    {
+      "id" : "21A1B2C3",
+      "localizations" : [
 
+      ],
+      "name" : "Shabbat Waker Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6741000011",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Saved places, several reminders, Lock Screen widgets, alarms for some weeks and every app icon.",
+              "displayName" : "Pro yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.shabbatwake.ios.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro yearly",
+          "subscriptionGroupID" : "21A1B2C3",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6741000012",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Saved places, several reminders, Lock Screen widgets, alarms for some weeks and every app icon.",
+              "displayName" : "Pro monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.shabbatwake.ios.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro monthly",
+          "subscriptionGroupID" : "21A1B2C3",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
   ],
   "version" : {
     "major" : 3,
