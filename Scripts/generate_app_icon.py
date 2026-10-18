@@ -46,7 +46,20 @@ def main():
     d = ImageDraw.Draw(ring)
     r = n * 0.355
     d.ellipse((c - r, c - r, c + r, c + r), outline=SILVER + (70,), width=int(n * 0.006))
+    ticks = ImageDraw.Draw(ring)
+    for i in range(60):
+        a = math.radians(i * 6 - 90)
+        long = i % 5 == 0
+        r0, r1 = n * (0.318 if long else 0.328), n * 0.338
+        ticks.line((c + r0 * math.cos(a), c + r0 * math.sin(a), c + r1 * math.cos(a), c + r1 * math.sin(a)),
+                   fill=SILVER + ((120 if long else 55),), width=int(n * (0.005 if long else 0.003)))
     img = Image.alpha_composite(img.convert("RGBA"), ring)
+
+    # soft warm glow where the sun meets the horizon
+    warm = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    hy = c + n * 0.055
+    ImageDraw.Draw(warm).ellipse((c - n * 0.24, hy - n * 0.09, c + n * 0.24, hy + n * 0.09), fill=(255, 176, 96, 150))
+    img = Image.alpha_composite(img, warm.filter(ImageFilter.GaussianBlur(n * 0.04)))
 
     # luminous progress arc (cyan -> blue), starting top, sweeping clockwise
     arc = Image.new("RGBA", (n, n), (0, 0, 0, 0))
@@ -77,7 +90,11 @@ def main():
     d = ImageDraw.Draw(sun)
     sr = n * 0.145
     horizon = c + n * 0.055
-    d.pieslice((c - sr, horizon - sr, c + sr, horizon + sr), 180, 360, fill=(255, 255, 255, 255))
+    for step in range(40):
+        t = step / 39
+        rr = sr * (1 - t * 0.85)
+        col = lerp((255, 214, 150), (255, 255, 255), t)
+        d.pieslice((c - rr, horizon - rr, c + rr, horizon + rr), 180, 360, fill=col + (255,))
     d.rounded_rectangle((c - n * 0.2, horizon + n * 0.012, c + n * 0.2, horizon + n * 0.034), radius=n * 0.011, fill=SILVER + (255,))
     for deg in (-150, -120, -90, -60, -30):
         a = math.radians(deg)
