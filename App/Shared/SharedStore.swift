@@ -14,6 +14,21 @@ struct WidgetSnapshot: Codable, Equatable {
     var languageCode: String?
     /// The parasha or holiday of the next Shabbat, in the app's language, for the home screen.
     var nextTitle: String?
+    /// "system", "24h" or "12h": the clock style chosen inside the app. Nil follows the iPhone.
+    var timeFormat: String?
+}
+
+/// The 12 or 24 hour clock choice, applied to a language as a locale.
+enum TimeFormat {
+    static let storageKey = "timeFormat"
+
+    static func locale(language: String, format: String?) -> Locale {
+        switch format {
+        case "24h": return Locale(identifier: language + "@hours=h23")
+        case "12h": return Locale(identifier: language + "@hours=h12")
+        default: return Locale(identifier: language)
+        }
+    }
 }
 
 enum SharedStore {

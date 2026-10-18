@@ -27,13 +27,23 @@ final class ProStore: ObservableObject {
     }
 #endif
 
+    /// While Pro is only a preview, this pretends to be a free account so the locked features can be tried.
+    @Published private(set) var previewFree = UserDefaults.standard.bool(forKey: ProStore.previewFreeKey)
+    private static let previewFreeKey = "pro.previewFree.v1"
+
+    func setPreviewFree(_ on: Bool) {
+        previewFree = on
+        UserDefaults.standard.set(on, forKey: Self.previewFreeKey)
+        recompute()
+    }
+
     private var subscribed: Bool
     private var updatesTask: Task<Void, Never>?
     private static let subscribedKey = "pro.subscribed.v1"
 
     init() {
         subscribed = UserDefaults.standard.bool(forKey: Self.subscribedKey)
-        hasPro = !Self.isEnforced || subscribed
+        hasPro = Self.isEnforced ? subscribed : !UserDefaults.standard.bool(forKey: Self.previewFreeKey)
         WidgetSync.updatePro(hasPro)
     }
 
@@ -130,7 +140,7 @@ final class ProStore: ObservableObject {
 #if DEBUG
         if debugLocked { hasPro = false; WidgetSync.updatePro(false); return }
 #endif
-        hasPro = !Self.isEnforced || subscribed
+        hasPro = Self.isEnforced ? subscribed : !previewFree
         WidgetSync.updatePro(hasPro)
     }
 }

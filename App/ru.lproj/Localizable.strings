@@ -295,3 +295,14 @@
 "No alarm is set." = "Будильник не задан.";
 "Open Shabbat Waker once and allow location to get times." = "Откройте Shabbat Waker один раз и разрешите доступ к геопозиции, чтобы получить время.";
 "Your alarm is ready" = "Ваш будильник готов";
+
+"Time format" = "Формат времени";
+"24-hour" = "24 часа";
+"12-hour" = "12 часов (AM/PM)";
+"Try as a free user" = "Попробовать как бесплатный пользователь";
+"While Pro is in preview everything is open. This shows the locked features so you can see how they behave." = "Пока Pro в режиме предпросмотра, всё открыто. Это показывает заблокированные функции, чтобы вы увидели, как они работают.";
+"Test the alarm" = "Проверить сигнал";
+"Check that it rings" = "Проверка звонка";
+"The test alarm will ring in 10 seconds. Lock your phone and put it away." = "Тестовый сигнал прозвучит через 10 секунд. Заблокируйте телефон и отложите его.";
+"Test alarm" = "Тестовый сигнал";
+"Opens this alarm" = "Открывает этот сигнал";

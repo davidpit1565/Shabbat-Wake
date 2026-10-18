@@ -154,7 +154,20 @@ struct ShabbatTimesScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    placeMenu
+                    HStack(spacing: 10) {
+                        placeMenu
+                        Spacer(minLength: 0)
+                        Button { addPlaceTapped() } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus")
+                                ProBadge()
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 10)
+                            .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text("Add a place"))
+                    }
                     if usesCurrentLocation && !isAuthorized { permissionCard }
                     if model.isLoading {
                         ProgressView("Loading times for your location…").frame(maxWidth: .infinity).padding(.vertical, 30)
@@ -232,10 +245,14 @@ struct ShabbatTimesScreen: View {
     }
 
     private func addPlaceTapped() {
-        if ProPolicy.canSavePlace(currentCount: places.places.count, hasPro: pro.hasPro) {
-            showAddPlace = true
-        } else if !pro.hasPro {
-            showPaywall = true
+        // A sheet opened while a menu is still closing is dropped by SwiftUI, so give the menu a moment.
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            if !pro.hasPro {
+                showPaywall = true
+            } else if ProPolicy.canSavePlace(currentCount: places.places.count, hasPro: true) {
+                showAddPlace = true
+            }
         }
     }
 

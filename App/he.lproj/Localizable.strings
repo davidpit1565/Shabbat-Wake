@@ -309,3 +309,14 @@
 "Open Shabbat Waker once and allow location to get times." = "פתח את Shabbat Waker פעם אחת ואשר מיקום כדי לקבל זמנים.";
 
 "Your alarm is ready" = "ההתראה מוכנה";
+
+"Time format" = "פורמט שעה";
+"24-hour" = "24 שעות";
+"12-hour" = "12 שעות (AM/PM)";
+"Try as a free user" = "נסה כמשתמש חינמי";
+"While Pro is in preview everything is open. This shows the locked features so you can see how they behave." = "כל עוד Pro בתצוגה מקדימה, הכול פתוח. זה מציג את הפעולות הנעולות כדי שתוכל לראות איך הן מתנהגות.";
+"Test the alarm" = "בדוק את ההתראה";
+"Check that it rings" = "בדיקה שהיא מצלצלת";
+"The test alarm will ring in 10 seconds. Lock your phone and put it away." = "התראת הבדיקה תצלצל בעוד 10 שניות. נעל את הטלפון והנח אותו בצד.";
+"Test alarm" = "התראת בדיקה";
+"Opens this alarm" = "פותח את ההתראה הזו";
