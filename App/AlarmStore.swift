@@ -26,6 +26,7 @@ final class AlarmStore: ObservableObject {
     @Published private(set) var alarms: [WakeAlarm] = []
     @Published private(set) var lastError: String?
     @Published private(set) var systemAlarmIDs: Set<UUID> = []
+    @Published private(set) var busyAlarmIDs: Set<UUID> = []
 
     private let storageKey = "shabbatWake.localAlarms.v2"
 
@@ -59,8 +60,11 @@ final class AlarmStore: ObservableObject {
     func toggle(_ alarm: WakeAlarm) {
         guard let current = alarms.first(where: { $0.id == alarm.id }) else { return }
         let alarmID = current.id
+        guard !busyAlarmIDs.contains(alarmID) else { return }
         let shouldEnable = !current.isEnabled
+        busyAlarmIDs.insert(alarmID)
         Task {
+            defer { busyAlarmIDs.remove(alarmID) }
             do {
                 if shouldEnable {
                     guard let latest = alarms.first(where: { $0.id == alarmID }) else { return }
@@ -90,7 +94,10 @@ final class AlarmStore: ObservableObject {
     }
 
     func delete(_ alarm: WakeAlarm) {
+        guard !busyAlarmIDs.contains(alarm.id) else { return }
+        busyAlarmIDs.insert(alarm.id)
         Task {
+            defer { busyAlarmIDs.remove(alarm.id) }
             do {
                 try await NativeAlarmKitService.cancel(id: alarm.id)
                 systemAlarmIDs.remove(alarm.id)
