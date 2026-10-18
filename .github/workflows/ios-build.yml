@@ -51,6 +51,11 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
+      - name: Diagnose resources in generated project
+        run: |
+          ls -la App/Resources
+          grep -n -i "wav\|Resources" ShabbatWake.xcodeproj/project.pbxproj | head -30
+
       - name: Build for iOS Simulator
         run: |
           xcodebuild \
@@ -64,4 +69,7 @@ jobs:
 
       - name: List bundled alarm sounds
         if: always()
-        run: find ~/Library/Developer/Xcode/DerivedData -name "*.wav" -not -path "*/Intermediates*" | head -20
+        run: |
+          find ~/Library/Developer/Xcode/DerivedData -name "*.wav" -not -path "*/Intermediates*" | head -20
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
+          echo "APP=$APP"; ls -la "$APP" | head -40
