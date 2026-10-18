@@ -54,7 +54,7 @@ struct WatchHome: View {
 
     var body: some View {
         TabView {
-            page(title: "Candle lighting", symbol: "flame.fill", tint: Color(red: 1, green: 0.72, blue: 0.42), date: candle)
+            page(title: "Candle lighting", symbol: "candles", tint: Color(red: 1, green: 0.72, blue: 0.42), date: candle)
             page(title: "Shabbat ends", symbol: "moon.stars.fill", tint: Color(red: 0.35, green: 0.9, blue: 1), date: havdalah)
             page(title: "Next alarm", symbol: "alarm.fill", tint: Color(red: 0.4, green: 0.6, blue: 1), date: alarm, emptyText: "No alarm set")
         }
@@ -69,7 +69,7 @@ struct WatchHome: View {
 
     private func page(title: LocalizedStringKey, symbol: String, tint: Color, date: Date?, emptyText: LocalizedStringKey = "Open Shabbat Waker on your iPhone to load times.") -> some View {
         VStack(spacing: 6) {
-            Label(title, systemImage: symbol)
+            Label { Text(title) } icon: { KindIcon(symbol: symbol) }
                 .font(.footnote.weight(.semibold)).foregroundStyle(tint)
             if let date {
                 Text(date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale)))
