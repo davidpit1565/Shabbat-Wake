@@ -1,20 +1,23 @@
 import Foundation
 import StoreKit
 
-/// Knows whether the person has Pro. One purchase, no subscription.
+/// Knows whether the person has Pro: an auto-renewing subscription, yearly or monthly.
 @MainActor
 final class ProStore: ObservableObject {
-    /// Must match the product created in App Store Connect and in `Config/Pro.storekit`.
-    static let lifetimeProductID = "com.shabbatwake.ios.pro.lifetime"
+    /// Must match the subscriptions created in App Store Connect (one subscription group) and in `Config/Pro.storekit`.
+    static let yearlyProductID = "com.shabbatwake.ios.pro.yearly"
+    static let monthlyProductID = "com.shabbatwake.ios.pro.monthly"
+    static let productIDs = [yearlyProductID, monthlyProductID]
 
     /// Pro is not charged for until this is turned on. While it is false every feature is open,
-    /// so the app can be tested end to end. Turn it on once the product exists in App Store Connect.
+    /// so the app can be tested end to end. Turn it on once the subscriptions exist in App Store Connect.
     static let isEnforced = false
 
     @Published private(set) var hasPro: Bool
-    @Published private(set) var lifetimeProduct: Product?
+    /// Yearly first, then monthly.
+    @Published private(set) var products: [Product] = []
     @Published private(set) var isPurchasing = false
-    @Published private(set) var productUnavailable = false
+    @Published private(set) var productsUnavailable = false
     @Published var message: String?
 
 #if DEBUG
@@ -24,14 +27,26 @@ final class ProStore: ObservableObject {
     }
 #endif
 
-    private var owned: Bool
+    private var subscribed: Bool
     private var updatesTask: Task<Void, Never>?
-    private static let ownedKey = "pro.owned.v1"
+    private static let subscribedKey = "pro.subscribed.v1"
 
     init() {
-        owned = UserDefaults.standard.bool(forKey: Self.ownedKey)
-        hasPro = !Self.isEnforced || owned
+        subscribed = UserDefaults.standard.bool(forKey: Self.subscribedKey)
+        hasPro = !Self.isEnforced || subscribed
         WidgetSync.updatePro(hasPro)
+    }
+
+    var yearly: Product? { products.first { $0.id == Self.yearlyProductID } }
+    var monthly: Product? { products.first { $0.id == Self.monthlyProductID } }
+
+    /// How much the yearly plan saves against twelve monthly payments, as a whole percent, when both prices are known.
+    var yearlySavingsPercent: Int? {
+        guard let yearly, let monthly, monthly.price > 0 else { return nil }
+        let full = monthly.price * 12
+        guard full > yearly.price else { return nil }
+        let saved = NSDecimalNumber(decimal: (full - yearly.price) / full * 100).doubleValue
+        return Int(saved.rounded())
     }
 
     func start() async {
@@ -47,24 +62,21 @@ final class ProStore: ObservableObject {
             }
         }
         await refreshEntitlements()
-        await loadProduct()
+        await loadProducts()
     }
 
-    func loadProduct() async {
+    func loadProducts() async {
         do {
-            lifetimeProduct = try await Product.products(for: [Self.lifetimeProductID]).first
-            productUnavailable = lifetimeProduct == nil
+            let loaded = try await Product.products(for: Self.productIDs)
+            products = loaded.sorted { ($0.id == Self.yearlyProductID ? 0 : 1) < ($1.id == Self.yearlyProductID ? 0 : 1) }
+            productsUnavailable = products.isEmpty
         } catch {
-            lifetimeProduct = nil
-            productUnavailable = true
+            products = []
+            productsUnavailable = true
         }
     }
 
-    func purchase() async {
-        guard let product = lifetimeProduct else {
-            message = AppLanguage.text("The App Store isn't available right now. Please try again in a moment.")
-            return
-        }
+    func purchase(_ product: Product) async {
         isPurchasing = true
         defer { isPurchasing = false }
         do {
@@ -93,7 +105,7 @@ final class ProStore: ObservableObject {
         do {
             try await AppStore.sync()
             await refreshEntitlements()
-            message = AppLanguage.text(owned ? "Pro is restored." : "No earlier purchase was found for this Apple ID.")
+            message = AppLanguage.text(subscribed ? "Pro is restored." : "No earlier purchase was found for this Apple ID.")
         } catch {
             message = error.localizedDescription
         }
@@ -103,13 +115,14 @@ final class ProStore: ObservableObject {
         var found = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
-               transaction.productID == Self.lifetimeProductID,
-               transaction.revocationDate == nil {
+               Self.productIDs.contains(transaction.productID),
+               transaction.revocationDate == nil,
+               (transaction.expirationDate ?? .distantFuture) > .now {
                 found = true
             }
         }
-        owned = found
-        UserDefaults.standard.set(found, forKey: Self.ownedKey)
+        subscribed = found
+        UserDefaults.standard.set(found, forKey: Self.subscribedKey)
         recompute()
     }
 
@@ -117,7 +130,7 @@ final class ProStore: ObservableObject {
 #if DEBUG
         if debugLocked { hasPro = false; WidgetSync.updatePro(false); return }
 #endif
-        hasPro = !Self.isEnforced || owned
+        hasPro = !Self.isEnforced || subscribed
         WidgetSync.updatePro(hasPro)
     }
 }
