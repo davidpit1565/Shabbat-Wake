@@ -330,7 +330,7 @@ final class ShabbatWakeTests: XCTestCase {
             XCTAssertEqual(AppLanguage.effectiveCode(for: code), code)
             let path = Bundle.main.path(forResource: code, ofType: "lproj")
             XCTAssertNotNil(path, "\(code).lproj is missing from the app")
-            guard let path, let bundle = Bundle(path: path) else { continue }
+            guard code != "en", let path, let bundle = Bundle(path: path) else { continue }   // English uses the keys themselves
             let translated = bundle.localizedString(forKey: "Send feedback", value: "MISSING", table: nil)
             XCTAssertNotEqual(translated, "MISSING", "\(code) has no translation for 'Send feedback'")
         }
