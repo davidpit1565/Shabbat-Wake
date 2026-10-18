@@ -76,6 +76,8 @@ jobs:
           for test in json.load(open(manifest)):
               for att in test.get("attachments", []):
                   name = att.get("suggestedHumanReadableName", "")
+                  if not name.lower().endswith(".png"):
+                      continue
                   clean = name.split("_")[0] if "_" in name else name
                   shutil.copy(os.path.join(src, att["exportedFileName"]), f"out/{lang}-{clean}.png")
           PY
