@@ -27,6 +27,11 @@ enum SharedStore {
         return snapshot
     }
 
+    /// Used on the Watch: the iPhone's snapshot replaces whatever was stored.
+    static func replace(_ snapshot: WidgetSnapshot) {
+        if let data = try? JSONEncoder().encode(snapshot) { defaults.set(data, forKey: key) }
+    }
+
     static func update(_ change: (inout WidgetSnapshot) -> Void) {
         var snapshot = load()
         change(&snapshot)
