@@ -173,3 +173,15 @@ enum ShabbatTimesService {
         return formatter
     }
 }
+
+extension Array where Element == ShabbatWeek {
+    /// Candle-lighting and havdalah entries for the saved snapshot, widgets and reminders.
+    var timeItems: [ShabbatTimeItem] {
+        flatMap { week -> [ShabbatTimeItem] in
+            var list: [ShabbatTimeItem] = []
+            if let candle = week.candleLighting { list.append(ShabbatTimeItem(id: week.id + "c", title: "Candle lighting", date: candle, category: "candles")) }
+            if let havdalah = week.havdalah { list.append(ShabbatTimeItem(id: week.id + "h", title: "Havdalah", date: havdalah, category: "havdalah")) }
+            return list
+        }
+    }
+}

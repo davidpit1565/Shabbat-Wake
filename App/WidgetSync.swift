@@ -1,6 +1,10 @@
 import Foundation
 import WidgetKit
 
+extension Notification.Name {
+    static let shabbatTimesUpdated = Notification.Name("shabbatWake.timesUpdated")
+}
+
 /// Pushes app state into the shared container and asks WidgetKit to refresh.
 enum WidgetSync {
     static func updateAlarms(_ alarms: [WakeAlarm]) {
@@ -17,6 +21,7 @@ enum WidgetSync {
             $0.times = times
         }
         WidgetCenter.shared.reloadAllTimelines()
+        NotificationCenter.default.post(name: .shabbatTimesUpdated, object: nil)
     }
 
     static func clearLocation() {

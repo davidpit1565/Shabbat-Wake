@@ -83,18 +83,12 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             ).filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
             guard activeFetchID == fetchID else { return }
             weeks = fetched
-            let items = fetched.flatMap { week -> [ShabbatTimeItem] in
-                var list: [ShabbatTimeItem] = []
-                if let candle = week.candleLighting { list.append(ShabbatTimeItem(id: week.id + "c", title: "Candle lighting", date: candle, category: "candles")) }
-                if let havdalah = week.havdalah { list.append(ShabbatTimeItem(id: week.id + "h", title: "Havdalah", date: havdalah, category: "havdalah")) }
-                return list
-            }
             WidgetSync.updateLocation(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude,
                 timeZoneIdentifier: zone,
                 placeName: placeName,
-                times: items
+                times: fetched.timeItems
             )
             if fetched.isEmpty {
                 errorMessage = AppLanguage.text("No Shabbat times were returned for this location and date range.")

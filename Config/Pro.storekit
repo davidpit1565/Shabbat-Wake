@@ -1,0 +1,33 @@
+{
+  "identifier" : "5C1A0B22",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6741000001",
+      "localizations" : [
+        {
+          "description" : "Several reminders before candle lighting, your own times and every app icon. One purchase.",
+          "displayName" : "Shabbat Waker Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.shabbatwake.ios.pro.lifetime",
+      "referenceName" : "Pro (lifetime)",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
