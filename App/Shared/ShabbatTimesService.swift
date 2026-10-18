@@ -99,7 +99,12 @@ enum ShabbatTimesService {
 
     // MARK: Several weeks ahead
 
-    static func makeWeeksURL(latitude: Double, longitude: Double, timeZoneIdentifier: String, from start: Date, weeks: Int) -> URL? {
+    /// Hebcal can name parashiyot and holidays in these app languages; English and Hebrew need no `lg` (Hebrew comes in its own field).
+    static func hebcalLanguage(for appLanguage: String) -> String? {
+        ["ru", "fr", "es"].contains(appLanguage) ? appLanguage : nil
+    }
+
+    static func makeWeeksURL(latitude: Double, longitude: Double, timeZoneIdentifier: String, from start: Date, weeks: Int, language: String = "en") -> URL? {
         let formatter = dayFormatter(timeZoneIdentifier: timeZoneIdentifier)
         let end = start.addingTimeInterval(Double(weeks) * 7 * 24 * 3600)
         var components = URLComponents(string: "https://www.hebcal.com/hebcal")
@@ -124,6 +129,9 @@ enum ShabbatTimesService {
         ]
         if let minutes = candleLightingMinutes(latitude: latitude, longitude: longitude) {
             items.append(URLQueryItem(name: "b", value: String(minutes)))
+        }
+        if let lg = hebcalLanguage(for: language) {
+            items.append(URLQueryItem(name: "lg", value: lg))
         }
         components?.queryItems = items
         return components?.url
@@ -187,8 +195,8 @@ enum ShabbatTimesService {
         return names.isEmpty ? nil : names.joined(separator: " · ")
     }
 
-    static func fetchWeeks(latitude: Double, longitude: Double, timeZoneIdentifier: String, from start: Date = .now, weeks: Int = 26) async throws -> [ShabbatWeek] {
-        guard let url = makeWeeksURL(latitude: latitude, longitude: longitude, timeZoneIdentifier: timeZoneIdentifier, from: start, weeks: weeks) else {
+    static func fetchWeeks(latitude: Double, longitude: Double, timeZoneIdentifier: String, from start: Date = .now, weeks: Int = 26, language: String = "en") async throws -> [ShabbatWeek] {
+        guard let url = makeWeeksURL(latitude: latitude, longitude: longitude, timeZoneIdentifier: timeZoneIdentifier, from: start, weeks: weeks, language: language) else {
             throw URLError(.badURL)
         }
         var request = URLRequest(url: url)
