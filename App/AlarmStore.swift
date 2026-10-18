@@ -1,26 +1,6 @@
 import Foundation
 import SwiftUI
 
-struct WakeAlarm: Identifiable, Codable, Equatable {
-    var id: UUID = UUID()
-    var title: String
-    var hour: Int
-    var minute: Int
-    var repeatsWeekly: Bool
-    var weekdays: Set<Int>
-    var isEnabled: Bool = true
-    var soundID: String = "classic"
-    var createdAt: Date = .now
-
-    var timeLabel: String {
-        var components = DateComponents()
-        components.hour = hour
-        components.minute = minute
-        let date = Calendar.current.date(from: components) ?? .now
-        return date.formatted(date: .omitted, time: .shortened)
-    }
-}
-
 @MainActor
 final class AlarmStore: ObservableObject {
     @Published private(set) var alarms: [WakeAlarm] = []
@@ -30,7 +10,16 @@ final class AlarmStore: ObservableObject {
 
     private let storageKey = "shabbatWake.localAlarms.v2"
 
-    init() { load() }
+    init() {
+        load()
+        expireFinishedAlarms()
+    }
+
+    /// The enabled alarm that will ring first, with the moment it rings.
+    var nextWake: (alarm: WakeAlarm, date: Date)? {
+        alarms.compactMap { alarm in alarm.nextFireDate().map { (alarm: alarm, date: $0) } }
+            .min { $0.date < $1.date }
+    }
 
     func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic") async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
@@ -45,9 +34,10 @@ final class AlarmStore: ObservableObject {
         do {
             try await NativeAlarmKitService.schedule(alarm)
             systemAlarmIDs.insert(alarm.id)
-            LiveActivityManager.start(for: alarm)
             alarm.isEnabled = true
+            alarm.armedAt = .now
             alarms.append(alarm)
+            LiveActivityManager.start(for: alarm)
             save()
             lastError = nil
             return true
@@ -73,6 +63,7 @@ final class AlarmStore: ObservableObject {
                 } else {
                     try await NativeAlarmKitService.cancel(id: alarmID)
                     systemAlarmIDs.remove(alarmID)
+                    LiveActivityManager.end(alarmID: alarmID)
                 }
                 guard let index = alarms.firstIndex(where: { $0.id == alarmID }) else {
                     // If the local record disappeared while scheduling, clean up any system alarm.
@@ -80,6 +71,10 @@ final class AlarmStore: ObservableObject {
                     return
                 }
                 alarms[index].isEnabled = shouldEnable
+                if shouldEnable {
+                    alarms[index].armedAt = .now
+                    LiveActivityManager.start(for: alarms[index])
+                }
                 save()
                 lastError = nil
             } catch {
@@ -102,6 +97,7 @@ final class AlarmStore: ObservableObject {
                 try await NativeAlarmKitService.cancel(id: alarm.id)
                 systemAlarmIDs.remove(alarm.id)
                 alarms.removeAll { $0.id == alarm.id }
+                LiveActivityManager.end(alarmID: alarm.id)
                 save()
                 lastError = nil
             } catch {
@@ -110,6 +106,8 @@ final class AlarmStore: ObservableObject {
             }
         }
     }
+
+    func clearError() { lastError = nil }
 
     func requestSystemAlarmPermission() async -> Bool {
         do {
@@ -120,6 +118,35 @@ final class AlarmStore: ObservableObject {
             lastError = error.localizedDescription
             return false
         }
+    }
+
+    /// Compares saved alarms with what iOS actually has scheduled. Call whenever the app becomes active.
+    func refreshFromSystem() async {
+        expireFinishedAlarms()
+        guard let scheduled = try? NativeAlarmKitService.scheduledAlarmIDs() else { return }
+        systemAlarmIDs = scheduled
+        guard NativeAlarmKitService.authorizationState() == .authorized else { return }
+        // Weekly alarms that iOS no longer knows about (for example after restoring a backup) are scheduled again.
+        let missing = alarms.filter { $0.isEnabled && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
+        for alarm in missing {
+            do {
+                try await NativeAlarmKitService.schedule(alarm)
+                systemAlarmIDs.insert(alarm.id)
+            } catch {
+                lastError = error.localizedDescription
+            }
+        }
+    }
+
+    /// One-time alarms switch themselves off once they have rung.
+    private func expireFinishedAlarms() {
+        var changed = false
+        for index in alarms.indices where alarms[index].isEnabled && alarms[index].nextFireDate() == nil {
+            alarms[index].isEnabled = false
+            systemAlarmIDs.remove(alarms[index].id)
+            changed = true
+        }
+        if changed { save() } else { WidgetSync.updateAlarms(alarms) }
     }
 
     private func load() {
@@ -136,5 +163,6 @@ final class AlarmStore: ObservableObject {
         } catch {
             lastError = String(localized: "Alarm changes could not be saved.")
         }
+        WidgetSync.updateAlarms(alarms)
     }
 }

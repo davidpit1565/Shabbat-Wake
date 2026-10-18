@@ -55,6 +55,23 @@ enum NativeAlarmKitService {
         }
     }
 
+    enum AuthorizationState { case authorized, denied, notDetermined, unsupported }
+
+    static func authorizationState() -> AuthorizationState {
+        guard #available(iOS 26.1, *) else { return .unsupported }
+        switch AlarmManager.shared.authorizationState {
+        case .authorized: return .authorized
+        case .denied: return .denied
+        default: return .notDetermined
+        }
+    }
+
+    /// IDs of the alarms iOS currently has scheduled for this app, or nil where AlarmKit is unavailable.
+    static func scheduledAlarmIDs() throws -> Set<UUID>? {
+        guard #available(iOS 26.1, *) else { return nil }
+        return Set(try AlarmManager.shared.alarms.map(\.id))
+    }
+
     static func requestAuthorization() async throws -> Bool {
         guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
         let manager = AlarmManager.shared

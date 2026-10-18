@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Shabbat Wake";
+"NSLocationWhenInUseUsageDescription" = "Shabbat Wake uses your location to calculate local Shabbat times. Without access, no times are shown.";
+"NSAlarmKitUsageDescription" = "Shabbat Wake schedules the wake-up alarms you create using Apple system alarm features.";

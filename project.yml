@@ -15,6 +15,9 @@ settings:
     INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
     INFOPLIST_KEY_UILaunchScreen_Generation: YES
     SWIFT_EMIT_LOC_STRINGS: YES
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: 1
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
 targets:
   ShabbatWake:
     type: application
@@ -35,11 +38,15 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
         PRODUCT_NAME: "Shabbat Wake"
         PRODUCT_MODULE_NAME: ShabbatWake
-        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Wake requires your current location to calculate local Shabbat times. No times are calculated if you deny access."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Wake uses your location to calculate local Shabbat times. Without access, no times are shown."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Wake schedules the wake-up alarms you create using Apple system alarm features."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWake.entitlements
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.lifestyle
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
     dependencies:
       - target: ShabbatWakeWidget
         embed: true
@@ -51,13 +58,13 @@ targets:
     platform: iOS
     sources:
       - path: App/Widgets
+      - path: App/Shared
       - path: App/ShabbatWakeLiveActivityAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
         PRODUCT_NAME: "Shabbat Wake Widget"
-        CURRENT_PROJECT_VERSION: 1
-        MARKETING_VERSION: 1.0
+        CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWidget.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Wake"
         INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension

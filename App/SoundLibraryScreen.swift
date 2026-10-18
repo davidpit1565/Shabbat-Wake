@@ -75,11 +75,7 @@ struct SoundLibraryScreen: View {
             } header: {
                 Text("Original tones")
             } footer: {
-                Text("These are generated original tones, not commercial recordings. Preview playback is implemented; system-alarm playback still needs verification on a supported iPhone.")
-            }
-            Section("Important") {
-                Label("Preview works only when the WAV resources are present in the app bundle.", systemImage: "waveform")
-                Label("No copyrighted songs or downloaded third-party tracks are included.", systemImage: "checkmark.shield")
+                Text("These tones were created for Shabbat Wake. Choose one when you create an alarm.")
             }
         }
         .navigationTitle("Sound library")

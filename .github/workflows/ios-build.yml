@@ -37,6 +37,12 @@ jobs:
       - name: Validate widget extension plist and generated sounds
         run: |
           plutil -lint App/Widgets/Info.plist
+          plutil -lint App/PrivacyInfo.xcprivacy App/Widgets/PrivacyInfo.xcprivacy
+          plutil -lint Config/ShabbatWake.entitlements Config/ShabbatWakeWidget.entitlements
+          plutil -lint App/en.lproj/Localizable.strings App/he.lproj/Localizable.strings App/en.lproj/InfoPlist.strings App/he.lproj/InfoPlist.strings
+          plutil -lint App/Widgets/en.lproj/Localizable.strings App/Widgets/he.lproj/Localizable.strings
+          sips -g pixelWidth -g pixelHeight -g hasAlpha App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png | tee /tmp/icon.txt
+          grep -q "pixelWidth: 1024" /tmp/icon.txt && grep -q "pixelHeight: 1024" /tmp/icon.txt && grep -q "hasAlpha: no" /tmp/icon.txt
           test -s App/Resources/GentleChime.wav
           test -s App/Resources/SunriseSequence.wav
           test -s App/Resources/ClassicWake.wav
