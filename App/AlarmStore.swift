@@ -24,7 +24,7 @@ final class AlarmStore: ObservableObject {
     func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic") async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
         var alarm = WakeAlarm(
-            title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? String(localized: "Wake-up") : title,
+            title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppLanguage.text("Wake-up") : title,
             hour: parts.hour ?? 7,
             minute: parts.minute ?? 0,
             repeatsWeekly: repeatsWeekly,
@@ -112,7 +112,7 @@ final class AlarmStore: ObservableObject {
     func requestSystemAlarmPermission() async -> Bool {
         do {
             let allowed = try await NativeAlarmKitService.requestAuthorization()
-            lastError = allowed ? nil : String(localized: "Alarm permission was not granted.")
+            lastError = allowed ? nil : AppLanguage.text("Alarm permission was not granted.")
             return allowed
         } catch {
             lastError = error.localizedDescription
@@ -123,9 +123,12 @@ final class AlarmStore: ObservableObject {
     /// Compares saved alarms with what iOS actually has scheduled. Call whenever the app becomes active.
     func refreshFromSystem() async {
         expireFinishedAlarms()
-        guard let scheduled = try? NativeAlarmKitService.scheduledAlarmIDs() else { return }
+        let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
+            (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
+        }.value
+        guard let scheduled = scheduledOrNil else { return }
         systemAlarmIDs = scheduled
-        guard NativeAlarmKitService.authorizationState() == .authorized else { return }
+        guard state == .authorized else { return }
         // Weekly alarms that iOS no longer knows about (for example after restoring a backup) are scheduled again.
         let missing = alarms.filter { $0.isEnabled && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
         for alarm in missing {
@@ -152,7 +155,7 @@ final class AlarmStore: ObservableObject {
     private func load() {
         guard let data = UserDefaults.standard.data(forKey: storageKey) else { return }
         do { alarms = try JSONDecoder().decode([WakeAlarm].self, from: data) }
-        catch { lastError = String(localized: "Saved alarms could not be read.") }
+        catch { lastError = AppLanguage.text("Saved alarms could not be read.") }
     }
 
     private func save() {
@@ -161,7 +164,7 @@ final class AlarmStore: ObservableObject {
             UserDefaults.standard.set(data, forKey: storageKey)
             lastError = nil
         } catch {
-            lastError = String(localized: "Alarm changes could not be saved.")
+            lastError = AppLanguage.text("Alarm changes could not be saved.")
         }
         WidgetSync.updateAlarms(alarms)
     }

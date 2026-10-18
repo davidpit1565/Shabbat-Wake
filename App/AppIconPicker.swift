@@ -59,11 +59,11 @@ enum AppIconOption: String, CaseIterable, Identifiable {
 struct AppIconPickerScreen: View {
     @State private var selected = AppIconOption.current()
     @State private var errorMessage: String?
-    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 16)]
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 20) {
+            LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(AppIconOption.allCases) { option in
                     Button { choose(option) } label: { cell(option) }
                         .buttonStyle(.plain)
@@ -71,7 +71,7 @@ struct AppIconPickerScreen: View {
                         .accessibilityAddTraits(option == selected ? .isSelected : [])
                 }
             }
-            .padding(20)
+            .padding(16)
             if let errorMessage {
                 Text(errorMessage).font(.footnote).foregroundStyle(.red).padding(.horizontal, 20)
             }
@@ -86,9 +86,9 @@ struct AppIconPickerScreen: View {
             Image(option.previewImage)
                 .resizable()
                 .scaledToFit()
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .strokeBorder(option == selected ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: option == selected ? 3 : 1)
                 )
                 .overlay(alignment: .topTrailing) {
@@ -100,7 +100,7 @@ struct AppIconPickerScreen: View {
                             .padding(6)
                     }
                 }
-            Text(option.title).font(.caption.weight(.medium))
+            Text(option.title).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
         }
     }
 
@@ -112,7 +112,7 @@ struct AppIconPickerScreen: View {
                 try await UIApplication.shared.setAlternateIconName(option.iconName)
                 selected = option
             } catch {
-                errorMessage = String(localized: "The icon could not be changed.")
+                errorMessage = AppLanguage.text("The icon could not be changed.")
             }
         }
     }

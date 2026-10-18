@@ -87,8 +87,8 @@ enum NativeAlarmKitError: LocalizedError {
     case permissionDenied
     var errorDescription: String? {
         switch self {
-        case .unsupported: return String(localized: "System alarms require iOS 26.1 or later.")
-        case .permissionDenied: return String(localized: "Alarm permission was not granted.")
+        case .unsupported: return AppLanguage.text("System alarms require iOS 26.1 or later.")
+        case .permissionDenied: return AppLanguage.text("Alarm permission was not granted.")
         }
     }
 }

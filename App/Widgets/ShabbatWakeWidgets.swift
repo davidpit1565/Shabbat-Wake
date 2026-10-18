@@ -14,6 +14,7 @@ struct ShabbatWakeWidgetEntry: TimelineEntry {
     let havdalah: ShabbatTimeItem?
     let placeName: String?
     let hasLocation: Bool
+    var relevance: TimelineEntryRelevance? = nil
 
     static let placeholder = ShabbatWakeWidgetEntry(
         date: .now,
@@ -76,7 +77,7 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
 
     static func entry(at date: Date, snapshot: WidgetSnapshot, times: [ShabbatTimeItem]) -> ShabbatWakeWidgetEntry {
         let upcoming = times.filter { $0.date > date }
-        return ShabbatWakeWidgetEntry(
+        var entry = ShabbatWakeWidgetEntry(
             date: date,
             nextAlarm: nextAlarm(in: snapshot.alarms, after: date),
             candleLighting: upcoming.first { $0.category == "candles" },
@@ -84,6 +85,11 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             placeName: snapshot.placeName,
             hasLocation: snapshot.latitude != nil
         )
+        // Smart Stack: raise the widget in the hours before candle lighting.
+        if let candle = entry.candleLighting?.date, candle.timeIntervalSince(date) <= 4 * 3600 {
+            entry.relevance = TimelineEntryRelevance(score: 100, duration: max(60, candle.timeIntervalSince(date) + 1800))
+        }
+        return entry
     }
 }
 
@@ -234,6 +240,99 @@ struct ShabbatWakeHomeWidget: Widget {
     }
 }
 
+
+// MARK: - Single-time widgets (candle lighting, Shabbat ends)
+
+private enum SingleTimeKind {
+    case candles, ends
+
+    var title: LocalizedStringKey { self == .candles ? "Candle lighting" : "Shabbat ends" }
+    var symbol: String { self == .candles ? "flame.fill" : "moon.stars.fill" }
+    var tint: Color { self == .candles ? .orange : .indigo }
+    func item(_ entry: ShabbatWakeWidgetEntry) -> ShabbatTimeItem? { self == .candles ? entry.candleLighting : entry.havdalah }
+}
+
+private struct SingleTimeWidgetView: View {
+    let entry: ShabbatWakeWidgetEntry
+    let kind: SingleTimeKind
+    @Environment(\.widgetFamily) private var family
+
+    private var date: Date? { kind.item(entry)?.date }
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            if let date { Label("\(date.dayAndTime)", systemImage: kind.symbol) } else { Label("—", systemImage: kind.symbol) }
+        case .accessoryCircular:
+            ZStack {
+                AccessoryWidgetBackground()
+                VStack(spacing: 0) {
+                    Image(systemName: kind.symbol).font(.caption2)
+                    Text(date?.formatted(.dateTime.hour().minute()) ?? "—")
+                        .font(.caption.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.6)
+                }
+            }
+            .containerBackground(.background, for: .widget)
+        case .accessoryRectangular:
+            VStack(alignment: .leading, spacing: 1) {
+                Label(kind.title, systemImage: kind.symbol).font(.caption.weight(.semibold))
+                Text(date?.timeOnly ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
+                if let date { Text(date.formatted(.dateTime.weekday(.wide))).font(.caption2) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .containerBackground(.background, for: .widget)
+        default:
+            let medium = family == .systemMedium
+            VStack(alignment: .leading, spacing: medium ? 6 : 4) {
+                Spacer(minLength: 0)
+                Label(kind.title, systemImage: kind.symbol)
+                    .font(.system(size: medium ? 18 : 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(date?.timeOnly ?? "--:--")
+                    .font(.system(size: medium ? 64 : 42, weight: .heavy, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1).minimumScaleFactor(0.5)
+                if let date {
+                    Text(date.formatted(.dateTime.weekday(.wide)))
+                        .font(.system(size: medium ? 24 : 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(kind.tint)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                } else {
+                    Text(entry.hasLocation ? "Times unavailable" : "Open Shabbat Waker to set your location")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .containerBackground(.background, for: .widget)
+        }
+    }
+}
+
+struct CandleLightingWidget: Widget {
+    let kind = "ShabbatWakeCandleWidget"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: ShabbatWakeWidgetProvider()) { entry in
+            SingleTimeWidgetView(entry: entry, kind: .candles)
+        }
+        .configurationDisplayName("Candle lighting")
+        .description("The next candle-lighting time for your location.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline])
+    }
+}
+
+struct ShabbatEndsWidget: Widget {
+    let kind = "ShabbatWakeEndsWidget"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: ShabbatWakeWidgetProvider()) { entry in
+            SingleTimeWidgetView(entry: entry, kind: .ends)
+        }
+        .configurationDisplayName("Shabbat ends")
+        .description("When Shabbat ends at your location.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline])
+    }
+}
+
 struct ShabbatWakeAlarmLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: ShabbatWakeActivityAttributes.self) { context in
@@ -277,6 +376,8 @@ struct ShabbatWakeAlarmLiveActivity: Widget {
 struct ShabbatWakeWidgetBundle: WidgetBundle {
     var body: some Widget {
         ShabbatWakeHomeWidget()
+        CandleLightingWidget()
+        ShabbatEndsWidget()
         ShabbatWakeAlarmLiveActivity()
     }
 }
