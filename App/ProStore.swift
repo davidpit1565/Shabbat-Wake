@@ -43,7 +43,7 @@ final class ProStore: ObservableObject {
 
     init() {
         subscribed = UserDefaults.standard.bool(forKey: Self.subscribedKey)
-        hasPro = Self.isEnforced ? subscribed : !previewFree
+        hasPro = Self.isEnforced ? subscribed : !UserDefaults.standard.bool(forKey: Self.previewFreeKey)
         WidgetSync.updatePro(hasPro)
     }
 
