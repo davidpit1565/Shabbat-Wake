@@ -1,12 +1,14 @@
 import CoreLocation
 import SwiftUI
 import UIKit
+import UserNotifications
 
 /// Tracks the two permissions the app needs and asks for them in one place when the app opens.
 @MainActor
 final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
     @Published private(set) var alarm: NativeAlarmKitService.AuthorizationState
     @Published private(set) var location: CLAuthorizationStatus
+    @Published private(set) var notifications: UNAuthorizationStatus = .notDetermined
     @Published var isPresented = false
     private let manager = CLLocationManager()
     private var hasChecked = false
@@ -21,10 +23,11 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
 
     var alarmAllowed: Bool { alarm == .authorized }
     var locationAllowed: Bool { location == .authorizedAlways || location == .authorizedWhenInUse }
-    var allAllowed: Bool { alarmAllowed && locationAllowed }
+    var notificationsAllowed: Bool { notifications == .authorized || notifications == .provisional || notifications == .ephemeral }
+    var allAllowed: Bool { alarmAllowed && locationAllowed && notificationsAllowed }
 
     /// True when at least one permission can still be granted by asking (not yet answered).
-    var canAsk: Bool { alarm == .notDetermined || location == .notDetermined }
+    var canAsk: Bool { alarm == .notDetermined || location == .notDetermined || notifications == .notDetermined }
 
     func refresh() {
         location = manager.authorizationStatus
@@ -34,6 +37,7 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     /// AlarmKit is asked off the main thread so a slow answer can never freeze the screen.
     private func refreshAlarm() async {
         alarm = await Task.detached(priority: .userInitiated) { NativeAlarmKitService.authorizationState() }.value
+        notifications = await ReminderScheduler.authorizationStatus()
     }
 
     /// Called once when the app opens: shows the sheet if anything is missing.
@@ -48,6 +52,10 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     func allow() async {
         if alarm == .notDetermined {
             _ = try? await NativeAlarmKitService.requestAuthorization()
+            await refreshAlarm()
+        }
+        if notifications == .notDetermined {
+            _ = await ReminderScheduler.requestAuthorization()
             await refreshAlarm()
         }
         if location == .notDetermined {
@@ -83,6 +91,7 @@ struct PermissionsSheet: View {
             VStack(spacing: 14) {
                 row("alarm.fill", "Alarms", "So your wake-up alarms can ring.", allowed: gate.alarmAllowed)
                 row("location.fill", "Location", "To calculate Shabbat times for where you are.", allowed: gate.locationAllowed)
+                row("bell.fill", "Notifications", "For Shabbat alarms and reminders before candle lighting.", allowed: gate.notificationsAllowed)
             }
             .padding(.horizontal, 24)
             Spacer(minLength: 0)

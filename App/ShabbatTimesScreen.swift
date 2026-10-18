@@ -147,7 +147,8 @@ struct ShabbatTimesScreen: View {
                         Section {
                             weekRow(first, prominent: true)
                         } header: {
-                            Text(model.placeName.map { "\(AppLanguage.text("This Shabbat")) · \($0)" } ?? AppLanguage.text("This Shabbat"))
+                            let heading = AppLanguage.text(first.parashaEnglish == nil && first.holidayEnglish != nil ? "Next holiday" : "This Shabbat")
+                            Text(model.placeName.map { "\(heading) · \($0)" } ?? heading)
                         }
                     }
                     if model.weeks.count > 1 {
@@ -186,10 +187,12 @@ struct ShabbatTimesScreen: View {
     }
 
     private func weekRow(_ week: ShabbatWeek, prominent: Bool) -> some View {
-        let portion = isHebrew ? (week.parashaHebrew ?? week.parashaEnglish) : (week.parashaEnglish ?? week.parashaHebrew)
+        let parasha = isHebrew ? (week.parashaHebrew ?? week.parashaEnglish) : (week.parashaEnglish ?? week.parashaHebrew)
+        let holiday = isHebrew ? (week.holidayHebrew ?? week.holidayEnglish) : (week.holidayEnglish ?? week.holidayHebrew)
+        let portion = [parasha, holiday].compactMap { $0 }.joined(separator: " · ")
         return VStack(alignment: .leading, spacing: prominent ? 12 : 8) {
             VStack(alignment: .leading, spacing: 2) {
-                if let portion {
+                if !portion.isEmpty {
                     Text(portion).font(prominent ? .title3.weight(.semibold) : .headline)
                 }
                 Text(week.shabbatDay.formatted(in: locale, date: .complete))

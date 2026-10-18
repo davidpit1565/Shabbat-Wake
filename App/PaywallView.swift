@@ -5,6 +5,7 @@ enum PaywallReason {
     case moreReminders
     case reminderTime
     case icons
+    case weeksAhead
     case general
 
     var headline: LocalizedStringKey {
@@ -12,6 +13,7 @@ enum PaywallReason {
         case .moreReminders: "More reminders are part of Pro"
         case .reminderTime: "Choosing the time is part of Pro"
         case .icons: "Extra icons are part of Pro"
+        case .weeksAhead: "Limiting an alarm to some weeks is part of Pro"
         case .general: "Shabbat Waker Pro"
         }
     }
@@ -25,6 +27,7 @@ struct PaywallView: View {
     private let benefits: [(symbol: String, title: LocalizedStringKey, detail: LocalizedStringKey)] = [
         ("bell.badge", "Several reminders", "Remind yourself more than once before candle lighting."),
         ("clock", "Your own times", "Choose how many minutes before, for each reminder."),
+        ("calendar.badge.clock", "Alarms for some weeks", "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own."),
         ("app.badge", "All app icons", "Pick any of the extra icons.")
     ]
 

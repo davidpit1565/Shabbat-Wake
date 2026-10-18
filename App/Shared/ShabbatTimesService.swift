@@ -12,6 +12,9 @@ struct ShabbatWeek: Identifiable, Equatable, Codable {
     let id: String
     let parashaEnglish: String?
     let parashaHebrew: String?
+    /// Set when the days around this candle lighting include a Yom Tov, for example "Rosh Hashana".
+    var holidayEnglish: String? = nil
+    var holidayHebrew: String? = nil
     let candleLighting: Date?
     let havdalah: Date?
     /// The Shabbat day itself (midnight in the location's time zone).
@@ -28,6 +31,7 @@ enum ShabbatTimesService {
         let date: String
         let category: String?
         let hebrew: String?
+        let yomtov: Bool?
     }
 
     /// Communities with a longer candle-lighting custom (same table the Bet-El app uses: Jerusalem 40, Haifa 30, Zichron Yaakov 30).
@@ -104,7 +108,7 @@ enum ShabbatTimesService {
             URLQueryItem(name: "cfg", value: "json"),
             URLQueryItem(name: "s", value: "on"),
             URLQueryItem(name: "c", value: "on"),
-            URLQueryItem(name: "maj", value: "off"),
+            URLQueryItem(name: "maj", value: "on"),
             URLQueryItem(name: "min", value: "off"),
             URLQueryItem(name: "nx", value: "off"),
             URLQueryItem(name: "mf", value: "off"),
@@ -135,22 +139,52 @@ enum ShabbatTimesService {
         let candles = decoded.items.filter { $0.category == "candles" }.compactMap { item in iso.date(from: item.date).map { ($0, item) } }.sorted { $0.0 < $1.0 }
         let havdalot = decoded.items.filter { $0.category == "havdalah" }.compactMap { item in iso.date(from: item.date) }.sorted()
         let portions = decoded.items.filter { $0.category == "parashat" }.compactMap { item in day.date(from: item.date).map { ($0, item) } }
+        let yomTovDays = decoded.items.filter { $0.category == "holiday" && $0.yomtov == true }.compactMap { item in day.date(from: item.date).map { ($0, item) } }
 
-        return candles.map { candleDate, _ in
-            let candleDay = calendar.startOfDay(for: candleDate)
-            let window = candleDay...candleDay.addingTimeInterval(3 * 24 * 3600)
+        // Candles lit on consecutive evenings with no havdalah in between (Yom Tov, then Shabbat) are one stretch.
+        var blocks: [[Date]] = []
+        for (candleDate, _) in candles {
+            if let last = blocks.last?.last, !havdalot.contains(where: { $0 > last && $0 < candleDate }) {
+                blocks[blocks.count - 1].append(candleDate)
+            } else {
+                blocks.append([candleDate])
+            }
+        }
+
+        return blocks.compactMap { block -> ShabbatWeek? in
+            guard let candleDate = block.first, let lastCandle = block.last else { return nil }
+            let firstDay = calendar.startOfDay(for: candleDate)
+            let havdalah = havdalot.first { $0 > lastCandle && $0.timeIntervalSince(lastCandle) < 3 * 24 * 3600 }
+            let endDay = havdalah.map { calendar.startOfDay(for: $0) } ?? calendar.startOfDay(for: lastCandle).addingTimeInterval(24 * 3600)
+            let window = firstDay...max(firstDay.addingTimeInterval(3 * 24 * 3600), endDay)
             let portion = portions.first { window.contains($0.0) }
-            let havdalah = havdalot.first { $0 > candleDate && $0.timeIntervalSince(candleDate) < 3 * 24 * 3600 }
-            let shabbat = portion?.0 ?? havdalah.map { calendar.startOfDay(for: $0) } ?? candleDay
+            let holidays = yomTovDays.filter { (firstDay...endDay).contains($0.0) }
+            let shabbat = portion?.0 ?? havdalah.map { calendar.startOfDay(for: $0) } ?? firstDay
             return ShabbatWeek(
                 id: day.string(from: shabbat),
                 parashaEnglish: portion?.1.title,
                 parashaHebrew: portion?.1.hebrew,
+                holidayEnglish: holidayName(holidays.map { $0.1.title }, hebrew: false),
+                holidayHebrew: holidayName(holidays.map { $0.1.hebrew ?? $0.1.title }, hebrew: true),
                 candleLighting: candleDate,
                 havdalah: havdalah,
                 shabbatDay: shabbat
             )
         }
+    }
+
+    /// "Rosh Hashana 5787" and "Rosh Hashana II" both become "Rosh Hashana"; several days of one holiday are listed once.
+    static func holidayName(_ titles: [String], hebrew: Bool) -> String? {
+        var names: [String] = []
+        for title in titles {
+            var name = title
+            name = name.replacingOccurrences(of: #"\s+\d{4}$"#, with: "", options: .regularExpression)
+            name = name.replacingOccurrences(of: hebrew ? #"\s+[א-ת]׳$"# : #"\s+[IVX]+$"#, with: "", options: .regularExpression)
+            name = name.replacingOccurrences(of: #"\s*\(.*\)$"#, with: "", options: .regularExpression)
+            name = name.trimmingCharacters(in: .whitespaces)
+            if !name.isEmpty && !names.contains(name) { names.append(name) }
+        }
+        return names.isEmpty ? nil : names.joined(separator: " · ")
     }
 
     static func fetchWeeks(latitude: Double, longitude: Double, timeZoneIdentifier: String, from start: Date = .now, weeks: Int = 26) async throws -> [ShabbatWeek] {

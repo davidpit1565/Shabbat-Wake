@@ -84,3 +84,31 @@
 "Pro is unlocked" = "Pro is unlocked";
 "See what Pro includes" = "See what Pro includes";
 "Show the locked state (testing)" = "Show the locked state (testing)";
+
+"Notifications" = "Notifications";
+"For Shabbat alarms and reminders before candle lighting." = "For Shabbat alarms and reminders before candle lighting.";
+"Shabbat alarm" = "Shabbat alarm";
+"Notifications are turned off for this app, so a Shabbat alarm cannot ring." = "Notifications are turned off for this app, so a Shabbat alarm cannot ring.";
+"There are too many Shabbat alarm rings scheduled. Lower the number of rings or alarms." = "There are too many Shabbat alarm rings scheduled. Lower the number of rings or alarms.";
+"This alarm has no upcoming time to ring." = "This alarm has no upcoming time to ring.";
+"Until I turn it off" = "Until I turn it off";
+"For %d weeks" = "For %d weeks";
+"Repeat for" = "Repeat for";
+"Ring style" = "Ring style";
+"Stops by itself" = "Stops by itself";
+"Until I stop it" = "Until I stop it";
+"Rings: %d" = "Rings: %d";
+"Minutes between rings" = "Minutes between rings";
+"Seconds per ring" = "Seconds per ring";
+"Too many rings for these days. Lower the number of rings or days." = "Too many rings for these days. Lower the number of rings or days.";
+"How it rings" = "How it rings";
+"Rings as a notification and stops by itself, even if nobody touches the phone. It follows the silent switch, so keep the phone off silent." = "Rings as a notification and stops by itself, even if nobody touches the phone. It follows the silent switch, so keep the phone off silent.";
+"Apple's system alarm. It rings through silent mode and keeps ringing until it is stopped." = "Apple's system alarm. It rings through silent mode and keeps ringing until it is stopped.";
+"Rings once for %d seconds, then stops." = "Rings once for %d seconds, then stops.";
+"Rings %d times, every %d minutes, %d seconds each. Then it stops." = "Rings %d times, every %d minutes, %d seconds each. Then it stops.";
+"Stops by itself · %d × %d s" = "Stops by itself · %d × %d s";
+"Limiting an alarm to some weeks is part of Pro" = "Limiting an alarm to some weeks is part of Pro";
+"Alarms for some weeks" = "Alarms for some weeks";
+"Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own." = "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own.";
+
+"Next holiday" = "Next holiday";
