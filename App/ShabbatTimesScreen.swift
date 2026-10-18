@@ -11,6 +11,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     private let manager = CLLocationManager()
+    private var activeFetchID = UUID()
 
     override init() {
         authorization = manager.authorizationStatus
@@ -59,12 +60,16 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     func refresh() { requestLocation() }
 
     private func fetchTimes(for location: CLLocation) async {
+        let fetchID = UUID()
+        activeFetchID = fetchID
         isLoading = true
         errorMessage = nil
         times = []
+        placeName = nil
         do {
             let geocoder = CLGeocoder()
             let placemarks = try? await geocoder.reverseGeocodeLocation(location)
+            guard activeFetchID == fetchID else { return }
             placeName = placemarks?.first.map { mark in
                 [mark.locality, mark.administrativeArea, mark.isoCountryCode]
                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
@@ -74,8 +79,10 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
             let (data, response) = try await URLSession.shared.data(for: request)
+            guard activeFetchID == fetchID else { return }
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
             let decoded = try JSONDecoder().decode(HebcalResponse.self, from: data)
+            guard activeFetchID == fetchID else { return }
             times = decoded.items.compactMap { item in
                 guard let date = ISO8601DateFormatter().date(from: item.date) else { return nil }
                 guard ["candles", "havdalah"].contains(item.category ?? "") else { return nil }
@@ -85,9 +92,11 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
                 errorMessage = String(localized: "No Shabbat times were returned for this location and date range.")
             }
         } catch {
+            guard activeFetchID == fetchID else { return }
             errorMessage = String(localized: "Shabbat times could not be loaded. Check your connection and try again.")
             times = []
         }
+        guard activeFetchID == fetchID else { return }
         isLoading = false
     }
 
