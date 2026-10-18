@@ -1,15 +1,6 @@
 import SwiftUI
 import UIKit
 
-/// Who may use the extra icons. Everything is unlocked until the Pro purchase exists;
-/// replace `isUnlocked` with the StoreKit entitlement check then.
-enum ProAccess {
-    static func isUnlocked(_ option: AppIconOption) -> Bool {
-        !option.requiresPro || hasPro
-    }
-    private static var hasPro: Bool { true }
-}
-
 enum AppIconOption: String, CaseIterable, Identifiable {
     case standard, classic, minimal, sunrise, timeLight, glass, premiumTech
     var id: String { rawValue }
@@ -57,8 +48,10 @@ enum AppIconOption: String, CaseIterable, Identifiable {
 }
 
 struct AppIconPickerScreen: View {
+    @EnvironmentObject private var pro: ProStore
     @State private var selected = AppIconOption.current()
     @State private var errorMessage: String?
+    @State private var showPaywall = false
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
 
     var body: some View {
@@ -78,10 +71,11 @@ struct AppIconPickerScreen: View {
         }
         .navigationTitle("App icon")
         .onAppear { selected = AppIconOption.current() }
+        .sheet(isPresented: $showPaywall) { PaywallView(reason: .icons) }
     }
 
     private func cell(_ option: AppIconOption) -> some View {
-        let unlocked = ProAccess.isUnlocked(option)
+        let unlocked = !option.requiresPro || pro.hasPro
         return VStack(spacing: 8) {
             Image(option.previewImage)
                 .resizable()
@@ -105,7 +99,7 @@ struct AppIconPickerScreen: View {
     }
 
     private func choose(_ option: AppIconOption) {
-        guard ProAccess.isUnlocked(option) else { return }
+        guard !option.requiresPro || pro.hasPro else { showPaywall = true; return }
         errorMessage = nil
         Task {
             do {

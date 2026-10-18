@@ -57,6 +57,7 @@ targets:
     scheme:
       testTargets:
         - ShabbatWakeTests
+      storeKitConfiguration: Config/Pro.storekit
   ShabbatWakeWidget:
     type: app-extension
     platform: iOS

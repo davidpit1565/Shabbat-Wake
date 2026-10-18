@@ -161,4 +161,34 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertTrue(AppLanguage.isRightToLeft("he"))
         XCTAssertFalse(AppLanguage.isRightToLeft("en"))
     }
+
+    func testFreeUsersGetOneReminderAndProGetsSeveral() {
+        XCTAssertTrue(ProPolicy.canAddReminder(currentCount: 0, hasPro: false))
+        XCTAssertFalse(ProPolicy.canAddReminder(currentCount: 1, hasPro: false))
+        XCTAssertTrue(ProPolicy.canAddReminder(currentCount: 1, hasPro: true))
+        XCTAssertFalse(ProPolicy.canAddReminder(currentCount: ProPolicy.maxReminders, hasPro: true))
+        XCTAssertFalse(ProPolicy.canChooseReminderTime(hasPro: false))
+        XCTAssertTrue(ProPolicy.reminderChoices.contains(ProPolicy.defaultReminderMinutes))
+    }
+
+    func testReminderPlanSkipsThePastAndIsSortedAndCapped() {
+        let reminders = [ShabbatReminder(minutesBefore: 30), ShabbatReminder(minutesBefore: 60)]
+        let past = date(16, 17)       // Friday already gone
+        let nextFriday = date(23, 17)
+        let following = date(30, 17)
+        let now = date(20, 9)
+        let plan = ReminderPlanner.plan(reminders: reminders, candleTimes: [past, nextFriday, following], now: now)
+        XCTAssertEqual(plan.count, 4)
+        XCTAssertEqual(plan.map(\.fireDate), plan.map(\.fireDate).sorted())
+        XCTAssertEqual(plan.first?.fireDate, nextFriday.addingTimeInterval(-3600))
+        XCTAssertEqual(Set(plan.map(\.id)).count, 4)
+        XCTAssertEqual(ReminderPlanner.plan(reminders: reminders, candleTimes: [nextFriday, following], now: now, limit: 3).count, 3)
+        XCTAssertTrue(ReminderPlanner.plan(reminders: [], candleTimes: [nextFriday], now: now).isEmpty)
+    }
+
+    func testReminderFiringExactlyNowIsSkipped() {
+        let now = date(20, 9)
+        let reminders = [ShabbatReminder(minutesBefore: 30)]
+        XCTAssertTrue(ReminderPlanner.plan(reminders: reminders, candleTimes: [now.addingTimeInterval(30 * 60)], now: now).isEmpty)
+    }
 }

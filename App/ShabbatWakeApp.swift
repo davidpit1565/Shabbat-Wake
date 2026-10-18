@@ -56,6 +56,8 @@ struct RootView: View {
     @State private var showAddAlarm = false
     @StateObject private var alarmStore = AlarmStore()
     @StateObject private var permissions = PermissionGate()
+    @StateObject private var pro = ProStore()
+    @StateObject private var reminders = ReminderStore()
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     @Environment(\.scenePhase) private var scenePhase
 
@@ -74,11 +76,12 @@ struct RootView: View {
             ShabbatTimesScreen()
                 .tabItem { Label(MainTab.times.title, systemImage: MainTab.times.symbol) }
                 .tag(MainTab.times)
-            SettingsScreen()
+            SettingsScreen(reminders: reminders)
                 .tabItem { Label(MainTab.settings.title, systemImage: MainTab.settings.symbol) }
                 .tag(MainTab.settings)
         }
         .tint(WakePalette.blue)
+        .environmentObject(pro)
         .environment(\.locale, Locale(identifier: languageCode))
         .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
         .id(languageCode)
@@ -87,6 +90,12 @@ struct RootView: View {
         .task {
             await permissions.checkOnLaunch()
             await alarmStore.refreshFromSystem()
+            await pro.start()
+            await TimesRefresher.refreshIfNeeded()
+            await reminders.reschedule()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .shabbatTimesUpdated)) { _ in
+            Task { await reminders.reschedule() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -227,6 +236,9 @@ private struct PrivacyScreen: View {
 }
 
 private struct SettingsScreen: View {
+    @ObservedObject var reminders: ReminderStore
+    @EnvironmentObject private var pro: ProStore
+    @State private var showPaywall = false
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     private var versionText: String {
@@ -238,6 +250,26 @@ private struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Shabbat Waker Pro") {
+                    if ProStore.isEnforced && pro.hasPro {
+                        Label("Pro is unlocked", systemImage: "checkmark.seal.fill").foregroundStyle(Color.green)
+                    } else {
+                        Button { showPaywall = true } label: { Label("See what Pro includes", systemImage: "star.circle.fill") }
+                    }
+                    if ProStore.isEnforced {
+                        Button { Task { await pro.restore() } } label: { Label("Restore purchases", systemImage: "arrow.clockwise") }
+                    }
+#if DEBUG
+                    Toggle("Show the locked state (testing)", isOn: $pro.debugLocked)
+#endif
+                }
+                Section("Reminders") {
+                    NavigationLink {
+                        RemindersScreen(store: reminders)
+                    } label: {
+                        Label("Before candle lighting", systemImage: "bell")
+                    }
+                }
                 Section("Display") {
                     Picker("Display mode", selection: $appearanceMode) {
                         Text("System").tag("system")
@@ -282,6 +314,7 @@ private struct SettingsScreen: View {
                 }
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $showPaywall) { PaywallView(reason: .general) }
         }
     }
 }
