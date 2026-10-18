@@ -303,4 +303,25 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertEqual(ShabbatTimesService.holidayName(["Sukkot I", "Sukkot II"], hebrew: false), "Sukkot")
         XCTAssertEqual(ShabbatTimesService.holidayName(["Pesach I", "Shavuot II"], hebrew: false), "Pesach · Shavuot")
     }
+
+    func testHebrewNumeralsUseLettersWithGeresh() {
+        XCTAssertEqual(HebrewDateFormat.numeral(7), "ז׳")
+        XCTAssertEqual(HebrewDateFormat.numeral(15), "ט״ו")
+        XCTAssertEqual(HebrewDateFormat.numeral(16), "ט״ז")
+        XCTAssertEqual(HebrewDateFormat.numeral(29), "כ״ט")
+        XCTAssertEqual(HebrewDateFormat.numeral(30), "ל׳")
+        XCTAssertEqual(HebrewDateFormat.numeral(787), "תשפ״ז")
+    }
+
+    func testHebrewDateInHebrewIsLettersAndEnglishKeepsDigits() {
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = TimeZone.current
+        let day = gregorian.date(from: DateComponents(year: 2026, month: 10, day: 18, hour: 12))!   // 7 Cheshvan 5787
+        let hebrew = day.hebrewDateString(in: Locale(identifier: "he"))
+        XCTAssertTrue(hebrew.hasPrefix("ז׳ "), hebrew)
+        XCTAssertTrue(hebrew.hasSuffix("תשפ״ז"), hebrew)
+        let english = day.hebrewDateString(in: Locale(identifier: "en"))
+        XCTAssertTrue(english.contains("5787"), english)
+        XCTAssertTrue(english.contains("Cheshvan"), english)
+    }
 }

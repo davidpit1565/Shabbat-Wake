@@ -22,7 +22,7 @@ struct RemindersScreen: View {
                         HStack {
                             Text(label(reminder.minutesBefore))
                             Spacer()
-                            if !ProPolicy.canChooseReminderTime(hasPro: pro.hasPro) { ProBadge() }
+                            ProBadge()
                         }
                         .foregroundStyle(.primary)
                     }
@@ -32,7 +32,13 @@ struct RemindersScreen: View {
                         }
                     }
                 }
-                Button { addTapped() } label: { Label("Add a reminder", systemImage: "plus") }
+                Button { addTapped() } label: {
+                    HStack {
+                        Label("Add a reminder", systemImage: "plus")
+                        Spacer()
+                        if store.reminders.count >= ProPolicy.freeReminderLimit { ProBadge() }
+                    }
+                }
             } header: {
                 Text("Before candle lighting")
             } footer: {

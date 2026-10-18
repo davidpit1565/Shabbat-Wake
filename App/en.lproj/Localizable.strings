@@ -115,3 +115,15 @@
 
 "Lock Screen widgets" = "Lock Screen widgets";
 "Candle lighting, Shabbat ends and your next alarm on the Lock Screen." = "Candle lighting, Shabbat ends and your next alarm on the Lock Screen.";
+
+"Your name" = "Your name";
+"Your email (optional, so we can reply)" = "Your email (optional, so we can reply)";
+"Title" = "Title";
+"Could not send right now. Check your connection and try again." = "Could not send right now. Check your connection and try again.";
+"Send by email instead" = "Send by email instead";
+"Thank you! Your feedback was sent." = "Thank you! Your feedback was sent.";
+"Buy · %@" = "Buy · %@";
+"Feedback" = "Feedback";
+"Credits" = "Credits";
+"When you send feedback, the name, email and message you type are sent to the developer. Nothing else is sent." = "When you send feedback, the name, email and message you type are sent to the developer. Nothing else is sent.";
+"Shabbat times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Customs differ between communities, so confirm with your rabbi or local calendar." = "Shabbat times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Customs differ between communities, so confirm with your rabbi or local calendar.";

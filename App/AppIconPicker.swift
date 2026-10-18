@@ -96,6 +96,7 @@ struct AppIconPickerScreen: View {
                     }
                 }
             Text(option.title).font(.caption2.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+            if option.requiresPro { ProBadge() }
         }
     }
 

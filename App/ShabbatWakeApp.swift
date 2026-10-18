@@ -58,6 +58,7 @@ struct RootView: View {
     @StateObject private var permissions = PermissionGate()
     @StateObject private var pro = ProStore()
     @StateObject private var reminders = ReminderStore()
+    @State private var browserLink: InAppLink?
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     @Environment(\.scenePhase) private var scenePhase
 
@@ -81,12 +82,20 @@ struct RootView: View {
                 .tag(MainTab.settings)
         }
         .tint(WakePalette.blue)
-        .environmentObject(pro)
-        .environment(\.locale, Locale(identifier: languageCode))
-        .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
         .id(languageCode)
         .sheet(isPresented: $showAddAlarm) { AlarmEditorSheet(store: alarmStore, editing: nil) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
+        .sheet(item: $browserLink) { InAppBrowser(url: $0.url).ignoresSafeArea() }
+        // Applied after the sheets so the sheets receive them too. A sheet only inherits what is set outside it.
+        .environmentObject(pro)
+        .environment(\.locale, Locale(identifier: languageCode))
+        .environment(\.layoutDirection, AppLanguage.isRightToLeft(languageCode) ? .rightToLeft : .leftToRight)
+        .environment(\.openURL, OpenURLAction { url in
+            // Web links open inside the app; anything else (mail, settings) goes to the system.
+            guard url.scheme == "https" || url.scheme == "http" else { return .systemAction }
+            browserLink = InAppLink(url: url)
+            return .handled
+        })
         .task {
             await permissions.checkOnLaunch()
             await alarmStore.refreshFromSystem()
@@ -128,22 +137,19 @@ struct HomeDashboard: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(Date.now.formatted(in: locale, date: .complete))
-                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-                        Text(Date.now.hebrewDateString(in: locale))
-                            .font(.subheadline).foregroundStyle(.secondary)
                         Text("Ready for Shabbat.")
                             .font(.system(.largeTitle, design: .rounded, weight: .semibold))
-                            .padding(.top, 4)
+                        Text(Date.now.formatted(in: locale, date: .complete))
+                            .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                            .padding(.top, 2)
+                        Text(Date.now.hebrewDateString(in: locale))
+                            .font(.subheadline).foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     ZStack {
-                        Circle().stroke(WakePalette.silver.opacity(0.18), lineWidth: 1)
-                            .frame(width: 240, height: 240)
-                        Circle()
-                            .stroke(AngularGradient(colors: [WakePalette.cyan, WakePalette.blue, WakePalette.cyan], center: .center), style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                            .frame(width: 222, height: 222)
+                        LivingRing(primary: WakePalette.cyan, secondary: WakePalette.blue)
+                            .frame(width: 252, height: 252)
                         VStack(spacing: 7) {
                             Text(nextAlarmTime)
                                 .font(.system(size: 47, weight: .light, design: .rounded))
@@ -163,6 +169,7 @@ struct HomeDashboard: View {
                             }
                             .font(.caption2).foregroundStyle(.secondary)
                         }
+                        .frame(width: 170)
                     }
                     .frame(height: 260)
                     .accessibilityElement(children: .combine)
@@ -227,6 +234,12 @@ private struct PrivacyScreen: View {
         List {
             Section {
                 Text("Your alarms, sounds and preferences are stored on this device only. Shabbat Waker has no account, no analytics and no advertising.")
+            }
+            Section("Feedback") {
+                Text("When you send feedback, the name, email and message you type are sent to the developer. Nothing else is sent.")
+            }
+            Section("Credits") {
+                Text("Shabbat times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Customs differ between communities, so confirm with your rabbi or local calendar.")
             }
             Section("Location") {
                 Text("If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Waker on any server.")
@@ -311,7 +324,6 @@ private struct SettingsScreen: View {
                     if let url = AppLinks.support {
                         Link("Support", destination: url)
                     }
-                    Link("Shabbat times by Hebcal.com (CC BY 4.0)", destination: URL(string: "https://www.hebcal.com")!)
                     LabeledContent("Version", value: versionText)
                 }
             }

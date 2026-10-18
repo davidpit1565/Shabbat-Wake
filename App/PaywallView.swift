@@ -74,7 +74,20 @@ struct PaywallView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if ProStore.isEnforced && !pro.hasPro {
+                        Button {
+                            Task { await pro.purchase() }
+                        } label: {
+                            Text(pro.lifetimeProduct.map { String(format: AppLanguage.text("Buy · %@"), $0.displayPrice) } ?? AppLanguage.text("Unlock Pro"))
+                                .font(.headline)
+                        }
+                        .disabled(pro.isPurchasing || pro.lifetimeProduct == nil)
+                    }
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .alert("Shabbat Waker Pro", isPresented: Binding(get: { pro.message != nil }, set: { if !$0 { pro.message = nil } })) {
                 Button("OK", role: .cancel) { }
@@ -92,10 +105,6 @@ struct PaywallView: View {
             if !ProStore.isEnforced {
                 Label("Preview: everything is unlocked for now.", systemImage: "lock.open")
                     .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-                Button { dismiss() } label: {
-                    Text("Close").font(.headline).frame(maxWidth: .infinity, minHeight: 28)
-                }
-                .buttonStyle(.borderedProminent).controlSize(.large)
             } else if pro.hasPro {
                 Label("You have Pro. Thank you!", systemImage: "checkmark.seal.fill")
                     .font(.headline).foregroundStyle(Color.green)
