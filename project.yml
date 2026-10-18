@@ -39,6 +39,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
         PRODUCT_NAME: "Shabbat Wake"
         PRODUCT_MODULE_NAME: ShabbatWake
+        TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Waker uses your location to calculate local Shabbat times. Without access, no times are shown."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Waker schedules the wake-up alarms you create using Apple system alarm features."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
@@ -48,6 +49,7 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWake.entitlements
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.lifestyle
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
     dependencies:
       - target: ShabbatWakeWidget
@@ -66,6 +68,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
         PRODUCT_NAME: "Shabbat Wake Widget"
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWidget.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
@@ -84,6 +87,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.tests
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Shabbat Wake.app/Shabbat Wake"
         BUNDLE_LOADER: "$(TEST_HOST)"

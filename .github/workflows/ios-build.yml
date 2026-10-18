@@ -77,3 +77,10 @@ jobs:
           find ~/Library/Developer/Xcode/DerivedData -name "*.wav" -not -path "*/Intermediates*" | head -20
           APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
           echo "APP=$APP"; ls -la "$APP" | head -40
+
+      - name: Print built Info.plist files
+        if: always()
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
+          echo "=== APP"; plutil -p "$APP/Info.plist"
+          for X in "$APP"/PlugIns/*.appex; do echo "=== $X"; plutil -p "$X/Info.plist"; done
