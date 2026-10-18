@@ -62,7 +62,7 @@ struct WatchHome: View {
         .environment(\.locale, locale)
         .environment(\.layoutDirection, model.snapshot.languageCode == "he" ? .rightToLeft : .leftToRight)
         .containerBackground(
-            LinearGradient(colors: [Color(red: 0.04, green: 0.07, blue: 0.16), Color(red: 0.07, green: 0.19, blue: 0.43)], startPoint: .top, endPoint: .bottom).gradient,
+            LinearGradient(colors: [Color(red: 0.04, green: 0.07, blue: 0.16), Color(red: 0.07, green: 0.19, blue: 0.43)], startPoint: .top, endPoint: .bottom),
             for: .tabView
         )
     }
