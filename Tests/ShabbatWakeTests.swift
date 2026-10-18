@@ -277,4 +277,30 @@ final class ShabbatWakeTests: XCTestCase {
             }
         }
     }
+
+    func testYomTovChainBecomesOneStretchWithTheHolidayName() throws {
+        let json = """
+        {"items":[
+          {"title":"Candle lighting: 18:30","date":"2026-09-11T18:30:00+03:00","category":"candles","hebrew":"הדלקת נרות"},
+          {"title":"Rosh Hashana 5787","date":"2026-09-12","category":"holiday","yomtov":true,"hebrew":"ראש השנה 5787"},
+          {"title":"Candle lighting: 19:25","date":"2026-09-12T19:25:00+03:00","category":"candles","hebrew":"הדלקת נרות"},
+          {"title":"Rosh Hashana II","date":"2026-09-13","category":"holiday","yomtov":true,"hebrew":"ראש השנה ב׳"},
+          {"title":"Havdalah: 19:22","date":"2026-09-13T19:22:00+03:00","category":"havdalah","hebrew":"הבדלה"},
+          {"title":"Erev Yom Kippur","date":"2026-09-20","category":"holiday","hebrew":"ערב יום כפור"}
+        ]}
+        """
+        let weeks = try ShabbatTimesService.parseWeeks(Data(json.utf8), timeZoneIdentifier: "Asia/Jerusalem")
+        XCTAssertEqual(weeks.count, 1)
+        XCTAssertEqual(weeks[0].holidayEnglish, "Rosh Hashana")
+        XCTAssertEqual(weeks[0].holidayHebrew, "ראש השנה")
+        XCTAssertNil(weeks[0].parashaEnglish)
+        XCTAssertEqual(weeks[0].candleLighting, ISO8601DateFormatter().date(from: "2026-09-11T18:30:00+03:00"))
+        XCTAssertEqual(weeks[0].havdalah, ISO8601DateFormatter().date(from: "2026-09-13T19:22:00+03:00"))
+    }
+
+    func testPlainShabbatHasNoHolidayName() throws {
+        XCTAssertNil(ShabbatTimesService.holidayName([], hebrew: false))
+        XCTAssertEqual(ShabbatTimesService.holidayName(["Sukkot I", "Sukkot II"], hebrew: false), "Sukkot")
+        XCTAssertEqual(ShabbatTimesService.holidayName(["Pesach I", "Shavuot II"], hebrew: false), "Pesach · Shavuot")
+    }
 }
