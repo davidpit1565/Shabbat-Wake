@@ -3,15 +3,11 @@ import UIKit
 
 struct AlarmListScreen: View {
     @ObservedObject var store: AlarmStore
+    @ObservedObject var permissions: PermissionGate
     let onAddAlarm: () -> Void
     @Environment(\.locale) private var locale
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var permissionRefresh = 0
 
-    private var permissionState: NativeAlarmKitService.AuthorizationState {
-        _ = permissionRefresh
-        return NativeAlarmKitService.authorizationState()
-    }
+    private var permissionState: NativeAlarmKitService.AuthorizationState { permissions.alarm }
 
     var body: some View {
         NavigationStack {
@@ -94,9 +90,6 @@ struct AlarmListScreen: View {
                     }
                     .accessibilityLabel("Add alarm")
                 }
-            }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .active { permissionRefresh += 1 }
             }
         }
     }

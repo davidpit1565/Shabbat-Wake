@@ -123,9 +123,12 @@ final class AlarmStore: ObservableObject {
     /// Compares saved alarms with what iOS actually has scheduled. Call whenever the app becomes active.
     func refreshFromSystem() async {
         expireFinishedAlarms()
-        guard let scheduled = try? NativeAlarmKitService.scheduledAlarmIDs() else { return }
+        let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
+            (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
+        }.value
+        guard let scheduled = scheduledOrNil else { return }
         systemAlarmIDs = scheduled
-        guard NativeAlarmKitService.authorizationState() == .authorized else { return }
+        guard state == .authorized else { return }
         // Weekly alarms that iOS no longer knows about (for example after restoring a backup) are scheduled again.
         let missing = alarms.filter { $0.isEnabled && $0.repeatsWeekly && !scheduled.contains($0.id) && !busyAlarmIDs.contains($0.id) }
         for alarm in missing {

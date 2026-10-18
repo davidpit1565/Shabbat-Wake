@@ -12,10 +12,11 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     private var hasChecked = false
 
     override init() {
-        alarm = NativeAlarmKitService.authorizationState()
+        alarm = .notDetermined
         location = manager.authorizationStatus
         super.init()
         manager.delegate = self
+        Task { await refreshAlarm() }
     }
 
     var alarmAllowed: Bool { alarm == .authorized }
@@ -26,27 +27,33 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     var canAsk: Bool { alarm == .notDetermined || location == .notDetermined }
 
     func refresh() {
-        alarm = NativeAlarmKitService.authorizationState()
         location = manager.authorizationStatus
+        Task { await refreshAlarm() }
+    }
+
+    /// AlarmKit is asked off the main thread so a slow answer can never freeze the screen.
+    private func refreshAlarm() async {
+        alarm = await Task.detached(priority: .userInitiated) { NativeAlarmKitService.authorizationState() }.value
     }
 
     /// Called once when the app opens: shows the sheet if anything is missing.
-    func checkOnLaunch() {
+    func checkOnLaunch() async {
         guard !hasChecked else { return }
         hasChecked = true
-        refresh()
+        location = manager.authorizationStatus
+        await refreshAlarm()
         if !allAllowed { isPresented = true }
     }
 
     func allow() async {
         if alarm == .notDetermined {
             _ = try? await NativeAlarmKitService.requestAuthorization()
-            refresh()
+            await refreshAlarm()
         }
         if location == .notDetermined {
             manager.requestWhenInUseAuthorization()
         }
-        refresh()
+        location = manager.authorizationStatus
         if allAllowed { isPresented = false }
     }
 

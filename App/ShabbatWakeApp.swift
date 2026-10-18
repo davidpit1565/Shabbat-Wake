@@ -68,7 +68,7 @@ struct RootView: View {
             HomeDashboard(alarmStore: alarmStore, onAddAlarm: { showAddAlarm = true }, onOpenTimes: { selectedTab = .times })
                 .tabItem { Label(MainTab.home.title, systemImage: MainTab.home.symbol) }
                 .tag(MainTab.home)
-            AlarmListScreen(store: alarmStore, onAddAlarm: { showAddAlarm = true })
+            AlarmListScreen(store: alarmStore, permissions: permissions, onAddAlarm: { showAddAlarm = true })
                 .tabItem { Label(MainTab.alarms.title, systemImage: MainTab.alarms.symbol) }
                 .tag(MainTab.alarms)
             ShabbatTimesScreen()
@@ -85,7 +85,7 @@ struct RootView: View {
         .sheet(isPresented: $showAddAlarm) { AddAlarmSheet(store: alarmStore) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
         .task {
-            permissions.checkOnLaunch()
+            await permissions.checkOnLaunch()
             await alarmStore.refreshFromSystem()
         }
         .onChange(of: scenePhase) { _, phase in
@@ -103,9 +103,7 @@ struct HomeDashboard: View {
     var onOpenTimes: () -> Void
     @Environment(\.locale) private var locale
 
-    private var nextShabbatTime: ShabbatTimeItem? {
-        SharedStore.load().times.first { $0.date > .now }
-    }
+    @State private var nextShabbatTime: ShabbatTimeItem?
 
     private var nextAlarmTime: String {
         guard let date = alarmStore.nextWake?.date else { return "— —" }
@@ -202,6 +200,7 @@ struct HomeDashboard: View {
                 }.ignoresSafeArea()
             }
             .toolbar(.hidden, for: .navigationBar)
+            .onAppear { nextShabbatTime = SharedStore.load().times.first { $0.date > .now } }
         }
     }
 }
