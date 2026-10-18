@@ -1,4 +1,5 @@
 import ActivityKit
+import AlarmKit
 import SwiftUI
 import WidgetKit
 
@@ -333,41 +334,34 @@ struct ShabbatEndsWidget: Widget {
     }
 }
 
+/// The Lock Screen / Dynamic Island presentation of a system alarm. AlarmKit requires the widget
+/// extension to provide it; without it the system alarm cannot present itself properly.
+@available(iOS 26.1, *)
 struct ShabbatWakeAlarmLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ShabbatWakeActivityAttributes.self) { context in
+        ActivityConfiguration(for: AlarmAttributes<ShabbatWakeAlarmMetadata>.self) { context in
             HStack(spacing: 12) {
-                Image(systemName: "alarm.fill").font(.title2).foregroundStyle(.cyan)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(context.state.alarmTitle).font(.headline)
-                    Text(context.state.scheduledAt, style: .time).font(.title3.monospacedDigit())
-                }
+                Image(systemName: "alarm.fill").font(.title2).foregroundStyle(context.attributes.tintColor)
+                Text(context.attributes.metadata?.title ?? "")
+                    .font(.headline)
                 Spacer()
-                Text("Alarm set")
-                    .font(.caption2).foregroundStyle(.secondary)
             }
             .padding()
-            .activityBackgroundTint(Color(red: 0.04, green: 0.09, blue: 0.18))
-            .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "alarm.fill").foregroundStyle(.cyan)
+                    Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.state.alarmTitle).font(.headline)
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.scheduledAt, style: .time).monospacedDigit()
+                    Text(context.attributes.metadata?.title ?? "").font(.headline)
                 }
             } compactLeading: {
-                Image(systemName: "alarm.fill")
+                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
             } compactTrailing: {
-                Text(context.state.scheduledAt, style: .time).monospacedDigit()
+                EmptyView()
             } minimal: {
-                Image(systemName: "alarm.fill")
+                Image(systemName: "alarm.fill").foregroundStyle(context.attributes.tintColor)
             }
-            .keylineTint(.cyan)
         }
     }
 }
@@ -378,6 +372,8 @@ struct ShabbatWakeWidgetBundle: WidgetBundle {
         ShabbatWakeHomeWidget()
         CandleLightingWidget()
         ShabbatEndsWidget()
-        ShabbatWakeAlarmLiveActivity()
+        if #available(iOS 26.1, *) {
+            ShabbatWakeAlarmLiveActivity()
+        }
     }
 }
