@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Shabbat Waker";
+"NSLocationWhenInUseUsageDescription" = "Shabbat Waker utilise votre position pour calculer les horaires locaux de Chabbat. Sans cet accès, aucun horaire n’est affiché.";
+"NSAlarmKitUsageDescription" = "Shabbat Waker programme les alarmes de réveil que vous créez à l’aide des fonctions d’alarme système d’Apple.";

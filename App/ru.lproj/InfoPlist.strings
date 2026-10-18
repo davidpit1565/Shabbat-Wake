@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Shabbat Waker";
+"NSLocationWhenInUseUsageDescription" = "Shabbat Waker использует вашу геопозицию для расчёта местного времени Шаббата. Без доступа время не отображается.";
+"NSAlarmKitUsageDescription" = "Shabbat Waker планирует созданные вами будильники с помощью системных функций будильника Apple.";

@@ -324,4 +324,17 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertTrue(english.contains("5787"), english)
         XCTAssertTrue(english.contains("Cheshvan"), english)
     }
+
+    func testEveryLanguageIsOfferedAndHasItsStrings() {
+        for code in AppLanguage.supportedCodes {
+            XCTAssertEqual(AppLanguage.effectiveCode(for: code), code)
+            let path = Bundle.main.path(forResource: code, ofType: "lproj")
+            XCTAssertNotNil(path, "\(code).lproj is missing from the app")
+            guard let path, let bundle = Bundle(path: path) else { continue }
+            let translated = bundle.localizedString(forKey: "Send feedback", value: "MISSING", table: nil)
+            XCTAssertNotEqual(translated, "MISSING", "\(code) has no translation for 'Send feedback'")
+        }
+        XCTAssertTrue(AppLanguage.isRightToLeft("he"))
+        for code in ["en", "ru", "fr", "es"] { XCTAssertFalse(AppLanguage.isRightToLeft(code)) }
+    }
 }

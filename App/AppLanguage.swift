@@ -9,10 +9,16 @@ enum AppLanguage {
         UserDefaults.standard.string(forKey: storageKey) ?? "system"
     }
 
+    /// Languages the app is translated into, in the order the language picker lists them.
+    static let supportedCodes = ["en", "he", "ru", "fr", "es"]
+
     static func effectiveCode(for preference: String) -> String {
-        if preference == "he" || preference == "en" { return preference }
-        let system = Locale.preferredLanguages.first ?? "en"
-        return system.hasPrefix("he") || system.hasPrefix("iw") ? "he" : "en"
+        if supportedCodes.contains(preference) { return preference }
+        for language in Locale.preferredLanguages {
+            let code = String(language.prefix(2)).lowercased() == "iw" ? "he" : String(language.prefix(2)).lowercased()
+            if supportedCodes.contains(code) { return code }
+        }
+        return "en"
     }
 
     static func isRightToLeft(_ code: String) -> Bool { code == "he" }

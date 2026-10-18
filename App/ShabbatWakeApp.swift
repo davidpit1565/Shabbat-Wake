@@ -302,6 +302,9 @@ private struct SettingsScreen: View {
                         Text("System language").tag("system")
                         Text("English").tag("en")
                         Text("עברית").tag("he")
+                        Text("Русский").tag("ru")
+                        Text("Français").tag("fr")
+                        Text("Español").tag("es")
                     }
                 }
                 Section("Sound") {
