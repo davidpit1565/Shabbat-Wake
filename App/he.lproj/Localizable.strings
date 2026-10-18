@@ -307,3 +307,5 @@
 "Your next alarm is on %@ at %@." = "ההתראה הבאה שלך היא ב%@ בשעה %@.";
 "No alarm is set." = "לא מוגדרת התראה.";
 "Open Shabbat Waker once and allow location to get times." = "פתח את Shabbat Waker פעם אחת ואשר מיקום כדי לקבל זמנים.";
+
+"Your alarm is ready" = "ההתראה מוכנה";
