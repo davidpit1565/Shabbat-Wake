@@ -10,24 +10,21 @@
 
 ## Promotional text
 
-Prepare for Shabbat with thoughtfully designed alarms, Jewish-calendar context, and location-aware zmanim. Check your setup at a glance and personalize the experience in English or Hebrew.
-
-Do not publish this copy until all advertised features work in the submitted build and the zmanim methodology is documented.
+Wake up for Shabbat. Set a Saturday alarm, see this week's candle-lighting and havdalah times for where you are, and keep both on your Home and Lock Screen. English and Hebrew.
 
 ## Description draft
 
-Shabbat Wake is designed to help you plan your wake-up alarms and prepare for Shabbat with clarity.
+Shabbat Wake sets your wake-up alarm for Shabbat and shows you the times that matter.
 
-Planned features include:
-- Alarm schedules designed for Shabbat and everyday wake-ups.
-- Hebrew calendar and holiday context.
-- Location-based zmanim with selectable calculation conventions.
-- A readiness view that reflects actual permissions and alarm scheduling status.
-- Home Screen and Lock Screen widgets, plus Live Activities on supported devices.
-- English and Hebrew interface, including right-to-left layout.
-- Light and dark appearance.
+- Alarms that repeat on the days you choose (Saturday by default), using Apple's system alarms.
+- Candle-lighting and havdalah times for your current location.
+- Home Screen and Lock Screen widgets with your next alarm and Shabbat times.
+- A readiness view that shows what iOS actually reports about permissions and scheduled alarms.
+- English and Hebrew, including right-to-left layout; light and dark appearance.
 
-**Important:** Alarm availability, timing calculations, and Live Activity support depend on device, iOS version, permissions, and the final implemented feature set. Do not claim a feature in the public listing until it has been tested in the production build.
+Requires iOS 26.1 or later to create alarms. Shabbat times need location access and an internet connection; times are provided by Hebcal.com.
+
+Only list features here that are in the submitted build. Hebrew-calendar dates, selectable calculation conventions, and manual location are NOT implemented yet; do not advertise them.
 
 ## Keywords draft
 
@@ -43,4 +40,4 @@ Review keyword limits, duplicates, relevance, and localized metadata in App Stor
 
 ## App Review notes draft
 
-Shabbat Wake is an alarm and Jewish-calendar utility. Please test alarm creation on a supported physical device and verify the system alarm authorization flow. Location is optional; manual location selection should remain available. If a review account or special setup becomes necessary, add exact instructions here. Never claim alarm scheduling is active until it has been confirmed in the submitted build.
+Shabbat Wake is an alarm and Jewish-calendar utility. Please test alarm creation on a supported physical device and verify the system alarm authorization flow. Location is optional and only used for Shabbat times; alarms work without it. Reviewers need iOS 26.1 or later and must allow alarms when prompted. If a review account or special setup becomes necessary, add exact instructions here. Never claim alarm scheduling is active until it has been confirmed in the submitted build.

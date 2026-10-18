@@ -16,7 +16,7 @@ This policy describes the intended privacy approach for Shabbat Wake, an iOS app
 The intended design is privacy-first and on-device by default.
 
 - **Alarm settings:** labels, selected times, repeat rules, and sound choices needed to create and manage alarms.
-- **Location:** if the user grants permission, location may be used to calculate local zmanim. The app should support manual location selection. The release must state whether coordinates leave the device; the intended design is not to upload precise location to an operator server.
+- **Location:** if the user grants permission, the device's coordinates are used to calculate local candle-lighting and havdalah times. The coordinates and the location's time zone are sent to the third-party service Hebcal.com (https://www.hebcal.com) to obtain those times, and the widget repeats that request in the background. The app also uses Apple's reverse-geocoding to show a place name. Coordinates are not sent to any server operated by the app's operator. Manual location selection is not yet available.
 - **Calendar preferences:** selected Hebrew-calendar settings, location, and calculation conventions.
 - **App preferences:** language, appearance, accessibility-related choices, and other local settings.
 - **Purchases:** if optional Pro purchases are introduced, Apple may process purchase and subscription information. The app should use StoreKit and must not collect or store payment-card details.
@@ -69,7 +69,7 @@ Data controller/operator: **[LEGAL NAME AND POSTAL ADDRESS TO BE COMPLETED AFTER
 
 - Replace every bracketed placeholder with verified operator/contact details.
 - Have the actual data flows, permissions, extensions, dependencies, and production build audited.
-- Confirm whether any location lookup or zmanim service sends queries to a third party.
+- Location lookup: confirmed. Coordinates and time zone are sent to Hebcal.com (and Apple's geocoder). Review Hebcal's own terms/privacy practices and state them here.
 - Confirm purchase/StoreKit implementation and whether any diagnostics are included.
 - Publish the final reviewed policy at a stable HTTPS URL.
 - Ensure the in-app Privacy Policy link and App Store Connect URL point to the same live policy.
