@@ -99,6 +99,7 @@ struct RootView: View {
         .task {
             await permissions.checkOnLaunch()
             await alarmStore.refreshFromSystem()
+            WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
             await pro.start()
             await TimesRefresher.refreshIfNeeded()
