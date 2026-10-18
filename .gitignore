@@ -8,3 +8,4 @@ DerivedData/
 build/
 *.xcarchive
 .DS_Store
+Config/WidgetInfo.plist

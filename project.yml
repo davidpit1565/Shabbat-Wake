@@ -11,9 +11,6 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     GENERATE_INFOPLIST_FILE: YES
     INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
-    INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-    INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
-    INFOPLIST_KEY_UILaunchScreen_Generation: YES
     SWIFT_EMIT_LOC_STRINGS: YES
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: 1
@@ -39,15 +36,20 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios
         PRODUCT_NAME: "Shabbat Wake"
         PRODUCT_MODULE_NAME: ShabbatWake
+        TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Shabbat Waker uses your location to calculate local Shabbat times. Without access, no times are shown."
         INFOPLIST_KEY_NSAlarmKitUsageDescription: "Shabbat Waker schedules the wake-up alarms you create using Apple system alarm features."
         INFOPLIST_KEY_NSSupportsLiveActivities: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIconClassic AppIconMinimal AppIconSunrise AppIconTimeLight AppIconGlass AppIconPremiumTech"
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWake.entitlements
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.lifestyle
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
     dependencies:
       - target: ShabbatWakeWidget
@@ -58,6 +60,11 @@ targets:
   ShabbatWakeWidget:
     type: app-extension
     platform: iOS
+    info:
+      path: Config/WidgetInfo.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
     sources:
       - path: App/Widgets
       - path: App/Shared
@@ -66,11 +73,10 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
         PRODUCT_NAME: "Shabbat Wake Widget"
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Config/ShabbatWakeWidget.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "Shabbat Waker"
-        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
-        INFOPLIST_KEY_CFBundlePackageType: XPC!
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
 
@@ -84,6 +90,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.tests
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Shabbat Wake.app/Shabbat Wake"
         BUNDLE_LOADER: "$(TEST_HOST)"

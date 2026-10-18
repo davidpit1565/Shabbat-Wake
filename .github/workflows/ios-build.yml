@@ -36,7 +36,6 @@ jobs:
 
       - name: Validate widget extension plist and generated sounds
         run: |
-          plutil -lint App/Widgets/Info.plist
           plutil -lint App/PrivacyInfo.xcprivacy App/Widgets/PrivacyInfo.xcprivacy
           plutil -lint Config/ShabbatWake.entitlements Config/ShabbatWakeWidget.entitlements
           plutil -lint App/en.lproj/Localizable.strings App/he.lproj/Localizable.strings App/en.lproj/InfoPlist.strings App/he.lproj/InfoPlist.strings
@@ -77,3 +76,12 @@ jobs:
           find ~/Library/Developer/Xcode/DerivedData -name "*.wav" -not -path "*/Intermediates*" | head -20
           APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
           echo "APP=$APP"; ls -la "$APP" | head -40
+
+      - name: Print built Info.plist files
+        if: always()
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Shabbat Wake.app" -path "*Products*" | head -1)
+          echo "=== APP"; plutil -p "$APP/Info.plist"
+          for X in "$APP"/PlugIns/*.appex; do echo "=== $X"; plutil -p "$X/Info.plist"; done
+          plutil -extract NSExtension raw "$APP/Info.plist" >/dev/null 2>&1 && { echo "App Info.plist must not contain NSExtension"; exit 1; } || true
+          for X in "$APP"/PlugIns/*.appex; do plutil -extract NSExtension raw "$X/Info.plist" >/dev/null 2>&1 || { echo "Widget Info.plist needs NSExtension"; exit 1; }; done
