@@ -328,3 +328,5 @@
 "Remove a place" = "Удалить место";
 "Apple's standard alarm sound" = "Стандартный звук будильника Apple";
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "Стандартный звук Apple не отключается сам. Он звучит, пока вы не нажмёте «Стоп».";
+"Use it anyway" = "Всё равно использовать";
+"It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "Он звучит, пока вы не нажмёте «Стоп». Сам он не отключится, в том числе в Шаббат. Наши звуки отключаются сами.";
