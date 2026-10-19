@@ -254,6 +254,7 @@ struct HomeDashboard: View {
                             .frame(width: 252, height: 252)
                         VStack(spacing: 7) {
                             Text(nextAlarmTime)
+                                .environment(\.layoutDirection, .leftToRight)
                                 .font(.system(size: 47, weight: .light, design: .rounded))
                                 .monospacedDigit()
                                 .lineLimit(1)

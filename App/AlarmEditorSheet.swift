@@ -56,7 +56,14 @@ struct AlarmEditorSheet: View {
             Form {
                 Section("Alarm details") {
                     TextField("Alarm name", text: $title)
-                    DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
+                    HStack {
+                        Text("Time")
+                        Spacer()
+                        // Hours then minutes, left to right, in every language, as the digits are read.
+                        DatePicker("Time", selection: $time, displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                            .environment(\.layoutDirection, .leftToRight)
+                    }
                     Toggle("Repeat weekly", isOn: $repeatWeekly)
                     if repeatWeekly {
                         WeekdayPicker(selection: $weekdays, locale: locale)
