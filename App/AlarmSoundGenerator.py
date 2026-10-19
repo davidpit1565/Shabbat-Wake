@@ -19,14 +19,36 @@ def tone_bytes(notes, duration, rate=RATE):
         data.extend(struct.pack('<h',int(max(-1.0,min(1.0,sample*env*.65))*32767)))
     return bytes(data)
 
-def write_loop(filename, notes, duration, seconds, rate=22050):
-    """A tone repeated until `seconds` have passed, for Shabbat alarms: the file itself is how long the alarm rings."""
-    unit = tone_bytes(notes, duration, rate) + bytes(int(rate * 0.5) * 2)
-    total = int(rate * seconds) * 2
-    data = (unit * (total // len(unit) + 1))[:total]
-    with wave.open(os.path.join(ROOT, filename), "wb") as out:
-        out.setnchannels(1); out.setsampwidth(2); out.setframerate(rate)
-        out.writeframes(data)
+def mulaw(sample):
+    """G.711 mu-law for one signed 16-bit sample."""
+    BIAS, CLIP = 0x84, 32635
+    sign = 0x80 if sample < 0 else 0
+    sample = min(abs(sample), CLIP) + BIAS
+    exponent = 7
+    mask = 0x4000
+    while exponent > 0 and not (sample & mask):
+        exponent -= 1
+        mask >>= 1
+    mantissa = (sample >> (exponent + 3)) & 0x0F
+    return (~(sign | (exponent << 4) | mantissa)) & 0xFF
+
+TAIL_SECONDS = 300
+
+def write_loop(filename, notes, duration, seconds, rate=8000):
+    """The alarm tone repeated for `seconds`, then silence up to five minutes.
+    The system alarm repeats its sound file until someone stops it, and gives no way to stop it by itself.
+    A file that goes quiet after the chosen time is how the sound ends by itself."""
+    pcm = tone_bytes(notes, duration, rate) + bytes(int(rate * 0.5) * 2)
+    unit = [struct.unpack_from('<h', pcm, i)[0] for i in range(0, len(pcm), 2)]
+    tone_samples = int(rate * seconds)
+    samples = (unit * (tone_samples // len(unit) + 1))[:tone_samples]
+    samples += [0] * (rate * TAIL_SECONDS - len(samples))
+    data = bytes(mulaw(v) for v in samples)
+    with open(os.path.join(ROOT, filename), "wb") as out:
+        fmt = struct.pack('<HHIIHHH', 7, 1, rate, rate, 1, 8, 0)
+        fact = struct.pack('<I', len(data))
+        body = b'WAVE' + b'fmt ' + struct.pack('<I', len(fmt)) + fmt + b'fact' + struct.pack('<I', len(fact)) + fact + b'data' + struct.pack('<I', len(data)) + data
+        out.write(b'RIFF' + struct.pack('<I', len(body)) + body)
 
 def write_tone(filename, notes, duration):
     frames = int(RATE * duration)
