@@ -74,9 +74,16 @@ struct RootView: View {
     @AppStorage("preferredLanguage") private var preferredLanguage = "system"
     @AppStorage(TimeFormat.storageKey) private var timeFormat = "system"
     @State private var editingAlarm: WakeAlarm?
+    @State private var wakeRequest: WakeRequest?
     @Environment(\.scenePhase) private var scenePhase
 
     private var languageCode: String { AppLanguage.effectiveCode(for: preferredLanguage) }
+
+    /// The "Open" button on a ringing alarm leaves a note; show the wake-up screen for it.
+    private func showWakeScreenIfRequested() {
+        guard let note = WakeScreenRequest.take() else { return }
+        wakeRequest = WakeRequest(alarmID: UUID(uuidString: note.alarmID), title: note.title)
+    }
 
     var body: some View {
         // Set before the views below are created, so navigation and tab bars pick up the right direction.
@@ -101,6 +108,13 @@ struct RootView: View {
         .sheet(item: $editingAlarm) { AlarmEditorSheet(store: alarmStore, editing: $0) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
         .sheet(item: $browserLink) { InAppBrowser(url: $0.url).ignoresSafeArea() }
+        .fullScreenCover(item: $wakeRequest) { request in
+            WakeScreen(request: request) { wakeRequest = nil }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { showWakeScreenIfRequested() }
+        }
+        .onAppear { showWakeScreenIfRequested() }
         // Applied after the sheets so the sheets receive them too. A sheet only inherits what is set outside it.
         .environmentObject(pro)
         .environment(\.locale, TimeFormat.locale(language: languageCode, format: timeFormat))

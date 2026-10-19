@@ -7,6 +7,7 @@ final class AlarmStore: ObservableObject {
     @Published private(set) var lastError: String?
     @Published private(set) var systemAlarmIDs: Set<UUID> = []
     @Published private(set) var busyAlarmIDs: Set<UUID> = []
+    private var isRefreshing = false
 
     private let storageKey = "shabbatWake.localAlarms.v2"
 
@@ -21,7 +22,7 @@ final class AlarmStore: ObservableObject {
             .min { $0.date < $1.date }
     }
 
-    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic", ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
+    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic", ringPlan: RingPlan? = nil, weeksLimit: Int? = nil, ringSeconds: Int = RingPlan.defaultLength) async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
         var alarm = WakeAlarm(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppLanguage.text("Wake-up") : title,
@@ -31,7 +32,8 @@ final class AlarmStore: ObservableObject {
             weekdays: repeatsWeekly ? weekdays : [],
             soundID: soundID,
             ringPlan: ringPlan?.normalized(),
-            weeksLimit: repeatsWeekly ? weeksLimit : nil
+            weeksLimit: repeatsWeekly ? weeksLimit : nil,
+            ringSeconds: ringSeconds
         )
         alarm.armedAt = .now
         do {
@@ -50,7 +52,7 @@ final class AlarmStore: ObservableObject {
     }
 
     /// Changes an existing alarm. The system alarm is replaced; if the new one cannot be scheduled the old one is put back.
-    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String, ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
+    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String, ringPlan: RingPlan? = nil, weeksLimit: Int? = nil, ringSeconds: Int = RingPlan.defaultLength) async -> Bool {
         guard let index = alarms.firstIndex(where: { $0.id == id }), !busyAlarmIDs.contains(id) else { return false }
         busyAlarmIDs.insert(id)
         defer { busyAlarmIDs.remove(id) }
@@ -65,6 +67,7 @@ final class AlarmStore: ObservableObject {
         updated.soundID = soundID
         updated.ringPlan = ringPlan?.normalized()
         updated.weeksLimit = repeatsWeekly ? weeksLimit : nil
+        updated.ringSeconds = ringSeconds
         updated.isEnabled = true
         updated.armedAt = .now
         do {
@@ -156,7 +159,9 @@ final class AlarmStore: ObservableObject {
 
     /// Compares saved alarms with what iOS actually has scheduled. Call whenever the app becomes active.
     func refreshFromSystem() async {
-        if ScreenshotMode.isOn { return }
+        if ScreenshotMode.isOn || isRefreshing { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         expireFinishedAlarms()
         let (scheduledOrNil, state) = await Task.detached(priority: .userInitiated) {
             (try? NativeAlarmKitService.scheduledAlarmIDs(), NativeAlarmKitService.authorizationState())
@@ -190,6 +195,12 @@ final class AlarmStore: ObservableObject {
     private func expireFinishedAlarms() {
         var changed = false
         for index in alarms.indices where alarms[index].isEnabled && alarms[index].nextFireDate() == nil {
+            // A repeating alarm past its "for N weeks" limit is still known to the system; stop it there too.
+            // Several-rings alarms are dated rings that end on their own, so a later ring is left to sound.
+            if alarms[index].ringPlan == nil {
+                let id = alarms[index].id
+                Task { try? await NativeAlarmKitService.cancel(id: id) }
+            }
             alarms[index].isEnabled = false
             systemAlarmIDs.remove(alarms[index].id)
             changed = true
@@ -201,7 +212,11 @@ final class AlarmStore: ObservableObject {
         if ScreenshotMode.isOn { alarms = ScreenshotMode.sampleAlarms; return }
         guard let data = UserDefaults.standard.data(forKey: storageKey) else { return }
         do { alarms = try JSONDecoder().decode([WakeAlarm].self, from: data) }
-        catch { lastError = AppLanguage.text("Saved alarms could not be read.") }
+        catch {
+            // Keep the unreadable data so a later save cannot overwrite it for good.
+            UserDefaults.standard.set(data, forKey: storageKey + ".unreadable")
+            lastError = AppLanguage.text("Saved alarms could not be read.")
+        }
     }
 
     private func save() {

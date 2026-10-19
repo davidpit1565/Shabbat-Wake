@@ -80,6 +80,15 @@ struct PermissionsSheet: View {
     @ObservedObject var gate: PermissionGate
 
     var body: some View {
+        ScrollView {
+            content
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private var content: some View {
         VStack(spacing: 22) {
             Image(systemName: "checkmark.shield")
                 .font(.system(size: 44, weight: .light))
@@ -94,7 +103,6 @@ struct PermissionsSheet: View {
                 row("bell.fill", "Notifications", "For Shabbat alarms and reminders before candle lighting.", allowed: gate.notificationsAllowed)
             }
             .padding(.horizontal, 24)
-            Spacer(minLength: 0)
             VStack(spacing: 10) {
                 if gate.canAsk {
                     Button {
@@ -117,8 +125,6 @@ struct PermissionsSheet: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
         }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
     }
 
     private func row(_ symbol: String, _ title: LocalizedStringKey, _ detail: LocalizedStringKey, allowed: Bool) -> some View {

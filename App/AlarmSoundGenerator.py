@@ -22,7 +22,6 @@ def tone_bytes(notes, duration, rate=RATE):
 def write_loop(filename, notes, duration, seconds, rate=22050):
     """A tone repeated until `seconds` have passed, for Shabbat alarms: the file itself is how long the alarm rings."""
     unit = tone_bytes(notes, duration, rate) + bytes(int(rate * 0.5) * 2)
-    seconds = min(seconds, 29.5)  # iOS ignores notification sounds of 30 seconds or more
     total = int(rate * seconds) * 2
     data = (unit * (total // len(unit) + 1))[:total]
     with wave.open(os.path.join(ROOT, filename), "wb") as out:
@@ -52,6 +51,6 @@ TONES = {
 }
 for name, (notes, length) in TONES.items():
     write_tone(name + '.wav', notes, length)
-    for seconds in (10, 15, 20, 30):
+    for seconds in (10, 15, 20, 30, 40, 50):
         write_loop('%s_%ds.wav' % (name, seconds), notes, length, seconds)
-print('Generated three original alarm tones, each also as 10, 15, 20 and 30 second versions.')
+print('Generated three original alarm tones, each also as 10 to 50 second versions.')

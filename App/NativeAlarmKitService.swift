@@ -21,7 +21,7 @@ enum NativeAlarmKitService {
             time: .init(hour: alarm.hour, minute: alarm.minute),
             repeats: recurrence
         ))
-        try await submit(id: alarm.id, title: alarm.title, soundID: alarm.soundID, schedule: schedule)
+        try await submit(id: alarm.id, title: alarm.title, soundID: alarm.soundID, seconds: alarm.soundSeconds, schedule: schedule)
     }
 
     /// One ring of a "several rings" alarm: its own system alarm, at a fixed date or repeating on one weekday.
@@ -36,24 +36,33 @@ enum NativeAlarmKitService {
         } else {
             schedule = .fixed(ring.fireDate)
         }
-        try await submit(id: id, title: alarm.title, soundID: alarm.soundID, schedule: schedule)
+        try await submit(id: id, title: alarm.title, soundID: alarm.soundID, seconds: alarm.soundSeconds, schedule: schedule)
     }
 
     /// A one-off alarm about a minute from now, for checking by hand that the alarm really sounds.
     static func scheduleTest() async throws {
         guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
-        try await submit(id: UUID(), title: AppLanguage.text("Test alarm"), soundID: "classic", schedule: .fixed(Date().addingTimeInterval(65)))
+        try await submit(id: UUID(), title: AppLanguage.text("Test alarm"), soundID: "classic", seconds: RingPlan.defaultLength, schedule: .fixed(Date().addingTimeInterval(65)))
     }
 
     @available(iOS 26.1, *)
-    private static func submit(id: UUID, title: String, soundID: String, schedule: Alarm.Schedule) async throws {
+    private static func submit(id: UUID, title: String, soundID: String, seconds: Int, schedule: Alarm.Schedule) async throws {
         let manager = AlarmManager.shared
         if manager.authorizationState != .authorized {
             let state = try await manager.requestAuthorization()
             guard state == .authorized else { throw NativeAlarmKitError.permissionDenied }
         }
+        let stopID = id.uuidString
         let presentation = AlarmPresentation(
-            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: title)),
+            alert: AlarmPresentation.Alert(
+                title: LocalizedStringResource(stringLiteral: title),
+                secondaryButton: AlarmButton(
+                    text: LocalizedStringResource(stringLiteral: AppLanguage.text("Open")),
+                    textColor: .white,
+                    systemImageName: "sun.max.fill"
+                ),
+                secondaryButtonBehavior: .custom
+            ),
             countdown: nil,
             paused: nil
         )
@@ -62,15 +71,18 @@ enum NativeAlarmKitService {
             metadata: ShabbatWakeAlarmMetadata(title: title),
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
-        let sound: AlertConfiguration.AlertSound
+        // The file is as long as the person chose, so the sound ends by itself. If a file is missing, the system alarm sound is used.
+        let file: String
         switch soundID {
-        case "gentle": sound = .named("GentleChime.wav")
-        case "sunrise": sound = .named("SunriseSequence.wav")
-        default: sound = .named("ClassicWake.wav")
+        case "gentle": file = "GentleChime_\(seconds)s.wav"
+        case "sunrise": file = "SunriseSequence_\(seconds)s.wav"
+        default: file = "ClassicWake_\(seconds)s.wav"
         }
+        let sound: AlertConfiguration.AlertSound = Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil ? .named(file) : .default
         let configuration = AlarmManager.AlarmConfiguration.alarm(
             schedule: schedule,
             attributes: attributes,
+            secondaryIntent: OpenWakeScreenIntent(alarmID: stopID, alarmTitle: title),
             sound: sound
         )
         _ = try await manager.schedule(id: id, configuration: configuration)

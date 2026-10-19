@@ -71,6 +71,7 @@ targets:
     sources:
       - path: App/Widgets
       - path: App/Shared
+      - path: App/AlarmUI/OpenWakeScreenIntent.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widget
