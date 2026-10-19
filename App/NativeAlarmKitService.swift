@@ -52,8 +52,17 @@ enum NativeAlarmKitService {
             let state = try await manager.requestAuthorization()
             guard state == .authorized else { throw NativeAlarmKitError.permissionDenied }
         }
+        let stopID = id.uuidString
         let presentation = AlarmPresentation(
-            alert: AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: title)),
+            alert: AlarmPresentation.Alert(
+                title: LocalizedStringResource(stringLiteral: title),
+                secondaryButton: AlarmButton(
+                    text: LocalizedStringResource(stringLiteral: AppLanguage.text("Open")),
+                    textColor: .white,
+                    systemImageName: "sun.max.fill"
+                ),
+                secondaryButtonBehavior: .custom
+            ),
             countdown: nil,
             paused: nil
         )
@@ -62,15 +71,18 @@ enum NativeAlarmKitService {
             metadata: ShabbatWakeAlarmMetadata(title: title),
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
-        let sound: AlertConfiguration.AlertSound
+        // Long looping files, so the alarm keeps sounding. If a file is missing, the system alarm sound is used.
+        let file: String
         switch soundID {
-        case "gentle": sound = .named("GentleChime.wav")
-        case "sunrise": sound = .named("SunriseSequence.wav")
-        default: sound = .named("ClassicWake.wav")
+        case "gentle": file = "GentleChime_20s.wav"
+        case "sunrise": file = "SunriseSequence_20s.wav"
+        default: file = "ClassicWake_20s.wav"
         }
+        let sound: AlertConfiguration.AlertSound = Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil ? .named(file) : .default
         let configuration = AlarmManager.AlarmConfiguration.alarm(
             schedule: schedule,
             attributes: attributes,
+            secondaryIntent: OpenWakeScreenIntent(alarmID: stopID, alarmTitle: title),
             sound: sound
         )
         _ = try await manager.schedule(id: id, configuration: configuration)
