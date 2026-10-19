@@ -65,9 +65,15 @@ struct AlarmEditorSheet: View {
                         Text("Gentle Chime").tag("gentle")
                         Text("Sunrise Sequence").tag("sunrise")
                         Text("Classic Wake").tag("classic")
+                        Text("Apple's standard alarm sound").tag("system")
                     }
-                    Picker("How long each ring sounds", selection: $ringSeconds) {
-                        ForEach(RingPlan.lengthChoices, id: \.self) { Text(String(format: AppLanguage.text("%d seconds"), $0)).tag($0) }
+                    if soundID == "system" {
+                        Text("Apple's standard sound cannot stop by itself. It rings until you press Stop.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    } else {
+                        Picker("How long each ring sounds", selection: $ringSeconds) {
+                            ForEach(RingPlan.lengthChoices, id: \.self) { Text(String(format: AppLanguage.text("%d seconds"), $0)).tag($0) }
+                        }
                     }
                 }
                 if repeatWeekly {
