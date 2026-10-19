@@ -281,9 +281,19 @@ struct ShabbatTimesScreen: View {
             }
             Divider()
             Button { addPlaceTapped() } label: { Label("Add a place", systemImage: "plus") }
-            if let active = places.activePlace {
-                Button(role: .destructive) { places.remove(active.id); model.show(place: places.activePlace) } label: {
-                    Label("Remove this place", systemImage: "trash")
+            if !places.places.isEmpty {
+                Menu {
+                    ForEach(places.places) { place in
+                        Button(role: .destructive) {
+                            let wasActive = places.activeID == place.id
+                            places.remove(place.id)
+                            if wasActive { model.show(place: places.activePlace) }
+                        } label: {
+                            Label(place.name, systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    Label("Remove a place", systemImage: "trash")
                 }
             }
         } label: {

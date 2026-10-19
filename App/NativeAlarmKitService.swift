@@ -59,7 +59,7 @@ enum NativeAlarmKitService {
                 secondaryButton: AlarmButton(
                     text: LocalizedStringResource(stringLiteral: AppLanguage.text("Open")),
                     textColor: .white,
-                    systemImageName: "sun.max.fill"
+                    systemImageName: "arrow.up.forward.app"
                 ),
                 secondaryButtonBehavior: .custom
             ),
@@ -78,7 +78,7 @@ enum NativeAlarmKitService {
         case "sunrise": file = "SunriseSequence_\(seconds)s.wav"
         default: file = "ClassicWake_\(seconds)s.wav"
         }
-        let sound: AlertConfiguration.AlertSound = Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil ? .named(file) : .default
+        let sound: AlertConfiguration.AlertSound = soundID == "system" ? .default : Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil ? .named(file) : .default
         let configuration = AlarmManager.AlarmConfiguration.alarm(
             schedule: schedule,
             attributes: attributes,
