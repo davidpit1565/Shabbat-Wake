@@ -104,6 +104,7 @@ struct FeedbackScreen: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Your message").font(.footnote.weight(.semibold)).foregroundStyle(.secondary)
                     TextEditor(text: $message)
+                        .accessibilityLabel(Text("Your message"))
                         .focused($focus, equals: .message)
                         .frame(minHeight: 170)
                         .padding(8)
@@ -122,6 +123,9 @@ struct FeedbackScreen: View {
                             .font(.footnote).foregroundStyle(.red)
                         if MFMailComposeViewController.canSendMail() {
                             Button("Send by email instead") { showComposer = true }
+                                .font(.footnote.weight(.semibold))
+                        } else if let mailto = URL(string: "mailto:\(SupportContact.email)") {
+                            Link("Send by email instead", destination: mailto)
                                 .font(.footnote.weight(.semibold))
                         }
                     }

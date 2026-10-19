@@ -65,6 +65,9 @@ struct AlarmListScreen: View {
                                     }
                                     .contentShape(Rectangle())
                                     .onTapGesture { editingAlarm = alarm }
+                                    .accessibilityElement(children: .combine)
+                                    .accessibilityAddTraits(.isButton)
+                                    .accessibilityAction { editingAlarm = alarm }
                                     Spacer()
                                     Toggle("Enabled", isOn: Binding(
                                         get: { alarm.isEnabled },
