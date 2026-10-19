@@ -19,7 +19,10 @@ struct ShabbatWakeWidgetEntry: TimelineEntry {
     var hasPro: Bool = true
     var languageCode: String? = nil
     var timeFormat: String? = nil
+    var timeZoneIdentifier: String? = nil
 
+    /// Candle lighting and Shabbat ends belong to the place, not to the phone's time zone.
+    var placeZone: TimeZone? { timeZoneIdentifier.flatMap { TimeZone(identifier: $0) } }
     var locale: Locale { languageCode.map { TimeFormat.locale(language: $0, format: timeFormat) } ?? .current }
     var isRightToLeft: Bool { languageCode == "he" }
 
@@ -89,7 +92,8 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
             hasLocation: snapshot.latitude != nil,
             hasPro: snapshot.proUnlocked ?? true,
             languageCode: snapshot.languageCode,
-            timeFormat: snapshot.timeFormat
+            timeFormat: snapshot.timeFormat,
+            timeZoneIdentifier: snapshot.timeZoneIdentifier
         )
         // Smart Stack: raise the widget in the hours before candle lighting.
         if let candle = entry.candleLighting?.date, candle.timeIntervalSince(date) <= 4 * 3600 {
@@ -128,10 +132,15 @@ private struct LockedWidgetView: View {
 }
 
 private extension Date {
-    func dayAndTime(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).weekday(.abbreviated).hour().minute()) }
-    func timeOnly(_ locale: Locale) -> String { formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale)) }
-    func weekdayName(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).weekday(.wide)) }
-    func hourMinute(_ locale: Locale) -> String { formatted(Date.FormatStyle(locale: locale).hour().minute()) }
+    private func style(_ base: Date.FormatStyle, _ zone: TimeZone?) -> Date.FormatStyle {
+        var style = base
+        if let zone { style.timeZone = zone }
+        return style
+    }
+    func dayAndTime(_ locale: Locale, in zone: TimeZone? = nil) -> String { formatted(style(Date.FormatStyle(locale: locale).weekday(.abbreviated).hour().minute(), zone)) }
+    func timeOnly(_ locale: Locale, in zone: TimeZone? = nil) -> String { formatted(style(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale), zone)) }
+    func weekdayName(_ locale: Locale, in zone: TimeZone? = nil) -> String { formatted(style(Date.FormatStyle(locale: locale).weekday(.wide), zone)) }
+    func hourMinute(_ locale: Locale, in zone: TimeZone? = nil) -> String { formatted(style(Date.FormatStyle(locale: locale).hour().minute(), zone)) }
 }
 
 /// The app's look on the Home Screen: deep blue with a cyan glow, whatever the system appearance.
@@ -211,7 +220,7 @@ struct ShabbatWakeWidgetView: View {
                 ForEach(Array(shabbatLines.enumerated()), id: \.offset) { _, line in
                     VStack(alignment: .leading, spacing: 0) {
                         Text(line.label).font(.caption2).foregroundStyle(.secondary)
-                        Text(line.date.dayAndTime(entry.locale)).font(.subheadline.weight(.semibold)).monospacedDigit()
+                        Text(line.date.dayAndTime(entry.locale, in: entry.placeZone)).font(.subheadline.weight(.semibold)).monospacedDigit()
                     }
                 }
             }
@@ -225,7 +234,7 @@ struct ShabbatWakeWidgetView: View {
             if let line = shabbatLines.first {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(line.label).font(.caption2).foregroundStyle(.secondary)
-                    Text(line.date.dayAndTime(entry.locale)).font(.footnote.weight(.semibold)).monospacedDigit()
+                    Text(line.date.dayAndTime(entry.locale, in: entry.placeZone)).font(.footnote.weight(.semibold)).monospacedDigit()
                 }
             } else {
                 Text(emptyShabbatMessage)
@@ -257,9 +266,9 @@ struct ShabbatWakeWidgetView: View {
                 Label("No alarm set", systemImage: "alarm").font(.headline)
             }
             if let candle = entry.candleLighting {
-                Text("Candle lighting \(candle.date.dayAndTime(entry.locale))").font(.caption)
+                Text("Candle lighting \(candle.date.dayAndTime(entry.locale, in: entry.placeZone))").font(.caption)
             } else if let havdalah = entry.havdalah {
-                Text("Havdalah \(havdalah.date.dayAndTime(entry.locale))").font(.caption)
+                Text("Havdalah \(havdalah.date.dayAndTime(entry.locale, in: entry.placeZone))").font(.caption)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -337,22 +346,26 @@ private struct SingleTimeWidgetView: View {
     @ViewBuilder private var content: some View {
         switch family {
         case .accessoryInline:
-            Label { Text(date.map { $0.dayAndTime(entry.locale) } ?? "—") } icon: { KindIcon(symbol: kind.symbol) }
+            Label { Text(date.map { $0.dayAndTime(entry.locale, in: entry.placeZone) } ?? "—") } icon: { KindIcon(symbol: kind.symbol) }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(kind.title) + Text(" ") + Text(date.map { $0.dayAndTime(entry.locale, in: entry.placeZone) } ?? "—"))
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 0) {
                     KindIcon(symbol: kind.symbol, size: 13)
-                    Text(date?.hourMinute(entry.locale) ?? "—")
+                    Text(date?.hourMinute(entry.locale, in: entry.placeZone) ?? "—")
                         .font(.caption.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.6)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(kind.title) + Text(" ") + Text(date?.hourMinute(entry.locale, in: entry.placeZone) ?? "—"))
             .containerBackground(.background, for: .widget)
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
                 Label { Text(kind.title) } icon: { KindIcon(symbol: kind.symbol) }.font(.caption.weight(.semibold))
-                Text(date?.timeOnly(entry.locale) ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
-                if let date { Text(date.weekdayName(entry.locale)).font(.caption2) }
+                Text(date?.timeOnly(entry.locale, in: entry.placeZone) ?? "—").font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
+                if let date { Text(date.weekdayName(entry.locale, in: entry.placeZone)).font(.caption2) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .containerBackground(.background, for: .widget)
@@ -363,12 +376,12 @@ private struct SingleTimeWidgetView: View {
                 Label { Text(kind.title) } icon: { KindIcon(symbol: kind.symbol, size: medium ? 22 : 18) }
                     .font(.system(size: medium ? 18 : 14, weight: .semibold))
                     .foregroundStyle(WidgetBrand.cyan)
-                Text(date?.timeOnly(entry.locale) ?? "--:--")
+                Text(date?.timeOnly(entry.locale, in: entry.placeZone) ?? "--:--")
                     .font(.system(size: medium ? 64 : 42, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1).minimumScaleFactor(0.5)
                 if let date {
-                    Text(date.weekdayName(entry.locale))
+                    Text(date.weekdayName(entry.locale, in: entry.placeZone))
                         .font(.system(size: medium ? 24 : 18, weight: .bold, design: .rounded))
                         .foregroundStyle(kind.tint)
                         .lineLimit(1).minimumScaleFactor(0.6)

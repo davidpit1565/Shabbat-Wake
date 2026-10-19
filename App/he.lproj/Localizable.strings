@@ -325,8 +325,8 @@
 "One ring" = "צלצול אחד";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop." = "כל צלצול הוא שעון מעורר אמיתי של אפל. הוא נשמע גם במצב שקט ובריכוז, ונעצר כשלוחצים עצור.";
 "Rings once, until you stop it." = "מצלצל פעם אחת, עד שתעצור אותו.";
-"Rings %d times, every %d minutes. Stop each ring when it sounds." = "מצלצל %d פעמים, כל %d דקות. עצור כל צלצול כשהוא נשמע.";
-"%d rings, every %d min" = "%d צלצולים, כל %d דק׳";
+"Rings: %d · interval: %d min. Stop each ring when it sounds." = "צלצולים: %d · מרווח: %d דק׳. עצור כל צלצול כשהוא נשמע.";
+"Rings: %d · interval: %d min" = "צלצולים: %d · מרווח: %d דק׳";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "שעון הבדיקה יצלצל בעוד כדקה. נעל את הטלפון והנח אותו בצד.";
 "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "תמיד בחינם: התראות ללא הגבלה, זמני שבת, Siri, Apple Watch, ווידג'טים למסך הבית ותזכורת אחת לפני הדלקת נרות.";
 "Open" = "פתח";
@@ -335,3 +335,7 @@
 "Apple's system alarm. It sounds through silent mode and Focus for the length you chose, once, with no snooze." = "שעון מעורר של המערכת. הוא נשמע גם במצב שקט ובמצב Focus, כמה שניות שבחרת, פעם אחת, בלי נודניק.";
 "How long each ring sounds" = "כמה זמן כל צלצול נשמע";
 "%d seconds" = "%d שניות";
+"Preview" = "השמעה מקדימה";
+"A soft, layered morning chime" = "צלצול בוקר רך ושכבתי";
+"A calm rising sequence of original notes" = "רצף רגוע ועולה של צלילים מקוריים";
+"A clearer, more insistent bell-like pattern" = "צליל דמוי פעמון, ברור ומתעקש יותר";

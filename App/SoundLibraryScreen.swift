@@ -40,10 +40,10 @@ final class AlarmTonePlayer: ObservableObject {
 
 struct SoundLibraryScreen: View {
     @StateObject private var audio = AlarmTonePlayer.shared
-    private let tones: [(name: String, detail: String, file: String, symbol: String)] = [
-        ("Gentle Chime", "A soft, layered morning chime", "GentleChime", "sparkles"),
-        ("Sunrise Sequence", "A calm rising sequence of original notes", "SunriseSequence", "sunrise.fill"),
-        ("Classic Wake", "A clearer, more insistent bell-like pattern", "ClassicWake", "bell.fill")
+    private let tones: [(name: LocalizedStringKey, plainName: String, detail: LocalizedStringKey, file: String, symbol: String)] = [
+        ("Gentle Chime", "Gentle Chime", "A soft, layered morning chime", "GentleChime", "sparkles"),
+        ("Sunrise Sequence", "Sunrise Sequence", "A calm rising sequence of original notes", "SunriseSequence", "sunrise.fill"),
+        ("Classic Wake", "Classic Wake", "A clearer, more insistent bell-like pattern", "ClassicWake", "bell.fill")
     ]
 
     var body: some View {
@@ -53,7 +53,8 @@ struct SoundLibraryScreen: View {
                     HStack(spacing: 14) {
                         Image(systemName: tone.symbol)
                             .font(.title3)
-                            .foregroundStyle(.cyan)
+                            .foregroundStyle(.blue)
+                            .accessibilityHidden(true)
                             .frame(width: 42, height: 42)
                             .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                         VStack(alignment: .leading, spacing: 4) {
@@ -62,13 +63,14 @@ struct SoundLibraryScreen: View {
                         }
                         Spacer()
                         Button {
-                            audio.toggle(name: tone.name, resource: tone.file)
+                            audio.toggle(name: tone.plainName, resource: tone.file)
                         } label: {
-                            Image(systemName: audio.playingName == tone.name ? "stop.fill" : "play.fill")
+                            Image(systemName: audio.playingName == tone.plainName ? "stop.fill" : "play.fill")
                                 .frame(width: 36, height: 36)
                         }
                         .buttonStyle(.bordered)
-                        .accessibilityLabel(audio.playingName == tone.name ? "Stop \(tone.name)" : "Preview \(tone.name)")
+                        .accessibilityLabel(audio.playingName == tone.plainName ? Text("Stop") : Text("Preview"))
+                        .accessibilityValue(Text(tone.name))
                     }
                     .padding(.vertical, 5)
                 }

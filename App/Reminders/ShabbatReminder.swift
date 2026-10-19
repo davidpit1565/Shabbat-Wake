@@ -50,6 +50,7 @@ enum ReminderScheduler {
 
     /// Replaces every pending reminder notification with the current plan.
     static func reschedule(reminders: [ShabbatReminder], times: [ShabbatTimeItem], placeName: String?) async {
+        let placeZone = SharedStore.load().timeZoneIdentifier.flatMap { TimeZone(identifier: $0) }
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()
         center.removePendingNotificationRequests(withIdentifiers: pending.map(\.identifier).filter { $0.hasPrefix(prefix) })
@@ -63,7 +64,7 @@ enum ReminderScheduler {
         for item in ReminderPlanner.plan(reminders: reminders, candleTimes: candleTimes) {
             let content = UNMutableNotificationContent()
             content.title = String(format: AppLanguage.text("Candle lighting in %d minutes"), item.minutesBefore)
-            let time = item.candleLighting.formatted(in: locale, time: .shortened)
+            let time = item.candleLighting.formatted(in: locale, time: .shortened, timeZone: placeZone)
             content.body = [String(format: AppLanguage.text("Candle lighting at %@"), time), placeName]
                 .compactMap { $0 }.joined(separator: " · ")
             content.sound = .default

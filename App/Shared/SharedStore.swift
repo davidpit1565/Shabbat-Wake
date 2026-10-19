@@ -26,7 +26,10 @@ enum TimeFormat {
         switch format {
         case "24h": return Locale(identifier: language + "@hours=h23")
         case "12h": return Locale(identifier: language + "@hours=h12")
-        default: return Locale(identifier: language)
+        default:
+            // "System": keep the phone's region and clock when the app is in the phone's own language.
+            if Locale.current.language.languageCode?.identifier == language { return .current }
+            return Locale(identifier: language)
         }
     }
 }

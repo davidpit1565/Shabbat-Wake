@@ -8,6 +8,8 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
     @Published private(set) var authorization: CLAuthorizationStatus
     @Published private(set) var placeName: String?
     @Published private(set) var weeks: [ShabbatWeek] = []
+    /// The time zone of the place the weeks belong to, so times show as that place sees them.
+    @Published private(set) var placeZone: TimeZone?
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     /// Nil means "where I am now"; otherwise the saved place being shown.
@@ -47,6 +49,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         let upcoming = cached.weeks.filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
         guard !upcoming.isEmpty else { return }
         weeks = upcoming
+        placeZone = TimeZone(identifier: cached.zone)
         placeName = cached.name
         isLoading = false
         errorMessage = nil
@@ -170,6 +173,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
             ).filter { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
             guard activeFetchID == fetchID else { return }
             weeks = fetched
+            placeZone = TimeZone(identifier: zone)
             saveCache(latitude: latitude, longitude: longitude, zone: zone, name: name, weeks: fetched)
             let language = AppLanguage.effectiveCode(for: AppLanguage.preference)
             WidgetSync.updateNextTitle(fetched.first?.displayTitle(language: language))
@@ -373,8 +377,8 @@ struct ShabbatTimesScreen: View {
                 }
                 let name = title(for: week)
                 if !name.isEmpty { Text(name).font(.title3.weight(.semibold)) }
-                Text(week.shabbatDay.formatted(in: locale, date: .complete)).font(.subheadline).foregroundStyle(.secondary)
-                Text(week.shabbatDay.hebrewDateString(in: locale)).font(.subheadline).foregroundStyle(.secondary)
+                Text(week.shabbatDay.formatted(in: locale, date: .complete, timeZone: model.placeZone)).font(.subheadline).foregroundStyle(.secondary)
+                Text(week.shabbatDay.hebrewDateString(in: locale, timeZone: model.placeZone)).font(.subheadline).foregroundStyle(.secondary)
             }
             HStack(spacing: 12) {
                 timeBlock("Candle lighting", symbol: "candles", date: week.candleLighting)
@@ -392,8 +396,9 @@ struct ShabbatTimesScreen: View {
     private func timeBlock(_ label: LocalizedStringKey, symbol: String, date: Date?) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label { Text(label) } icon: { KindIcon(symbol: symbol) }.font(.caption).foregroundStyle(.secondary)
-            Text(date?.formatted(in: locale, time: .shortened) ?? "—")
+            Text(date?.formatted(in: locale, time: .shortened, timeZone: model.placeZone) ?? "—")
                 .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
+                .lineLimit(1).minimumScaleFactor(0.6)
         }
         .padding(14).frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(uiColor: .systemBackground).opacity(0.55), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -405,14 +410,14 @@ struct ShabbatTimesScreen: View {
             VStack(alignment: .leading, spacing: 3) {
                 let name = title(for: week)
                 if !name.isEmpty { Text(name).font(.headline) }
-                Text(week.shabbatDay.formatted(in: locale, date: .abbreviated)).font(.footnote).foregroundStyle(.secondary)
-                Text(week.shabbatDay.hebrewDateString(in: locale)).font(.footnote).foregroundStyle(.secondary)
+                Text(week.shabbatDay.formatted(in: locale, date: .abbreviated, timeZone: model.placeZone)).font(.footnote).foregroundStyle(.secondary)
+                Text(week.shabbatDay.hebrewDateString(in: locale, timeZone: model.placeZone)).font(.footnote).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
-                Label { Text(week.candleLighting?.formatted(in: locale, time: .shortened) ?? "—") } icon: { CandleIcon() }
+                Label { Text(week.candleLighting?.formatted(in: locale, time: .shortened, timeZone: model.placeZone) ?? "—") } icon: { CandleIcon() }
                     .font(.subheadline.weight(.semibold).monospacedDigit())
-                Label(week.havdalah?.formatted(in: locale, time: .shortened) ?? "—", systemImage: "moon.stars")
+                Label(week.havdalah?.formatted(in: locale, time: .shortened, timeZone: model.placeZone) ?? "—", systemImage: "moon.stars")
                     .font(.footnote.monospacedDigit()).foregroundStyle(.secondary)
             }
         }

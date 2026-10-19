@@ -37,7 +37,7 @@ private struct RingPressStyle: ButtonStyle {
 }
 
 private enum WakePalette {
-    static let blue = Color(red: 40 / 255, green: 116 / 255, blue: 1)
+    static let blue = Color(red: 0, green: 92 / 255, blue: 230 / 255)
     static let cyan = Color(red: 89 / 255, green: 230 / 255, blue: 1)
     static let silver = Color(red: 201 / 255, green: 216 / 255, blue: 236 / 255)
 }
@@ -180,6 +180,7 @@ struct HomeDashboard: View {
     @Environment(\.locale) private var locale
 
     @State private var nextShabbatTime: ShabbatTimeItem?
+    @State private var shabbatZone: TimeZone?
     @State private var nextTitle: String?
 
     /// The alarm that rings first comes first; switched-off alarms follow.
@@ -284,7 +285,7 @@ struct HomeDashboard: View {
                             Circle().fill(Color.green).frame(width: 9, height: 9)
                                 .shadow(color: .green.opacity(0.8), radius: 5)
                             Text("Your alarm is ready")
-                                .font(.subheadline).foregroundStyle(Color.green)
+                                .font(.subheadline).foregroundStyle(.primary)
                         }
                         .frame(maxWidth: .infinity)
                         .accessibilityElement(children: .combine)
@@ -295,7 +296,7 @@ struct HomeDashboard: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(nextShabbatTime?.category == "havdalah" ? "Shabbat ends" : "Candle lighting")
                                     .font(.caption).foregroundStyle(.secondary)
-                                Text(nextShabbatTime.map { $0.date.formatted(in: locale, time: .shortened) } ?? "—")
+                                Text(nextShabbatTime.map { $0.date.formatted(in: locale, time: .shortened, timeZone: shabbatZone) } ?? "—")
                                     .font(.system(size: 26, weight: .bold, design: .rounded)).monospacedDigit()
                             }
                             Spacer(minLength: 8)
@@ -307,8 +308,8 @@ struct HomeDashboard: View {
                                     Text(relative(item.date))
                                         .font(.caption.weight(.semibold))
                                         .padding(.horizontal, 10).padding(.vertical, 4)
-                                        .background(WakePalette.cyan.opacity(0.15), in: Capsule())
-                                        .foregroundStyle(WakePalette.cyan)
+                                        .background(WakePalette.cyan.opacity(0.3), in: Capsule())
+                                        .foregroundStyle(.primary)
                                 } else {
                                     Text("Choose your location to calculate times")
                                         .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
@@ -342,7 +343,7 @@ struct HomeDashboard: View {
                         Label("Create an alarm", systemImage: "plus")
                             .font(.headline)
                             .frame(maxWidth: .infinity).padding(.vertical, 16)
-                            .background(LinearGradient(colors: [WakePalette.cyan, WakePalette.blue], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 17))
+                            .background(LinearGradient(colors: [WakePalette.blue, Color(red: 0, green: 60 / 255, blue: 170 / 255)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 17))
                             .foregroundStyle(.white)
                     }
                     .buttonStyle(.plain)
@@ -359,6 +360,7 @@ struct HomeDashboard: View {
             .onAppear {
                 let snapshot = SharedStore.load()
                 nextShabbatTime = snapshot.times.first { $0.date > .now }
+                shabbatZone = snapshot.timeZoneIdentifier.flatMap { TimeZone(identifier: $0) }
                 nextTitle = snapshot.nextTitle
             }
         }

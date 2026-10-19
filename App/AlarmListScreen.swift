@@ -49,7 +49,7 @@ struct AlarmListScreen: View {
                                         Text(alarm.title)
                                             .font(.subheadline.weight(.medium))
                                         if let plan = alarm.ringPlan {
-                                            Text(String(format: AppLanguage.text("%d rings, every %d min"), plan.count, plan.intervalMinutes))
+                                            Text(plan.count == 1 ? AppLanguage.text("One ring") : String(format: AppLanguage.text("Rings: %d · interval: %d min"), plan.count, plan.intervalMinutes))
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
                                         }
