@@ -185,7 +185,7 @@
 "One ring" = "One ring";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop." = "Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop.";
 "Rings once, until you stop it." = "Rings once, until you stop it.";
-"Rings %d times, every %d minutes. Stop each ring when it sounds." = "Rings %d times, every %d minutes. Stop each ring when it sounds.";
-"%d rings, every %d min" = "%d rings, every %d min";
+"Rings: %d · interval: %d min. Stop each ring when it sounds." = "Rings: %d · interval: %d min. Stop each ring when it sounds.";
+"Rings: %d · interval: %d min" = "Rings: %d · interval: %d min";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "The test alarm will ring in about a minute. Lock your phone and put it away.";
 "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting.";

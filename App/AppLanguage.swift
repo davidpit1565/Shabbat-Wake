@@ -39,23 +39,31 @@ enum AppLanguage {
 
 extension Date {
     /// Formats with the app's chosen language instead of the iPhone's.
-    func formatted(in locale: Locale, date: Date.FormatStyle.DateStyle = .omitted, time: Date.FormatStyle.TimeStyle = .omitted) -> String {
-        formatted(Date.FormatStyle(date: date, time: time, locale: locale))
+    /// `timeZone` is the place the time belongs to (candle lighting in New York is shown as New York time);
+    /// without it the device's time zone is used.
+    func formatted(in locale: Locale, date: Date.FormatStyle.DateStyle = .omitted, time: Date.FormatStyle.TimeStyle = .omitted, timeZone: TimeZone? = nil) -> String {
+        var style = Date.FormatStyle(date: date, time: time, locale: locale)
+        if let timeZone { style.timeZone = timeZone }
+        return formatted(style)
     }
 
     /// The Hebrew calendar date, e.g. "7 Cheshvan 5787", or in Hebrew "ז׳ חשוון תשפ״ז" (letters, not digits).
-    func hebrewDateString(in locale: Locale) -> String {
-        if locale.identifier.hasPrefix("he") { return HebrewDateFormat.string(for: self, locale: locale) }
-        return formatted(Date.FormatStyle(date: .long, time: .omitted, locale: locale, calendar: Calendar(identifier: .hebrew)))
+    func hebrewDateString(in locale: Locale, timeZone: TimeZone? = nil) -> String {
+        var calendar = Calendar(identifier: .hebrew)
+        if let timeZone { calendar.timeZone = timeZone }
+        if locale.identifier.hasPrefix("he") { return HebrewDateFormat.string(for: self, locale: locale, calendar: calendar) }
+        var style = Date.FormatStyle(date: .long, time: .omitted, locale: locale, calendar: calendar)
+        if let timeZone { style.timeZone = timeZone }
+        return formatted(style)
     }
 }
 
 /// Hebrew dates the way they are written in Hebrew: the day and the year as letters.
 enum HebrewDateFormat {
-    static func string(for date: Date, locale: Locale) -> String {
-        let calendar = Calendar(identifier: .hebrew)
+    static func string(for date: Date, locale: Locale, calendar: Calendar = Calendar(identifier: .hebrew)) -> String {
         let parts = calendar.dateComponents([.day, .year], from: date)
         let month = DateFormatter()
+        month.timeZone = calendar.timeZone
         month.locale = locale
         month.calendar = calendar
         month.dateFormat = "MMMM"

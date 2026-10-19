@@ -136,7 +136,7 @@ struct AlarmEditorSheet: View {
         if plan.count == 1 {
             return AppLanguage.text("Rings once, until you stop it.")
         }
-        return String(format: AppLanguage.text("Rings %d times, every %d minutes. Stop each ring when it sounds."), plan.count, plan.intervalMinutes)
+        return String(format: AppLanguage.text("Rings: %d · interval: %d min. Stop each ring when it sounds."), plan.count, plan.intervalMinutes)
     }
 
     private func chooseWeeks(_ weeks: Int) {

@@ -218,7 +218,7 @@ struct ProBadge: View {
         Text("PRO")
             .font(.caption2.weight(.bold))
             .padding(.horizontal, 6).padding(.vertical, 2)
-            .foregroundStyle(Color.orange)
+            .foregroundStyle(Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? .systemOrange : UIColor(red: 0.62, green: 0.30, blue: 0, alpha: 1) }))
             .background(Color.orange.opacity(0.16), in: Capsule())
             .accessibilityLabel("Pro feature")
     }
