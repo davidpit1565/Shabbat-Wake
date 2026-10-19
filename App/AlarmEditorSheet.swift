@@ -15,6 +15,7 @@ struct AlarmEditorSheet: View {
     @State private var stopsByItself: Bool
     @State private var plan: RingPlan
     @State private var weeksLimit: Int
+    @State private var ringSeconds: Int
     @State private var isSaving = false
     @State private var showPaywall = false
     @EnvironmentObject private var pro: ProStore
@@ -31,6 +32,7 @@ struct AlarmEditorSheet: View {
             _stopsByItself = State(initialValue: alarm.ringPlan != nil)
             _plan = State(initialValue: alarm.ringPlan ?? .standard)
             _weeksLimit = State(initialValue: alarm.weeksLimit ?? 0)
+            _ringSeconds = State(initialValue: alarm.soundSeconds)
         } else {
             _title = State(initialValue: AppLanguage.text("Shabbat wake-up"))
             _time = State(initialValue: .now)
@@ -40,6 +42,7 @@ struct AlarmEditorSheet: View {
             _stopsByItself = State(initialValue: true)
             _plan = State(initialValue: .standard)
             _weeksLimit = State(initialValue: 0)
+            _ringSeconds = State(initialValue: RingPlan.defaultLength)
         }
     }
 
@@ -62,6 +65,9 @@ struct AlarmEditorSheet: View {
                         Text("Gentle Chime").tag("gentle")
                         Text("Sunrise Sequence").tag("sunrise")
                         Text("Classic Wake").tag("classic")
+                    }
+                    Picker("How long each ring sounds", selection: $ringSeconds) {
+                        ForEach(RingPlan.lengthChoices, id: \.self) { Text(String(format: AppLanguage.text("%d seconds"), $0)).tag($0) }
                     }
                 }
                 if repeatWeekly {
@@ -101,8 +107,8 @@ struct AlarmEditorSheet: View {
                     Text("How it rings")
                 } footer: {
                     Text(stopsByItself
-                         ? "Each ring is a real Apple alarm. It sounds through silent mode and Focus, and stops when you press Stop."
-                         : "Apple's system alarm. It rings through silent mode and keeps ringing until it is stopped.")
+                         ? "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set."
+                         : "Apple's system alarm. It sounds through silent mode and Focus for the length you chose, once, with no snooze.")
                 }
                 if let error = store.lastError {
                     Section("Could not schedule alarm") {
@@ -148,9 +154,9 @@ struct AlarmEditorSheet: View {
         Task {
             let saved: Bool
             if let editing {
-                saved = await store.update(id: editing.id, title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks)
+                saved = await store.update(id: editing.id, title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds)
             } else {
-                saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks)
+                saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds)
             }
             isSaving = false
             if saved { dismiss() }

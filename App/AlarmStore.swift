@@ -22,7 +22,7 @@ final class AlarmStore: ObservableObject {
             .min { $0.date < $1.date }
     }
 
-    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic", ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
+    func add(title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String = "classic", ringPlan: RingPlan? = nil, weeksLimit: Int? = nil, ringSeconds: Int = RingPlan.defaultLength) async -> Bool {
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
         var alarm = WakeAlarm(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppLanguage.text("Wake-up") : title,
@@ -32,7 +32,8 @@ final class AlarmStore: ObservableObject {
             weekdays: repeatsWeekly ? weekdays : [],
             soundID: soundID,
             ringPlan: ringPlan?.normalized(),
-            weeksLimit: repeatsWeekly ? weeksLimit : nil
+            weeksLimit: repeatsWeekly ? weeksLimit : nil,
+            ringSeconds: ringSeconds
         )
         alarm.armedAt = .now
         do {
@@ -51,7 +52,7 @@ final class AlarmStore: ObservableObject {
     }
 
     /// Changes an existing alarm. The system alarm is replaced; if the new one cannot be scheduled the old one is put back.
-    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String, ringPlan: RingPlan? = nil, weeksLimit: Int? = nil) async -> Bool {
+    func update(id: UUID, title: String, time: Date, repeatsWeekly: Bool, weekdays: Set<Int>, soundID: String, ringPlan: RingPlan? = nil, weeksLimit: Int? = nil, ringSeconds: Int = RingPlan.defaultLength) async -> Bool {
         guard let index = alarms.firstIndex(where: { $0.id == id }), !busyAlarmIDs.contains(id) else { return false }
         busyAlarmIDs.insert(id)
         defer { busyAlarmIDs.remove(id) }
@@ -66,6 +67,7 @@ final class AlarmStore: ObservableObject {
         updated.soundID = soundID
         updated.ringPlan = ringPlan?.normalized()
         updated.weeksLimit = repeatsWeekly ? weeksLimit : nil
+        updated.ringSeconds = ringSeconds
         updated.isEnabled = true
         updated.armedAt = .now
         do {

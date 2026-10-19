@@ -9,6 +9,9 @@ struct RingPlan: Codable, Equatable {
     static let countChoices = Array(1...10)
     static let intervalChoices = [1, 2, 3, 5, 10, 15]
     static let secondChoices = [10, 15, 20, 30]
+    /// How long each ring sounds, chosen per alarm.
+    static let lengthChoices = [10, 15, 20, 30, 40, 50]
+    static let defaultLength = 15
     static let standard = RingPlan(count: 3, intervalMinutes: 5, seconds: 15)
 
     /// Keeps every value inside what the app offers, so saved or imported data cannot produce an odd schedule.
@@ -37,6 +40,10 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
     var ringPlan: RingPlan?
     /// For weekly alarms: stop repeating after this many weeks. Nil repeats until switched off.
     var weeksLimit: Int?
+    /// How many seconds each ring sounds. Nil means the default.
+    var ringSeconds: Int?
+
+    var soundSeconds: Int { RingPlan.lengthChoices.contains(ringSeconds ?? 0) ? ringSeconds! : RingPlan.defaultLength }
 
     var timeLabel: String { timeLabel(in: .current) }
 

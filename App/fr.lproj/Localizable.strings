@@ -317,3 +317,7 @@
 "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Toujours gratuit : alarmes illimitées, horaires de Chabbat, Siri, Apple Watch, widgets de l'écran d'accueil et un rappel avant l'allumage des bougies.";
 "Open" = "Ouvrir";
 "Stop" = "Arrêter";
+"Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set." = "Chaque sonnerie est une vraie alarme Apple. Elle sonne même en mode silencieux et en Concentration pendant la durée choisie, sans répétition. La suivante arrive après les minutes réglées.";
+"Apple's system alarm. It sounds through silent mode and Focus for the length you chose, once, with no snooze." = "Alarme système d'Apple. Elle sonne même en mode silencieux et en Concentration pendant la durée choisie, une seule fois, sans répétition.";
+"How long each ring sounds" = "Durée de chaque sonnerie";
+"%d seconds" = "%d secondes";
