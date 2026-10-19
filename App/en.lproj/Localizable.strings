@@ -189,3 +189,8 @@
 "Rings: %d · interval: %d min" = "Rings: %d · interval: %d min";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "The test alarm will ring in about a minute. Lock your phone and put it away.";
 "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting.";
+"Remove a place" = "Remove a place";
+"Apple's standard alarm sound" = "Apple's standard alarm sound";
+"Apple's standard sound cannot stop by itself. It rings until you press Stop." = "Apple's standard sound cannot stop by itself. It rings until you press Stop.";
+"Use it anyway" = "Use it anyway";
+"It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves.";

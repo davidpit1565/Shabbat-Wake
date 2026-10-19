@@ -16,6 +16,8 @@ struct AlarmEditorSheet: View {
     @State private var plan: RingPlan
     @State private var weeksLimit: Int
     @State private var ringSeconds: Int
+    @State private var showSystemSoundConfirm = false
+    @State private var systemSoundConfirmed = false
     @State private var isSaving = false
     @State private var showPaywall = false
     @EnvironmentObject private var pro: ProStore
@@ -33,6 +35,7 @@ struct AlarmEditorSheet: View {
             _plan = State(initialValue: alarm.ringPlan ?? .standard)
             _weeksLimit = State(initialValue: alarm.weeksLimit ?? 0)
             _ringSeconds = State(initialValue: alarm.soundSeconds)
+            _systemSoundConfirmed = State(initialValue: alarm.soundID == "system")
         } else {
             _title = State(initialValue: AppLanguage.text("Shabbat wake-up"))
             _time = State(initialValue: .now)
@@ -72,9 +75,15 @@ struct AlarmEditorSheet: View {
                         Text("Gentle Chime").tag("gentle")
                         Text("Sunrise Sequence").tag("sunrise")
                         Text("Classic Wake").tag("classic")
+                        Text("Apple's standard alarm sound").tag("system")
                     }
-                    Picker("How long each ring sounds", selection: $ringSeconds) {
-                        ForEach(RingPlan.lengthChoices, id: \.self) { Text(String(format: AppLanguage.text("%d seconds"), $0)).tag($0) }
+                    if soundID == "system" {
+                        Text("Apple's standard sound cannot stop by itself. It rings until you press Stop.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    } else {
+                        Picker("How long each ring sounds", selection: $ringSeconds) {
+                            ForEach(RingPlan.lengthChoices, id: \.self) { Text(String(format: AppLanguage.text("%d seconds"), $0)).tag($0) }
+                        }
                     }
                 }
                 if repeatWeekly {
@@ -128,6 +137,22 @@ struct AlarmEditorSheet: View {
             .navigationTitle(editing == nil ? "New alarm" : "Edit alarm")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { store.clearError() }
+            .onChange(of: soundID) { old, new in
+                // Apple's standard sound never stops by itself, so ask once before it is chosen.
+                if new == "system" && !systemSoundConfirmed {
+                    soundID = old
+                    showSystemSoundConfirm = true
+                }
+            }
+            .alert("Apple's standard alarm sound", isPresented: $showSystemSoundConfirm) {
+                Button("Use it anyway") {
+                    systemSoundConfirmed = true
+                    soundID = "system"
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves.")
+            }
             .sheet(isPresented: $showPaywall) { PaywallView(reason: .weeksAhead) }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
