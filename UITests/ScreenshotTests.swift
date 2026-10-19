@@ -27,22 +27,36 @@ final class ScreenshotTests: XCTestCase {
         app.tap()
 
         let tabs = app.tabBars.firstMatch
-        XCTAssertTrue(tabs.waitForExistence(timeout: 20))
+        XCTAssertTrue(tabs.waitForExistence(timeout: 45))
         let buttons = tabs.buttons
 
-        sleep(4)
+        // Shabbat times first, so the home screen already knows the candle-lighting time when it is shown.
+        buttons.element(boundBy: 2).tap()
+        sleep(14)   // the times come from the network
+        shot("3-times")
+
+        buttons.element(boundBy: 0).tap()
+        sleep(3)
         shot("1-home")
 
         buttons.element(boundBy: 1).tap()
         sleep(2)
         shot("2-alarms")
 
-        buttons.element(boundBy: 2).tap()
-        sleep(12)   // the times come from the network
-        shot("3-times")
+        // The editor for the first alarm. A row of a list is tapped by position.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.24)).tap()
+        sleep(3)
+        shot("5-editor")
+        app.swipeDown(velocity: .fast)
+        sleep(2)
 
         buttons.element(boundBy: 3).tap()
         sleep(2)
         shot("4-settings")
+
+        // The Pro screen: the first row of Settings.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.245)).tap()
+        sleep(3)
+        shot("6-pro")
     }
 }
