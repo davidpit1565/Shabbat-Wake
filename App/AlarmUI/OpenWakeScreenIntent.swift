@@ -5,7 +5,7 @@ import Foundation
 @available(iOS 26.1, *)
 struct OpenWakeScreenIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Open"
-    static var openAppWhenRun: Bool { true }
+    static var openAppWhenRun = true
 
     @Parameter(title: "Alarm")
     var alarmID: String

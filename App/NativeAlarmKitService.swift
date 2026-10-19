@@ -59,7 +59,7 @@ enum NativeAlarmKitService {
                 secondaryButton: AlarmButton(
                     text: LocalizedStringResource(stringLiteral: AppLanguage.text("Open")),
                     textColor: .white,
-                    systemImageName: "sun.max.fill"
+                    systemImageName: "arrow.up.forward.app"
                 ),
                 secondaryButtonBehavior: .custom
             ),
