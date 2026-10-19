@@ -52,6 +52,11 @@ enum ShabbatTimesService {
         return nil
     }
 
+    /// Hebcal keeps the diaspora calendar (two-day holidays, different readings) unless it is asked for Israel's.
+    static func isIsrael(timeZoneIdentifier: String) -> Bool {
+        ["Asia/Jerusalem", "Asia/Tel_Aviv", "Israel"].contains(timeZoneIdentifier)
+    }
+
     static func makeURL(latitude: Double, longitude: Double, timeZoneIdentifier: String, around date: Date? = nil) -> URL? {
         var components = URLComponents(string: "https://www.hebcal.com/shabbat")
         var items = [
@@ -61,6 +66,7 @@ enum ShabbatTimesService {
             URLQueryItem(name: "tzid", value: timeZoneIdentifier),
             URLQueryItem(name: "M", value: "on")
         ]
+        if isIsrael(timeZoneIdentifier: timeZoneIdentifier) { items.append(URLQueryItem(name: "i", value: "on")) }
         if let minutes = candleLightingMinutes(latitude: latitude, longitude: longitude) {
             items.append(URLQueryItem(name: "b", value: String(minutes)))
         }
@@ -127,6 +133,7 @@ enum ShabbatTimesService {
             URLQueryItem(name: "start", value: formatter.string(from: start)),
             URLQueryItem(name: "end", value: formatter.string(from: end))
         ]
+        if isIsrael(timeZoneIdentifier: timeZoneIdentifier) { items.append(URLQueryItem(name: "i", value: "on")) }
         if let minutes = candleLightingMinutes(latitude: latitude, longitude: longitude) {
             items.append(URLQueryItem(name: "b", value: String(minutes)))
         }
@@ -164,12 +171,12 @@ enum ShabbatTimesService {
             let firstDay = calendar.startOfDay(for: candleDate)
             let havdalah = havdalot.first { $0 > lastCandle && $0.timeIntervalSince(lastCandle) < 3 * 24 * 3600 }
             let endDay = havdalah.map { calendar.startOfDay(for: $0) } ?? calendar.startOfDay(for: lastCandle).addingTimeInterval(24 * 3600)
-            let window = firstDay...max(firstDay.addingTimeInterval(3 * 24 * 3600), endDay)
+            let window = firstDay..<max(firstDay.addingTimeInterval(3 * 24 * 3600), endDay.addingTimeInterval(1))
             let portion = portions.first { window.contains($0.0) }
             let holidays = yomTovDays.filter { (firstDay...endDay).contains($0.0) }
             let shabbat = portion?.0 ?? havdalah.map { calendar.startOfDay(for: $0) } ?? firstDay
             return ShabbatWeek(
-                id: day.string(from: shabbat),
+                id: day.string(from: shabbat) + (portion == nil ? "-yt" : ""),
                 parashaEnglish: portion?.1.title,
                 parashaHebrew: portion?.1.hebrew,
                 holidayEnglish: holidayName(holidays.map { $0.1.title }, hebrew: false),

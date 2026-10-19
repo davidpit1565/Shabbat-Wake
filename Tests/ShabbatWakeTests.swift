@@ -344,6 +344,15 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertFalse(ProPolicy.canSavePlace(currentCount: ProPolicy.maxSavedPlaces, hasPro: true))
     }
 
+    func testIsraelGetsTheIsraeliCalendarAndOthersDoNot() {
+        func hasIsrael(_ zone: String) -> Bool {
+            let url = ShabbatTimesService.makeWeeksURL(latitude: 31.77, longitude: 35.21, timeZoneIdentifier: zone, from: Date(timeIntervalSince1970: 1_790_000_000), weeks: 4)!
+            return URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.contains { $0.name == "i" && $0.value == "on" } ?? false
+        }
+        XCTAssertTrue(hasIsrael("Asia/Jerusalem"))
+        XCTAssertFalse(hasIsrael("America/New_York"))
+    }
+
     func testHebcalIsAskedForNamesInTheAppLanguage() {
         func query(_ language: String) -> [String: String] {
             let url = ShabbatTimesService.makeWeeksURL(latitude: 31.77, longitude: 35.21, timeZoneIdentifier: "Asia/Jerusalem", from: Date(timeIntervalSince1970: 1_790_000_000), weeks: 4, language: language)!

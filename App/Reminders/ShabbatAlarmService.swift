@@ -176,11 +176,8 @@ enum AlarmScheduler {
 
     static func cancel(_ alarm: WakeAlarm) async throws {
         await ShabbatAlarmService.cancel(id: alarm.id)
-        do {
-            try await NativeAlarmKitService.cancel(id: alarm.id)
-        } catch {
-            if alarm.ringPlan == nil { throw error }
-        }
+        // An alarm the system no longer knows (already rang, restored backup) must still be deletable.
+        try? await NativeAlarmKitService.cancel(id: alarm.id)
     }
 }
 
