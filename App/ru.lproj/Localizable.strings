@@ -314,7 +314,7 @@
 "Rings: %d · interval: %d min. Stop each ring when it sounds." = "Звонков: %d · интервал: %d мин. Останавливайте каждый звонок, когда он звучит.";
 "Rings: %d · interval: %d min" = "Звонков: %d · интервал: %d мин";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "Тестовый будильник прозвучит примерно через минуту. Заблокируйте телефон и отложите его.";
-"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Всегда бесплатно: неограниченное число будильников, время субботы, Siri, Apple Watch, виджеты главного экрана и одно напоминание перед зажиганием свечей.";
+"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, all widgets and one reminder before candle lighting." = "Всегда бесплатно: неограниченное число будильников, время Шаббата, Siri, Apple Watch, все виджеты и одно напоминание перед зажиганием свечей.";
 "Open" = "Открыть";
 "Stop" = "Стоп";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set." = "Каждый звонок — настоящий будильник Apple. Он звучит даже в беззвучном режиме и в Фокусе столько секунд, сколько вы выбрали, без повтора. Следующий звонок придёт через заданные минуты.";
@@ -325,6 +325,8 @@
 "A soft, layered morning chime" = "Мягкий многослойный утренний перезвон";
 "A calm rising sequence of original notes" = "Спокойная восходящая последовательность оригинальных нот";
 "A clearer, more insistent bell-like pattern" = "Более чёткий, настойчивый звук, похожий на колокол";
+"Included in Pro" = "Входит в Pro";
+"Free for everyone" = "Бесплатно для всех";
 "Remove a place" = "Удалить место";
 "Apple's standard alarm sound" = "Стандартный звук будильника Apple";
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "Стандартный звук Apple не отключается сам. Он звучит, пока вы не нажмёте «Стоп».";

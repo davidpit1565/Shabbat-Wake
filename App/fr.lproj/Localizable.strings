@@ -314,7 +314,7 @@
 "Rings: %d · interval: %d min. Stop each ring when it sounds." = "Sonneries : %d · intervalle : %d min. Arrêtez chaque sonnerie quand elle retentit.";
 "Rings: %d · interval: %d min" = "Sonneries : %d · intervalle : %d min";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "L'alarme de test sonnera dans environ une minute. Verrouillez votre téléphone et posez-le.";
-"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Toujours gratuit : alarmes illimitées, horaires de Chabbat, Siri, Apple Watch, widgets de l'écran d'accueil et un rappel avant l'allumage des bougies.";
+"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, all widgets and one reminder before candle lighting." = "Toujours gratuit : alarmes illimitées, horaires de Chabbat, Siri, Apple Watch, tous les widgets et un rappel avant l’allumage des bougies.";
 "Open" = "Ouvrir";
 "Stop" = "Arrêter";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set." = "Chaque sonnerie est une vraie alarme Apple. Elle sonne même en mode silencieux et en Concentration pendant la durée choisie, sans répétition. La suivante arrive après les minutes réglées.";
@@ -325,6 +325,8 @@
 "A soft, layered morning chime" = "Un carillon matinal doux et superposé";
 "A calm rising sequence of original notes" = "Une douce séquence ascendante de notes originales";
 "A clearer, more insistent bell-like pattern" = "Un motif de cloche plus net et plus insistant";
+"Included in Pro" = "Inclus dans Pro";
+"Free for everyone" = "Gratuit pour tous";
 "Remove a place" = "Supprimer un lieu";
 "Apple's standard alarm sound" = "Sonnerie d’alarme standard d’Apple";
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "La sonnerie standard d’Apple ne s’arrête pas toute seule. Elle sonne jusqu’à ce que vous appuyiez sur Arrêter.";

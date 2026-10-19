@@ -103,34 +103,6 @@ struct ShabbatWakeWidgetProvider: TimelineProvider {
     }
 }
 
-private extension WidgetFamily {
-    var isLockScreen: Bool { self == .accessoryInline || self == .accessoryCircular || self == .accessoryRectangular }
-}
-
-/// Shown on the Lock Screen in place of a widget that needs Pro.
-private struct LockedWidgetView: View {
-    @Environment(\.widgetFamily) private var family
-
-    var body: some View {
-        switch family {
-        case .accessoryInline:
-            Label("Pro widget", systemImage: "lock.fill")
-        case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                Image(systemName: "lock.fill")
-            }
-            .containerBackground(.background, for: .widget)
-        default:
-            VStack(alignment: .leading, spacing: 2) {
-                Label("Pro widget", systemImage: "lock.fill").font(.caption.weight(.semibold))
-                Text("Open Shabbat Waker to unlock Lock Screen widgets.").font(.caption2)
-            }
-            .containerBackground(.background, for: .widget)
-        }
-    }
-}
-
 private extension Date {
     private func style(_ base: Date.FormatStyle, _ zone: TimeZone?) -> Date.FormatStyle {
         var style = base
@@ -172,13 +144,7 @@ struct ShabbatWakeWidgetView: View {
     }
 
     var body: some View {
-        Group {
-            if !entry.hasPro && family.isLockScreen {
-                LockedWidgetView()
-            } else {
-                content
-            }
-        }
+        content
         .environment(\.locale, entry.locale)
         .environment(\.layoutDirection, entry.isRightToLeft ? .rightToLeft : .leftToRight)
     }
@@ -332,13 +298,7 @@ private struct SingleTimeWidgetView: View {
     private var date: Date? { kind.item(entry)?.date }
 
     var body: some View {
-        Group {
-            if !entry.hasPro && family.isLockScreen {
-                LockedWidgetView()
-            } else {
-                content
-            }
-        }
+        content
         .environment(\.locale, entry.locale)
         .environment(\.layoutDirection, entry.isRightToLeft ? .rightToLeft : .leftToRight)
     }
