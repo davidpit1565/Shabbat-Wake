@@ -328,7 +328,7 @@
 "Rings: %d · interval: %d min. Stop each ring when it sounds." = "צלצולים: %d · מרווח: %d דק׳. עצור כל צלצול כשהוא נשמע.";
 "Rings: %d · interval: %d min" = "צלצולים: %d · מרווח: %d דק׳";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "שעון הבדיקה יצלצל בעוד כדקה. נעל את הטלפון והנח אותו בצד.";
-"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "תמיד בחינם: התראות ללא הגבלה, זמני שבת, Siri, Apple Watch, ווידג'טים למסך הבית ותזכורת אחת לפני הדלקת נרות.";
+"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, all widgets and one reminder before candle lighting." = "תמיד בחינם: התראות ללא הגבלה, זמני שבת, Siri, Apple Watch, כל הווידג'טים ותזכורת אחת לפני הדלקת נרות.";
 "Open" = "פתח";
 "Stop" = "עצור";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set." = "כל צלצול הוא שעון מעורר אמיתי של אפל. הוא נשמע גם במצב שקט ובמצב Focus, כמה שניות שבחרת, בלי נודניק. הצלצול הבא יגיע אחרי הדקות שהגדרת.";
@@ -339,3 +339,5 @@
 "A soft, layered morning chime" = "צלצול בוקר רך ושכבתי";
 "A calm rising sequence of original notes" = "רצף רגוע ועולה של צלילים מקוריים";
 "A clearer, more insistent bell-like pattern" = "צליל דמוי פעמון, ברור ומתעקש יותר";
+"Included in Pro" = "כלול ב-Pro";
+"Free for everyone" = "בחינם לכולם";

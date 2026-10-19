@@ -34,7 +34,6 @@ struct PaywallView: View {
     private let benefits: [(symbol: String, title: LocalizedStringKey, detail: LocalizedStringKey)] = [
         ("mappin.and.ellipse", "Saved places", "Keep times for home, family and trips, and switch between them."),
         ("bell.badge", "Several reminders", "Remind yourself more than once before candle lighting, at times you choose."),
-        ("lock.rectangle", "Lock Screen widgets", "Candle lighting, Shabbat ends and your next alarm on the Lock Screen."),
         ("calendar.badge.clock", "Alarms for some weeks", "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own."),
         ("app.badge", "All app icons", "Pick any of the extra icons.")
     ]
@@ -58,6 +57,9 @@ struct PaywallView: View {
                         Text("Cancel any time. No account.")
                             .font(.subheadline).foregroundStyle(.secondary)
                     }
+                    Text("Included in Pro")
+                        .font(.title3.weight(.bold))
+                        .accessibilityAddTraits(.isHeader)
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(0..<benefits.count, id: \.self) { index in
                             HStack(alignment: .top, spacing: 14) {
@@ -79,8 +81,13 @@ struct PaywallView: View {
 
                     if ProStore.isEnforced && !pro.hasPro { plans }
 
-                    Text("Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting.")
-                        .font(.footnote).foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Free for everyone")
+                            .font(.title3.weight(.bold))
+                            .accessibilityAddTraits(.isHeader)
+                        Text("Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, all widgets and one reminder before candle lighting.")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    }
                     if ProStore.isEnforced { legal }
                 }
                 .padding(20)

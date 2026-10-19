@@ -174,6 +174,25 @@ struct FeedbackScreen: View {
         }
     }
 
+    private func sendByMail(subject: String, message: String, name: String) {
+        if MFMailComposeViewController.canSendMail() {
+            showComposer = true
+            return
+        }
+        let body = "\(message)\n\n—\n\(name)\niOS \(UIDevice.current.systemVersion)"
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = SupportContact.email
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "[Shabbat Waker] \(subject)"),
+            URLQueryItem(name: "body", value: body)
+        ]
+        guard let url = components.url else { failed = true; return }
+        UIApplication.shared.open(url) { opened in
+            if !opened { failed = true }
+        }
+    }
+
     private func send() {
         focus = nil
         failed = false
@@ -182,6 +201,12 @@ struct FeedbackScreen: View {
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Without a form-service key the message goes by email, from the person's own mail app.
+        if FeedbackRelay.accessKey.isEmpty {
+            isSending = false
+            sendByMail(subject: trimmedTitle, message: trimmedMessage, name: trimmedName)
+            return
+        }
         Task {
             let outcome = await FeedbackRelay.send(name: trimmedName, email: trimmedEmail, subject: trimmedTitle, message: trimmedMessage)
             isSending = false

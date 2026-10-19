@@ -314,7 +314,7 @@
 "Rings: %d · interval: %d min. Stop each ring when it sounds." = "Avisos: %d · intervalo: %d min. Detén cada aviso cuando suene.";
 "Rings: %d · interval: %d min" = "Avisos: %d · intervalo: %d min";
 "The test alarm will ring in about a minute. Lock your phone and put it away." = "La alarma de prueba sonará en aproximadamente un minuto. Bloquea el teléfono y déjalo a un lado.";
-"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, Home Screen widgets and one reminder before candle lighting." = "Siempre gratis: alarmas ilimitadas, horarios de Shabat, Siri, Apple Watch, widgets de la pantalla de inicio y un recordatorio antes del encendido de velas.";
+"Always free: unlimited alarms, Shabbat times, Siri, Apple Watch, all widgets and one reminder before candle lighting." = "Siempre gratis: alarmas ilimitadas, horarios de Shabat, Siri, Apple Watch, todos los widgets y un recordatorio antes del encendido de las velas.";
 "Open" = "Abrir";
 "Stop" = "Detener";
 "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set." = "Cada aviso es una alarma real de Apple. Suena incluso en modo silencio y Concentración durante el tiempo elegido, sin repetición. El siguiente llega tras los minutos que fijaste.";
@@ -325,3 +325,5 @@
 "A soft, layered morning chime" = "Un suave carillón matutino en capas";
 "A calm rising sequence of original notes" = "Una secuencia tranquila y ascendente de notas originales";
 "A clearer, more insistent bell-like pattern" = "Un patrón de campana más claro e insistente";
+"Included in Pro" = "Incluido en Pro";
+"Free for everyone" = "Gratis para todos";
