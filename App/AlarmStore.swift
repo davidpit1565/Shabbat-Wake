@@ -41,7 +41,6 @@ final class AlarmStore: ObservableObject {
             try await AlarmScheduler.schedule(alarm)
             systemAlarmIDs.insert(alarm.id)
             alarm.isEnabled = true
-            alarm.armedAt = .now
             alarms.append(alarm)
             save()
             lastError = nil
@@ -81,7 +80,17 @@ final class AlarmStore: ObservableObject {
             lastError = nil
             return true
         } catch {
-            if previous.isEnabled { try? await AlarmScheduler.schedule(previous) }
+            if previous.isEnabled {
+                do {
+                    try await AlarmScheduler.schedule(previous)
+                } catch {
+                    // Neither the new nor the old schedule could be set: do not show an alarm as on when nothing will ring.
+                    if let current = alarms.firstIndex(where: { $0.id == id }) {
+                        alarms[current].isEnabled = false
+                        save()
+                    }
+                }
+            }
             lastError = error.localizedDescription
             return false
         }
@@ -95,11 +104,13 @@ final class AlarmStore: ObservableObject {
         busyAlarmIDs.insert(alarmID)
         Task {
             defer { busyAlarmIDs.remove(alarmID) }
+            var armedAt: Date?
             do {
                 if shouldEnable {
                     guard var latest = alarms.first(where: { $0.id == alarmID }) else { return }
                     latest.isEnabled = true
                     latest.armedAt = .now
+                    armedAt = latest.armedAt
                     try await AlarmScheduler.schedule(latest)
                     systemAlarmIDs.insert(alarmID)
                 } else {
@@ -112,8 +123,8 @@ final class AlarmStore: ObservableObject {
                     return
                 }
                 alarms[index].isEnabled = shouldEnable
-                if shouldEnable {
-                    alarms[index].armedAt = .now
+                if shouldEnable, let armedAt {
+                    alarms[index].armedAt = armedAt
                 }
                 save()
                 lastError = nil
@@ -166,11 +177,18 @@ final class AlarmStore: ObservableObject {
         defer { isRefreshing = false }
         expireFinishedAlarms()
         // Shabbat alarms are notifications: schedule them again if they went missing, and count the armed ones.
-        var armed = await ShabbatNotificationAlarm.armedAlarmIDs()
-        for alarm in alarms where alarm.isEnabled && alarm.isShabbatMode && !busyAlarmIDs.contains(alarm.id) && alarm.nextFireDate() != nil && !armed.contains(alarm.id) {
+        let counts = await ShabbatNotificationAlarm.armedCounts()
+        var armed = Set(counts.keys)
+        for snapshot in alarms where snapshot.isEnabled && snapshot.isShabbatMode && !busyAlarmIDs.contains(snapshot.id) && snapshot.nextFireDate() != nil {
+            // Top up when notifications are missing: all of them, or the later weeks of a long series.
+            guard (counts[snapshot.id] ?? 0) < ShabbatNotificationAlarm.expectedRequests(for: snapshot) else { continue }
+            busyAlarmIDs.insert(snapshot.id)
+            defer { busyAlarmIDs.remove(snapshot.id) }
+            // The alarm may have been changed or switched off while waiting.
+            guard let current = alarms.first(where: { $0.id == snapshot.id }), current.isEnabled, current.isShabbatMode else { continue }
             do {
-                try await ShabbatNotificationAlarm.schedule(alarm)
-                armed.insert(alarm.id)
+                try await ShabbatNotificationAlarm.schedule(current)
+                armed.insert(current.id)
             } catch {
                 lastError = error.localizedDescription
             }

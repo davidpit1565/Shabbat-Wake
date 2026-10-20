@@ -209,3 +209,5 @@
 "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on.";
 "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it.";
 "Shabbat Shalom" = "Shabbat Shalom";
+"Rings once, then it stops by itself." = "Rings once, then it stops by itself.";
+"Rings: %d · interval: %d min. Each ring stops by itself." = "Rings: %d · interval: %d min. Each ring stops by itself.";

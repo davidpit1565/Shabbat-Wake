@@ -55,7 +55,12 @@ struct AlarmEditorSheet: View {
     }
 
     /// A repeating alarm keeps one scheduled notification per ring and day, so the total has to stay small.
-    private var tooManyRings: Bool { stopsByItself && repeatWeekly && weeksLimit == 0 && weekdays.count * plan.count > 30 }
+    private var tooManyRings: Bool {
+        guard stopsByItself && repeatWeekly && weeksLimit == 0 else { return false }
+        // A Shabbat ring of 40 or 50 seconds is two notifications.
+        let perRing = shabbatMode ? (ringSeconds > 30 ? 2 : 1) : 1
+        return weekdays.count * plan.count * perRing > (shabbatMode ? ShabbatNotificationAlarm.requestBudget : 30)
+    }
     private var canSave: Bool { !isSaving && (!repeatWeekly || !weekdays.isEmpty) && !tooManyRings }
     private let weekChoices = [0, 4, 8, 12, 26]
 
@@ -196,6 +201,10 @@ struct AlarmEditorSheet: View {
     }
 
     private var summary: String {
+        if shabbatMode {
+            if plan.count == 1 { return AppLanguage.text("Rings once, then it stops by itself.") }
+            return String(format: AppLanguage.text("Rings: %d · interval: %d min. Each ring stops by itself."), plan.count, plan.intervalMinutes)
+        }
         if plan.count == 1 {
             return AppLanguage.text("Rings once, until you stop it.")
         }
@@ -211,6 +220,8 @@ struct AlarmEditorSheet: View {
     }
 
     private func save() {
+        // Apple's standard sound belongs to system alarms only.
+        if shabbatMode && soundID == "system" { soundID = "classic" }
         isSaving = true
         let ringPlan: RingPlan? = stopsByItself ? plan.normalized() : nil
         let weeks: Int? = repeatWeekly && weeksLimit > 0 ? weeksLimit : nil

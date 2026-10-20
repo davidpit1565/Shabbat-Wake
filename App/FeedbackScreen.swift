@@ -180,14 +180,12 @@ struct FeedbackScreen: View {
             return
         }
         let body = "\(message)\n\n—\n\(name)\niOS \(UIDevice.current.systemVersion)"
-        var components = URLComponents()
-        components.scheme = "mailto"
-        components.path = SupportContact.email
-        components.queryItems = [
-            URLQueryItem(name: "subject", value: "[Shabbat Waker] \(subject)"),
-            URLQueryItem(name: "body", value: body)
-        ]
-        guard let url = components.url else { failed = true; return }
+        // Encoded by hand: URLQueryItem leaves "&" and "+" as they are, which would cut the message off.
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        let encodedSubject = "[Shabbat Waker] \(subject)".addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        let encodedBody = body.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        guard let url = URL(string: "mailto:\(SupportContact.email)?subject=\(encodedSubject)&body=\(encodedBody)") else { failed = true; return }
         UIApplication.shared.open(url) { opened in
             if !opened { failed = true }
         }

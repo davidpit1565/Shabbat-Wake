@@ -23,6 +23,8 @@ final class WatchSync: NSObject, WCSessionDelegate {
         if activationState == .activated { push() }
     }
 
+    func sessionWatchStateDidChange(_ session: WCSession) { push() }
+
     func sessionDidBecomeInactive(_ session: WCSession) {}
 
     func sessionDidDeactivate(_ session: WCSession) {

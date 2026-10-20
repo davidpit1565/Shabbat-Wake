@@ -358,3 +358,5 @@
 "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "הוא ייעצר לבד בלי כפתורים, ולא יישמע אם המתג בצד האייפון על שקט.";
 "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "זה שעון מערכת של אפל עם כפתורי ״עצור״ ו״פתח״. הוא מצלצל גם על שקט ורוטט עד שעוצרים אותו.";
 "Shabbat Shalom" = "שבת שלום";
+"Rings once, then it stops by itself." = "מצלצל פעם אחת ואז נעצר לבד.";
+"Rings: %d · interval: %d min. Each ring stops by itself." = "צלצולים: %d · מרווח: %d דק׳. כל צלצול נעצר לבד.";

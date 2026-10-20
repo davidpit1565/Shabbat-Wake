@@ -142,14 +142,17 @@ enum TimesRefresher {
     static func refreshIfNeeded() async {
         let snapshot = SharedStore.load()
         guard let latitude = snapshot.latitude, let longitude = snapshot.longitude, let zone = snapshot.timeZoneIdentifier else { return }
+        let language = AppLanguage.effectiveCode(for: AppLanguage.preference)
         let upcoming = snapshot.times.filter { $0.date > .now }.count
         let last = UserDefaults.standard.object(forKey: fetchedKey) as? Date ?? .distantPast
         guard upcoming < 6 || Date.now.timeIntervalSince(last) > 2 * 24 * 3600 else { return }
         guard let weeks = try? await ShabbatTimesService.fetchWeeks(
             latitude: latitude, longitude: longitude, timeZoneIdentifier: zone,
-            from: Date.now.addingTimeInterval(-24 * 3600), weeks: 27
+            from: Date.now.addingTimeInterval(-24 * 3600), weeks: 27, language: language
         ), !weeks.isEmpty else { return }
         UserDefaults.standard.set(Date.now, forKey: fetchedKey)
+        let next = weeks.first { ($0.havdalah ?? $0.shabbatDay.addingTimeInterval(24 * 3600)) > .now }
+        WidgetSync.updateNextTitle(next?.displayTitle(language: language))
         WidgetSync.updateLocation(latitude: latitude, longitude: longitude, timeZoneIdentifier: zone, placeName: snapshot.placeName, times: weeks.timeItems)
     }
 

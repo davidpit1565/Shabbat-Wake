@@ -106,7 +106,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard savedPlace == nil else { return }
-        guard let latest = locations.last, latest.horizontalAccuracy >= 0, latest.horizontalAccuracy < 20000 else {
+        guard let latest = locations.last, latest.horizontalAccuracy >= 0, latest.horizontalAccuracy < 50000 else {
             errorMessage = AppLanguage.text("Could not get a reliable location. Try again.")
             return
         }
@@ -117,7 +117,7 @@ final class ShabbatLocationModel: NSObject, ObservableObject, @preconcurrency CL
         guard savedPlace == nil else { return }
         errorMessage = AppLanguage.text("Could not get your location. Check Location Services and try again.")
         isLoading = false
-        weeks = []
+        if (error as? CLError)?.code != .locationUnknown, weeks.isEmpty { weeks = [] }
     }
 
     func refresh() { requestLocation() }

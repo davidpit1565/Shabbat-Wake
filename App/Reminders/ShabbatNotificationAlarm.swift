@@ -5,8 +5,9 @@ import UserNotifications
 /// Unlike a system alarm it does not sound when the silent switch is on; it does break through Focus (time sensitive).
 enum ShabbatNotificationAlarm {
     static let prefix = "shabbatwake.shabbat."
-    /// Pending notifications are limited to 64 per app; reminders use a few of them.
-    static let ringBudget = 20
+    /// Pending notifications are limited to 64 per app; candle-lighting reminders use some of them.
+    /// The budget counts notifications (a 40 or 50 second ring is two of them), not rings.
+    static let requestBudget = 36
 
     private struct Piece {
         let file: String
@@ -31,6 +32,16 @@ enum ShabbatNotificationAlarm {
         }
     }
 
+    static func requestsPerRing(_ alarm: WakeAlarm) -> Int { pieces(for: alarm).count }
+
+    /// How many rings fit in the budget.
+    static func ringLimit(for alarm: WakeAlarm) -> Int { max(1, requestBudget / requestsPerRing(alarm)) }
+
+    /// The notifications this alarm should have waiting right now.
+    static func expectedRequests(for alarm: WakeAlarm) -> Int {
+        RingPlanner.rings(for: planned(alarm), limit: ringLimit(for: alarm)).count * requestsPerRing(alarm)
+    }
+
     /// A single ring when the alarm has no ring plan.
     private static func planned(_ alarm: WakeAlarm) -> WakeAlarm {
         var copy = alarm
@@ -49,8 +60,10 @@ enum ShabbatNotificationAlarm {
         guard status == .authorized || status == .provisional else { throw ShabbatAlarmError.notificationsDenied }
 
         let copy = planned(alarm)
-        let rings = RingPlanner.rings(for: copy, limit: ringBudget)
+        let rings = RingPlanner.rings(for: copy, limit: ringLimit(for: alarm))
         guard !rings.isEmpty else { throw ShabbatAlarmError.nothingToSchedule }
+        // Repeating rings are never dropped, so too many of them cannot be scheduled at all.
+        if rings.filter(\.repeats).count * requestsPerRing(alarm) > requestBudget { throw ShabbatAlarmError.tooManyRings }
         await cancel(id: alarm.id)
         let pieces = pieces(for: alarm)
         var added: [String] = []
@@ -65,6 +78,8 @@ enum ShabbatNotificationAlarm {
                     content.interruptionLevel = .timeSensitive
                     var parts = ring.components
                     parts.second = piece.offset
+                    // A dated ring is a fixed moment, even if the phone changes time zone.
+                    if !ring.repeats { parts.timeZone = Calendar.current.timeZone }
                     let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: ring.repeats)
                     let identifier = "\(base).p\(index)"
                     try await center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger))
@@ -86,14 +101,14 @@ enum ShabbatNotificationAlarm {
         if !delivered.isEmpty { center.removeDeliveredNotifications(withIdentifiers: delivered) }
     }
 
-    /// The Shabbat alarms that still have a notification waiting.
-    static func armedAlarmIDs() async -> Set<UUID> {
+    /// How many notifications each Shabbat alarm has waiting.
+    static func armedCounts() async -> [UUID: Int] {
         let pending = await UNUserNotificationCenter.current().pendingNotificationRequests().map(\.identifier)
-        var ids: Set<UUID> = []
+        var counts: [UUID: Int] = [:]
         for identifier in pending where identifier.hasPrefix(prefix) {
             let rest = identifier.dropFirst(prefix.count)
-            if let text = rest.split(separator: ".").first, let id = UUID(uuidString: String(text)) { ids.insert(id) }
+            if let text = rest.split(separator: ".").first, let id = UUID(uuidString: String(text)) { counts[id, default: 0] += 1 }
         }
-        return ids
+        return counts
     }
 }

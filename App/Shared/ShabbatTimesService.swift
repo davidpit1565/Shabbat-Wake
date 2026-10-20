@@ -54,7 +54,7 @@ enum ShabbatTimesService {
 
     /// Hebcal keeps the diaspora calendar (two-day holidays, different readings) unless it is asked for Israel's.
     static func isIsrael(timeZoneIdentifier: String) -> Bool {
-        ["Asia/Jerusalem", "Asia/Tel_Aviv", "Israel"].contains(timeZoneIdentifier)
+        ["Asia/Jerusalem", "Asia/Tel_Aviv", "Israel", "Asia/Hebron", "Asia/Gaza"].contains(timeZoneIdentifier)
     }
 
     static func makeURL(latitude: Double, longitude: Double, timeZoneIdentifier: String, around date: Date? = nil) -> URL? {

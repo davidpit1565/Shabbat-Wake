@@ -180,6 +180,8 @@ struct PaywallView: View {
                 Link("Privacy Policy", destination: Self.privacyURL)
             }
             .font(.caption.weight(.semibold))
+            // The app's own in-app browser is a sheet on the root view; this screen is already a sheet, so open these in Safari.
+            .environment(\.openURL, OpenURLAction { _ in .systemAction })
         }
     }
 

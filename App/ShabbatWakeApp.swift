@@ -13,15 +13,22 @@ struct ShabbatWakeApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .preferredColorScheme(preferredColorScheme)
+                .onAppear { Self.applyAppearance(appearanceMode) }
+                .onChange(of: appearanceMode) { _, mode in Self.applyAppearance(mode) }
         }
     }
 
-    private var preferredColorScheme: ColorScheme? {
-        switch appearanceMode {
-        case "light": return .light
-        case "dark": return .dark
-        default: return nil
+    /// Sets the look on the windows themselves. SwiftUI's `preferredColorScheme(nil)` does not go back to the
+    /// phone's own setting until the app is relaunched; the window's override does it at once.
+    static func applyAppearance(_ mode: String) {
+        let style: UIUserInterfaceStyle
+        switch mode {
+        case "light": style = .light
+        case "dark": style = .dark
+        default: style = .unspecified
+        }
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            for window in scene.windows { window.overrideUserInterfaceStyle = style }
         }
     }
 }
@@ -135,7 +142,7 @@ struct RootView: View {
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
             WidgetSync.updateTimeFormat(timeFormat)
-            await pro.start()
+            Task { await pro.start() }
             await TimesRefresher.refreshIfNeeded()
             await reminders.reschedule()
         }
