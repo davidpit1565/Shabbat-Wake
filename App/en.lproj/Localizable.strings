@@ -211,3 +211,21 @@
 "Shabbat Shalom" = "Shabbat Shalom";
 "Rings once, then it stops by itself." = "Rings once, then it stops by itself.";
 "Rings: %d · interval: %d min. Each ring stops by itself." = "Rings: %d · interval: %d min. Each ring stops by itself.";
+
+/* Widget texts, also here so the widget views can be rendered inside the app for the App Store images. */
+"Shabbat Waker" = "Shabbat Waker";
+"No alarm set" = "No alarm set";
+"Shabbat" = "Shabbat";
+"Open Shabbat Waker to set your location" = "Open Shabbat Waker to set your location";
+"Havdalah" = "Havdalah";
+"Candle lighting %@" = "Candle lighting %@";
+"Havdalah %@" = "Havdalah %@";
+"Alarm set" = "Alarm set";
+"Your next alarm and this week's candle-lighting and havdalah times." = "Your next alarm and this week's candle-lighting and havdalah times.";
+"Shabbat ends" = "Shabbat ends";
+"The next candle-lighting time for your location." = "The next candle-lighting time for your location.";
+"When Shabbat ends at your location." = "When Shabbat ends at your location.";
+
+"Pro widget" = "Pro widget";
+"Open Shabbat Waker to unlock Lock Screen widgets." = "Open Shabbat Waker to unlock Lock Screen widgets.";
+

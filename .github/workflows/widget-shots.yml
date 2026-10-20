@@ -1,0 +1,62 @@
+name: Widget images
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ["ShotTests/**", ".github/workflows/widget-shots.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate sounds and project
+        run: |
+          python3 App/AlarmSoundGenerator.py
+          xcodegen generate
+
+      - name: Pick the largest iPhone simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[0-9] Pro Max" | tail -1 | grep -oE "[0-9A-F-]{36}")
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Render the widgets
+        run: |
+          rm -rf res.xcresult
+          xcodebuild test \
+            -project ShabbatWake.xcodeproj -scheme ShabbatWakeWidgetShots \
+            -destination "id=$UDID" -derivedDataPath build \
+            -resultBundlePath res.xcresult \
+            CODE_SIGNING_ALLOWED=NO || echo "test run failed"
+          mkdir -p raw out
+          xcrun xcresulttool export attachments --path res.xcresult --output-path raw || true
+          python3 - <<'PY'
+          import json, os, shutil
+          manifest = "raw/manifest.json"
+          if not os.path.exists(manifest):
+              print("no manifest"); raise SystemExit(0)
+          for test in json.load(open(manifest)):
+              for att in test.get("attachments", []):
+                  name = att.get("suggestedHumanReadableName", "")
+                  clean = name.split("_")[0] if "_" in name else name
+                  shutil.copy(os.path.join("raw", att["exportedFileName"]), f"out/{clean}.png")
+          PY
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: widget-images
+          path: out
+          if-no-files-found: error

@@ -30,16 +30,25 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(tabs.waitForExistence(timeout: 20))
         let buttons = tabs.buttons
 
-        sleep(4)
+        // The times come from the network, so visit them first; then Home shows candle lighting.
+        buttons.element(boundBy: 2).tap()
+        sleep(12)
+        shot("3-times")
+
+        buttons.element(boundBy: 0).tap()
+        sleep(3)
         shot("1-home")
 
         buttons.element(boundBy: 1).tap()
         sleep(2)
         shot("2-alarms")
 
-        buttons.element(boundBy: 2).tap()
-        sleep(12)   // the times come from the network
-        shot("3-times")
+        // The "+" at the top right opens the editor, with the Shabbat alarm switched on.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
+        sleep(3)
+        shot("5-editor")
+        app.swipeDown(velocity: .fast)
+        sleep(2)
 
         buttons.element(boundBy: 3).tap()
         sleep(2)

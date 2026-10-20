@@ -149,6 +149,27 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
 
+  # Renders the real widget views to PNG files for the App Store images ("Widget images" workflow). Not part of the normal tests.
+  ShabbatWakeWidgetShots:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ShotTests
+      - path: App/Widgets
+        includes: ["*.swift"]
+      - path: App/Shared
+      - path: App/AlarmUI/OpenWakeScreenIntent.swift
+    dependencies:
+      - target: ShabbatWake
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shabbatwake.ios.widgetshots
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_SHOTS"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Shabbat Wake.app/Shabbat Wake"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
   ShabbatWakeTests:
     type: bundle.unit-test
     platform: iOS
@@ -165,6 +186,14 @@ targets:
         BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
+  ShabbatWakeWidgetShots:
+    build:
+      targets:
+        ShabbatWake: all
+        ShabbatWakeWidgetShots: [test]
+    test:
+      targets:
+        - ShabbatWakeWidgetShots
   ShabbatWakeScreenshots:
     build:
       targets:

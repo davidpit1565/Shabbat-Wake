@@ -130,7 +130,15 @@ enum WidgetBrand {
 
 struct ShabbatWakeWidgetView: View {
     var entry: ShabbatWakeWidgetEntry
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Lets the App Store image test draw a given size; in a real widget the system decides.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    init(entry: ShabbatWakeWidgetEntry, familyOverride: WidgetFamily? = nil) {
+        self.entry = entry
+        self.familyOverride = familyOverride
+    }
 
     private var shabbatLines: [(label: LocalizedStringKey, date: Date)] {
         var lines: [(label: LocalizedStringKey, date: Date)] = []
@@ -281,7 +289,7 @@ struct ShabbatWakeHomeWidget: Widget {
 
 // MARK: - Single-time widgets (candle lighting, Shabbat ends)
 
-private enum SingleTimeKind {
+enum SingleTimeKind {
     case candles, ends
 
     var title: LocalizedStringKey { self == .candles ? "Candle lighting" : "Shabbat ends" }
@@ -290,10 +298,19 @@ private enum SingleTimeKind {
     func item(_ entry: ShabbatWakeWidgetEntry) -> ShabbatTimeItem? { self == .candles ? entry.candleLighting : entry.havdalah }
 }
 
-private struct SingleTimeWidgetView: View {
+struct SingleTimeWidgetView: View {
     let entry: ShabbatWakeWidgetEntry
     let kind: SingleTimeKind
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Lets the App Store image test draw a given size; in a real widget the system decides.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    init(entry: ShabbatWakeWidgetEntry, kind: SingleTimeKind, familyOverride: WidgetFamily? = nil) {
+        self.entry = entry
+        self.kind = kind
+        self.familyOverride = familyOverride
+    }
 
     private var date: Date? { kind.item(entry)?.date }
 
@@ -414,7 +431,9 @@ struct ShabbatWakeAlarmLiveActivity: Widget {
     }
 }
 
+#if !WIDGET_SHOTS
 @main
+#endif
 struct ShabbatWakeWidgetBundle: WidgetBundle {
     var body: some Widget {
         ShabbatWakeHomeWidget()
