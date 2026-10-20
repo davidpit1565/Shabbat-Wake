@@ -11,7 +11,13 @@ final class ProStore: ObservableObject {
 
     /// Pro is not charged for until this is turned on. While it is false every feature is open,
     /// so the app can be tested end to end. Turn it on once the subscriptions exist in App Store Connect.
+    /// Debug builds (run from Xcode, with Config/Pro.storekit) show the real purchase flow so it can be tried.
+    /// Release builds keep everything unlocked until the two subscriptions exist in App Store Connect.
+    #if DEBUG
+    static let isEnforced = true
+    #else
     static let isEnforced = false
+    #endif
 
     @Published private(set) var hasPro: Bool
     /// Yearly first, then monthly.
@@ -43,7 +49,7 @@ final class ProStore: ObservableObject {
 
     init() {
         subscribed = UserDefaults.standard.bool(forKey: Self.subscribedKey)
-        hasPro = Self.isEnforced ? subscribed : !UserDefaults.standard.bool(forKey: Self.previewFreeKey)
+        hasPro = (Self.isEnforced && !ScreenshotMode.isOn) ? subscribed : !UserDefaults.standard.bool(forKey: Self.previewFreeKey)
         WidgetSync.updatePro(hasPro)
     }
 
@@ -140,7 +146,7 @@ final class ProStore: ObservableObject {
 #if DEBUG
         if debugLocked { hasPro = false; WidgetSync.updatePro(false); return }
 #endif
-        hasPro = Self.isEnforced ? subscribed : !previewFree
+        hasPro = (Self.isEnforced && !ScreenshotMode.isOn) ? subscribed : !previewFree
         WidgetSync.updatePro(hasPro)
     }
 }
