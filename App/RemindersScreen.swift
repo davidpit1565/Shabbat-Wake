@@ -22,7 +22,7 @@ struct RemindersScreen: View {
                         HStack {
                             Text(label(reminder.minutesBefore))
                             Spacer()
-                            ProBadge()
+                            if (store.reminders.firstIndex { $0.id == reminder.id } ?? 0) >= ProPolicy.freeReminderLimit { ProBadge() }
                         }
                         .foregroundStyle(.primary)
                     }

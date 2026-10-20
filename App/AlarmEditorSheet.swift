@@ -103,7 +103,8 @@ struct AlarmEditorSheet: View {
                         }
                     }
                 }
-                if repeatWeekly {
+                // A plain system alarm cannot end by itself, so the week limit only applies to alarms that stop by themselves.
+                if repeatWeekly && stopsByItself {
                     Section {
                         Picker(selection: Binding(get: { weeksLimit }, set: { chooseWeeks($0) })) {
                             ForEach(weekChoices, id: \.self) { weeks in

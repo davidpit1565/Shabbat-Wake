@@ -6,9 +6,13 @@ struct LivingRing: View {
     var primary: Color
     var secondary: Color
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// Stands still when the app is in the background, or when the phone is saving power.
+    private var stands: Bool { reduceMotion || scenePhase != .active || ProcessInfo.processInfo.isLowPowerModeEnabled }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: stands)) { context in
             let t = reduceMotion ? 1.5 : context.date.timeIntervalSinceReferenceDate
             Canvas { gc, size in
                 draw(&gc, size: size, t: t)

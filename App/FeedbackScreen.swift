@@ -152,7 +152,7 @@ struct FeedbackScreen: View {
         .navigationTitle("Send feedback")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showComposer) {
-            MailComposer(subject: "[Shabbat Waker] \(title)", body: "\(message)\n\n—\n\(name)\niOS \(UIDevice.current.systemVersion)") { showComposer = false }
+            MailComposer(subject: "[Shabbat Waker] \(title)", body: mailBody(message: message, name: name, email: email)) { showComposer = false }
                 .ignoresSafeArea()
         }
         .alert("Thank you! Your feedback was sent.", isPresented: $sent) {
@@ -174,12 +174,18 @@ struct FeedbackScreen: View {
         }
     }
 
+    /// The message plus who sent it; the optional reply address goes in too, so it is not lost.
+    private func mailBody(message: String, name: String, email: String) -> String {
+        let contact = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "\(message)\n\n—\n\(name)\(contact.isEmpty ? "" : "\n\(contact)")\niOS \(UIDevice.current.systemVersion)"
+    }
+
     private func sendByMail(subject: String, message: String, name: String) {
         if MFMailComposeViewController.canSendMail() {
             showComposer = true
             return
         }
-        let body = "\(message)\n\n—\n\(name)\niOS \(UIDevice.current.systemVersion)"
+        let body = mailBody(message: message, name: name, email: email)
         // Encoded by hand: URLQueryItem leaves "&" and "+" as they are, which would cut the message off.
         var allowed = CharacterSet.alphanumerics
         allowed.insert(charactersIn: "-._~")
