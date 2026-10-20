@@ -332,3 +332,15 @@
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "La sonnerie standard d’Apple ne s’arrête pas toute seule. Elle sonne jusqu’à ce que vous appuyiez sur Arrêter.";
 "Use it anyway" = "L’utiliser quand même";
 "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "Elle sonne jusqu’à ce que vous appuyiez sur Arrêter. Elle ne s’arrêtera pas toute seule, même pendant Chabbat. Nos sons s’arrêtent seuls.";
+"A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on." = "Une alarme de Chabbat est une notification ordinaire sans boutons. Son son et ses vibrations s’arrêtent d’eux-mêmes après la durée choisie. Elle ne sonne pas si le commutateur silencieux de l’iPhone est activé.";
+"A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop." = "Une alarme normale est une alarme système d’Apple avec les boutons Arrêter et Ouvrir. Elle sonne aussi en mode silencieux, et la vibration continue jusqu’à ce que vous appuyiez sur Arrêter.";
+"Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set." = "Chaque sonnerie est une notification qui s’arrête d’elle-même après la durée choisie. La suivante arrive après les minutes réglées.";
+"Save as a Shabbat alarm?" = "Enregistrer comme alarme de Chabbat ?";
+"Save as a regular alarm?" = "Enregistrer comme alarme normale ?";
+"Keep Shabbat alarm" = "Garder l’alarme de Chabbat";
+"Keep regular alarm" = "Garder l’alarme normale";
+"Make it a regular alarm" = "En faire une alarme normale";
+"Make it a Shabbat alarm" = "En faire une alarme de Chabbat";
+"It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "Elle s’arrêtera d’elle-même, sans boutons, et ne sonnera pas si le commutateur silencieux de l’iPhone est activé.";
+"It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "C’est une alarme système d’Apple avec les boutons Arrêter et Ouvrir. Elle sonne même en silencieux et vibre jusqu’à ce que vous l’arrêtiez.";
+"Shabbat Shalom" = "Chabbat chalom";

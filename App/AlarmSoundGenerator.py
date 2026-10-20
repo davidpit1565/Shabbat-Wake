@@ -50,6 +50,16 @@ def write_loop(filename, notes, duration, seconds, rate=8000):
         body = b'WAVE' + b'fmt ' + struct.pack('<I', len(fmt)) + fmt + b'fact' + struct.pack('<I', len(fact)) + fact + b'data' + struct.pack('<I', len(data)) + data
         out.write(b'RIFF' + struct.pack('<I', len(body)) + body)
 
+def write_notification(filename, notes, duration, seconds, rate=22050):
+    """The tone repeated for `seconds` and then it ends. Notification sounds must be under 30 seconds, and a notification
+    plays its sound once, so this is how a Shabbat alarm stops by itself."""
+    unit = tone_bytes(notes, duration, rate) + bytes(int(rate * 0.5) * 2)
+    total = int(rate * seconds) * 2
+    data = (unit * (total // len(unit) + 1))[:total]
+    with wave.open(os.path.join(ROOT, filename), "wb") as out:
+        out.setnchannels(1); out.setsampwidth(2); out.setframerate(rate)
+        out.writeframes(data)
+
 def write_tone(filename, notes, duration):
     frames = int(RATE * duration)
     with wave.open(os.path.join(ROOT, filename), "wb") as out:
@@ -75,4 +85,7 @@ for name, (notes, length) in TONES.items():
     write_tone(name + '.wav', notes, length)
     for seconds in (10, 15, 20, 30, 40, 50):
         write_loop('%s_%ds.wav' % (name, seconds), notes, length, seconds)
+    # Notification pieces: 10, 15, 20 and 29.5 seconds ("n29"); 40 and 50 seconds are two pieces one after the other.
+    for label, seconds in (('n10', 10), ('n15', 15), ('n20', 20), ('n29', 29.5)):
+        write_notification('%s_%ss.wav' % (name, label), notes, length, seconds)
 print('Generated three original alarm tones, each also as 10 to 50 second versions.')

@@ -165,6 +165,14 @@ enum ShabbatAlarmService {
 /// Chooses between a normal system alarm and a Shabbat alarm that stops by itself.
 enum AlarmScheduler {
     static func schedule(_ alarm: WakeAlarm) async throws {
+        if alarm.isShabbatMode {
+            // A Shabbat alarm is a notification; make sure no system alarm of the same alarm is left.
+            try? await NativeAlarmKitService.cancel(id: alarm.id)
+            await ShabbatAlarmService.cancel(id: alarm.id)
+            try await ShabbatNotificationAlarm.schedule(alarm)
+            return
+        }
+        await ShabbatNotificationAlarm.cancel(id: alarm.id)
         if alarm.ringPlan != nil {
             try? await NativeAlarmKitService.cancel(id: alarm.id)
             try await ShabbatAlarmService.schedule(alarm)
@@ -175,6 +183,7 @@ enum AlarmScheduler {
     }
 
     static func cancel(_ alarm: WakeAlarm) async throws {
+        await ShabbatNotificationAlarm.cancel(id: alarm.id)
         await ShabbatAlarmService.cancel(id: alarm.id)
         // An alarm the system no longer knows (already rang, restored backup) must still be deletable.
         try? await NativeAlarmKitService.cancel(id: alarm.id)

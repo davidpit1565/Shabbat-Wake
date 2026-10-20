@@ -18,6 +18,8 @@ struct AlarmEditorSheet: View {
     @State private var ringSeconds: Int
     @State private var showSystemSoundConfirm = false
     @State private var systemSoundConfirmed = false
+    @State private var shabbatMode: Bool
+    @State private var showModeConfirm = false
     @State private var isSaving = false
     @State private var showPaywall = false
     @EnvironmentObject private var pro: ProStore
@@ -36,6 +38,7 @@ struct AlarmEditorSheet: View {
             _weeksLimit = State(initialValue: alarm.weeksLimit ?? 0)
             _ringSeconds = State(initialValue: alarm.soundSeconds)
             _systemSoundConfirmed = State(initialValue: alarm.soundID == "system")
+            _shabbatMode = State(initialValue: alarm.isShabbatMode)
         } else {
             _title = State(initialValue: AppLanguage.text("Shabbat wake-up"))
             _time = State(initialValue: .now)
@@ -46,6 +49,8 @@ struct AlarmEditorSheet: View {
             _plan = State(initialValue: .standard)
             _weeksLimit = State(initialValue: 0)
             _ringSeconds = State(initialValue: RingPlan.defaultLength)
+            // A new alarm starts as a Shabbat alarm: the app is made for Shabbat.
+            _shabbatMode = State(initialValue: true)
         }
     }
 
@@ -57,6 +62,13 @@ struct AlarmEditorSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Toggle("Shabbat alarm", isOn: $shabbatMode)
+                } footer: {
+                    Text(LocalizedStringKey(shabbatMode
+                         ? "A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on."
+                         : "A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop."))
+                }
                 Section("Alarm details") {
                     TextField("Alarm name", text: $title)
                     HStack {
@@ -75,9 +87,9 @@ struct AlarmEditorSheet: View {
                         Text("Gentle Chime").tag("gentle")
                         Text("Sunrise Sequence").tag("sunrise")
                         Text("Classic Wake").tag("classic")
-                        Text("Apple's standard alarm sound").tag("system")
+                        if !shabbatMode { Text("Apple's standard alarm sound").tag("system") }
                     }
-                    if soundID == "system" {
+                    if soundID == "system" && !shabbatMode {
                         Text("Apple's standard sound cannot stop by itself. It rings until you press Stop.")
                             .font(.footnote).foregroundStyle(.secondary)
                     } else {
@@ -122,9 +134,11 @@ struct AlarmEditorSheet: View {
                 } header: {
                     Text("How it rings")
                 } footer: {
-                    Text(stopsByItself
+                    Text(LocalizedStringKey(shabbatMode
+                         ? "Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set."
+                         : stopsByItself
                          ? "Each ring is a real Apple alarm. It sounds through silent mode and Focus for the length you chose, with no snooze. The next ring comes after the minutes you set."
-                         : "Apple's system alarm. It sounds through silent mode and Focus for the length you chose, once, with no snooze.")
+                         : "Apple's system alarm. It sounds through silent mode and Focus for the length you chose, once, with no snooze."))
                 }
                 if let error = store.lastError {
                     Section("Could not schedule alarm") {
@@ -137,12 +151,27 @@ struct AlarmEditorSheet: View {
             .navigationTitle(editing == nil ? "New alarm" : "Edit alarm")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { store.clearError() }
+            .onChange(of: shabbatMode) { _, on in
+                if on && soundID == "system" { soundID = "classic" }
+            }
             .onChange(of: soundID) { old, new in
                 // Apple's standard sound never stops by itself, so ask once before it is chosen.
                 if new == "system" && !systemSoundConfirmed {
                     soundID = old
                     showSystemSoundConfirm = true
                 }
+            }
+            .alert(LocalizedStringKey(shabbatMode ? "Save as a Shabbat alarm?" : "Save as a regular alarm?"), isPresented: $showModeConfirm) {
+                Button(LocalizedStringKey(shabbatMode ? "Keep Shabbat alarm" : "Keep regular alarm")) { save() }
+                Button(LocalizedStringKey(shabbatMode ? "Make it a regular alarm" : "Make it a Shabbat alarm")) {
+                    shabbatMode.toggle()
+                    save()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(LocalizedStringKey(shabbatMode
+                     ? "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on."
+                     : "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it."))
             }
             .alert("Apple's standard alarm sound", isPresented: $showSystemSoundConfirm) {
                 Button("Use it anyway") {
@@ -157,8 +186,10 @@ struct AlarmEditorSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
-                        .disabled(!canSave)
+                    Button("Save") {
+                        if editing == nil { showModeConfirm = true } else { save() }
+                    }
+                    .disabled(!canSave)
                 }
             }
         }
@@ -186,9 +217,9 @@ struct AlarmEditorSheet: View {
         Task {
             let saved: Bool
             if let editing {
-                saved = await store.update(id: editing.id, title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds)
+                saved = await store.update(id: editing.id, title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds, shabbatMode: shabbatMode)
             } else {
-                saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds)
+                saved = await store.add(title: title, time: time, repeatsWeekly: repeatWeekly, weekdays: weekdays, soundID: soundID, ringPlan: ringPlan, weeksLimit: weeks, ringSeconds: ringSeconds, shabbatMode: shabbatMode)
             }
             isSaving = false
             if saved { dismiss() }

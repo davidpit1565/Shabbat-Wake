@@ -197,3 +197,15 @@
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "Apple's standard sound cannot stop by itself. It rings until you press Stop.";
 "Use it anyway" = "Use it anyway";
 "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves.";
+"A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on." = "A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on.";
+"A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop." = "A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop.";
+"Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set." = "Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set.";
+"Save as a Shabbat alarm?" = "Save as a Shabbat alarm?";
+"Save as a regular alarm?" = "Save as a regular alarm?";
+"Keep Shabbat alarm" = "Keep Shabbat alarm";
+"Keep regular alarm" = "Keep regular alarm";
+"Make it a regular alarm" = "Make it a regular alarm";
+"Make it a Shabbat alarm" = "Make it a Shabbat alarm";
+"It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on.";
+"It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it.";
+"Shabbat Shalom" = "Shabbat Shalom";

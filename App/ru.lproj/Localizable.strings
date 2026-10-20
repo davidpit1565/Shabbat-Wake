@@ -332,3 +332,15 @@
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "Стандартный звук Apple не отключается сам. Он звучит, пока вы не нажмёте «Стоп».";
 "Use it anyway" = "Всё равно использовать";
 "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "Он звучит, пока вы не нажмёте «Стоп». Сам он не отключится, в том числе в Шаббат. Наши звуки отключаются сами.";
+"A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on." = "Будильник Шаббата — обычное уведомление без кнопок. Звук и вибрация сами прекращаются через выбранное время. Звука не будет, если на боковой стороне iPhone включён беззвучный режим.";
+"A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop." = "Обычный будильник — системный будильник Apple с кнопками «Стоп» и «Открыть». Он звонит и в беззвучном режиме, а вибрация продолжается, пока вы не нажмёте «Стоп».";
+"Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set." = "Каждый звонок — уведомление, которое само заканчивается через выбранное время. Следующий звонок придёт через заданные минуты.";
+"Save as a Shabbat alarm?" = "Сохранить как будильник Шаббата?";
+"Save as a regular alarm?" = "Сохранить как обычный будильник?";
+"Keep Shabbat alarm" = "Оставить будильник Шаббата";
+"Keep regular alarm" = "Оставить обычный будильник";
+"Make it a regular alarm" = "Сделать обычным будильником";
+"Make it a Shabbat alarm" = "Сделать будильником Шаббата";
+"It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "Он остановится сам, без кнопок, и не зазвучит, если на iPhone включён беззвучный режим.";
+"It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "Это системный будильник Apple с кнопками «Стоп» и «Открыть». Он звонит даже в беззвучном режиме и вибрирует, пока вы его не остановите.";
+"Shabbat Shalom" = "Шаббат шалом";
