@@ -250,6 +250,15 @@ struct HomeDashboard: View {
 
                     Button(action: onOpenAlarm) {
                     ZStack {
+                        if alarmStore.nextWake == nil {
+                            // Nothing is set: show a clock instead of an empty ring.
+                            TimelineView(.periodic(from: .now, by: 1)) { context in
+                                AnalogClockView(date: context.date, ink: .primary, accent: WakePalette.blue)
+                            }
+                            .frame(width: 236, height: 236)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(Text("No alarm scheduled"))
+                        } else {
                         LivingRing(primary: WakePalette.cyan, secondary: WakePalette.blue)
                             .frame(width: 252, height: 252)
                         VStack(spacing: 7) {
@@ -273,6 +282,7 @@ struct HomeDashboard: View {
                             .font(.caption2).foregroundStyle(.secondary)
                         }
                         .frame(width: 170)
+                        }
                     }
                     .frame(height: 260)
                     .contentShape(Circle())
