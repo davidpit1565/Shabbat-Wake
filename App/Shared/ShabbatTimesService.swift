@@ -16,6 +16,8 @@ struct ShabbatWeek: Identifiable, Equatable, Codable {
     var holidayEnglish: String? = nil
     var holidayHebrew: String? = nil
     let candleLighting: Date?
+    /// Later candle lightings of the same stretch, for example Thursday night and Friday after Rosh Hashana on Wednesday night.
+    var laterCandleLightings: [Date]? = nil
     let havdalah: Date?
     /// The Shabbat day itself (midnight in the location's time zone).
     let shabbatDay: Date
@@ -61,6 +63,7 @@ enum ShabbatTimesService {
         var components = URLComponents(string: "https://www.hebcal.com/shabbat")
         var items = [
             URLQueryItem(name: "cfg", value: "json"),
+            URLQueryItem(name: "geo", value: "pos"),
             URLQueryItem(name: "latitude", value: String(latitude)),
             URLQueryItem(name: "longitude", value: String(longitude)),
             URLQueryItem(name: "tzid", value: timeZoneIdentifier),
@@ -182,6 +185,7 @@ enum ShabbatTimesService {
                 holidayEnglish: holidayName(holidays.map { $0.1.title }, hebrew: false),
                 holidayHebrew: holidayName(holidays.map { $0.1.hebrew ?? $0.1.title }, hebrew: true),
                 candleLighting: candleDate,
+                laterCandleLightings: block.count > 1 ? Array(block.dropFirst()) : nil,
                 havdalah: havdalah,
                 shabbatDay: shabbat
             )
@@ -229,6 +233,9 @@ extension Array where Element == ShabbatWeek {
         flatMap { week -> [ShabbatTimeItem] in
             var list: [ShabbatTimeItem] = []
             if let candle = week.candleLighting { list.append(ShabbatTimeItem(id: week.id + "c", title: "Candle lighting", date: candle, category: "candles")) }
+            for (index, later) in (week.laterCandleLightings ?? []).enumerated() {
+                list.append(ShabbatTimeItem(id: week.id + "c\(index + 2)", title: "Candle lighting", date: later, category: "candles"))
+            }
             if let havdalah = week.havdalah { list.append(ShabbatTimeItem(id: week.id + "h", title: "Havdalah", date: havdalah, category: "havdalah")) }
             return list
         }

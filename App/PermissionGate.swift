@@ -46,7 +46,8 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
         hasChecked = true
         location = manager.authorizationStatus
         await refreshAlarm()
-        if !allAllowed { isPresented = true }
+        // Only while something has never been asked; anyone who said "Not now" or "Don't allow" is not asked again at every launch.
+        if canAsk { isPresented = true }
     }
 
     func allow() async {

@@ -8,6 +8,7 @@ struct WatchEntry: TimelineEntry {
     let alarm: Date?
     let languageCode: String?
     var timeFormat: String? = nil
+    var timeZoneIdentifier: String? = nil
 
     var locale: Locale { languageCode.map { TimeFormat.locale(language: $0, format: timeFormat) } ?? .current }
 }
@@ -39,7 +40,8 @@ struct WatchProvider: TimelineProvider {
             havdalah: upcoming.first { $0.category == "havdalah" }?.date,
             alarm: snapshot.alarms.compactMap { $0.nextFireDate(after: date) }.min(),
             languageCode: snapshot.languageCode,
-            timeFormat: snapshot.timeFormat
+            timeFormat: snapshot.timeFormat,
+            timeZoneIdentifier: snapshot.timeZoneIdentifier
         )
     }
 }
@@ -77,14 +79,20 @@ struct WatchComplicationView: View {
     let kind: WatchKind
     @Environment(\.widgetFamily) private var family
 
+    /// Times of the place use its zone; the alarm stays on the watch's own clock.
+    private var zone: TimeZone {
+        guard kind != .alarm, let id = entry.timeZoneIdentifier, let zone = TimeZone(identifier: id) else { return .current }
+        return zone
+    }
+
     private var time: String {
         guard let date = kind.value(entry) else { return "—" }
-        return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: entry.locale))
+        return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: entry.locale, timeZone: zone))
     }
 
     private var day: String {
         guard let date = kind.value(entry) else { return "" }
-        return date.formatted(Date.FormatStyle(locale: entry.locale).weekday(.abbreviated))
+        return date.formatted(Date.FormatStyle(locale: entry.locale, timeZone: zone).weekday(.abbreviated))
     }
 
     var body: some View {

@@ -50,12 +50,14 @@ struct WatchHome: View {
     private var upcoming: [ShabbatTimeItem] { model.snapshot.times.filter { $0.date > .now } }
     private var candle: Date? { upcoming.first { $0.category == "candles" }?.date }
     private var havdalah: Date? { upcoming.first { $0.category == "havdalah" }?.date }
+    /// Candle lighting and havdalah are in the place's time zone, like on the iPhone; alarms stay on the watch's own clock.
+    private var placeZone: TimeZone? { model.snapshot.timeZoneIdentifier.flatMap { TimeZone(identifier: $0) } }
     private var alarm: Date? { model.snapshot.alarms.compactMap { $0.nextFireDate() }.min() }
 
     var body: some View {
         TabView {
-            page(title: "Candle lighting", symbol: "candles", tint: Color(red: 1, green: 0.72, blue: 0.42), date: candle)
-            page(title: "Shabbat ends", symbol: "moon.stars.fill", tint: Color(red: 0.35, green: 0.9, blue: 1), date: havdalah)
+            page(title: "Candle lighting", symbol: "candles", tint: Color(red: 1, green: 0.72, blue: 0.42), date: candle, zone: placeZone)
+            page(title: "Shabbat ends", symbol: "moon.stars.fill", tint: Color(red: 0.35, green: 0.9, blue: 1), date: havdalah, zone: placeZone)
             page(title: "Next alarm", symbol: "alarm.fill", tint: Color(red: 0.4, green: 0.6, blue: 1), date: alarm, emptyText: "No alarm set")
         }
         .tabViewStyle(.verticalPage)
@@ -67,15 +69,15 @@ struct WatchHome: View {
         )
     }
 
-    private func page(title: LocalizedStringKey, symbol: String, tint: Color, date: Date?, emptyText: LocalizedStringKey = "Open Shabbat Waker on your iPhone to load times.") -> some View {
+    private func page(title: LocalizedStringKey, symbol: String, tint: Color, date: Date?, zone: TimeZone? = nil, emptyText: LocalizedStringKey = "Open Shabbat Waker on your iPhone to load times.") -> some View {
         VStack(spacing: 6) {
             Label { Text(title) } icon: { KindIcon(symbol: symbol) }
                 .font(.footnote.weight(.semibold)).foregroundStyle(tint)
             if let date {
-                Text(date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale)))
+                Text(date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale, timeZone: zone ?? .current)))
                     .font(.system(size: 40, weight: .semibold, design: .rounded)).monospacedDigit()
                     .minimumScaleFactor(0.6).lineLimit(1)
-                Text(date.formatted(Date.FormatStyle(locale: locale).weekday(.wide).day().month(.abbreviated)))
+                Text(date.formatted(Date.FormatStyle(locale: locale, timeZone: zone ?? .current).weekday(.wide).day().month(.abbreviated)))
                     .font(.footnote).foregroundStyle(.secondary)
                 Text(date, style: .relative)
                     .font(.caption2).foregroundStyle(.secondary)

@@ -14,14 +14,15 @@ enum IntentAnswers {
     }
 
     /// "Friday 23 October" and "17:18", in the app's language.
-    static func parts(_ date: Date) -> (day: String, time: String) {
-        let day = date.formatted(Date.FormatStyle(locale: locale).weekday(.wide).day().month(.wide))
-        let time = date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
+    static func parts(_ date: Date, zone: TimeZone = .current) -> (day: String, time: String) {
+        let day = date.formatted(Date.FormatStyle(locale: locale, timeZone: zone).weekday(.wide).day().month(.wide))
+        let time = date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale, timeZone: zone))
         return (day, time)
     }
 
-    static func sentence(_ format: String, for date: Date) -> String {
-        let (day, time) = parts(date)
+    static func sentence(_ format: String, for date: Date, inPlaceZone: Bool = false) -> String {
+        let zone = inPlaceZone ? (SharedStore.load().timeZoneIdentifier.flatMap { TimeZone(identifier: $0) } ?? .current) : .current
+        let (day, time) = parts(date, zone: zone)
         return String(format: AppLanguage.text(format), day, time)
     }
 
@@ -36,7 +37,7 @@ struct NextCandleLightingIntent: AppIntent {
         guard let date = IntentAnswers.nextTime(category: "candles") else {
             return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.needsSetup))
         }
-        return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.sentence("Candle lighting is on %@ at %@.", for: date)))
+        return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.sentence("Candle lighting is on %@ at %@.", for: date, inPlaceZone: true)))
     }
 }
 
@@ -48,7 +49,7 @@ struct ShabbatEndsIntent: AppIntent {
         guard let date = IntentAnswers.nextTime(category: "havdalah") else {
             return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.needsSetup))
         }
-        return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.sentence("Shabbat ends on %@ at %@.", for: date)))
+        return .result(dialog: IntentDialog(stringLiteral: IntentAnswers.sentence("Shabbat ends on %@ at %@.", for: date, inPlaceZone: true)))
     }
 }
 

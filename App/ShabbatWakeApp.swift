@@ -92,7 +92,27 @@ struct RootView: View {
     /// The "Open" button on a ringing alarm leaves a note; show the wake-up screen for it.
     private func showWakeScreenIfRequested() {
         guard let note = WakeScreenRequest.take() else { return }
-        wakeRequest = WakeRequest(alarmID: UUID(uuidString: note.alarmID), title: note.title)
+        // A full-screen cover is refused while another sheet of this view is up, so close those first.
+        showAddAlarm = false
+        editingAlarm = nil
+        permissions.isPresented = false
+        browserLink = nil
+        let request = WakeRequest(alarmID: UUID(uuidString: note.alarmID), title: note.title)
+        Task {
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            wakeRequest = request
+        }
+    }
+
+    /// The intent may write its note a moment after the app turned active, so look again shortly.
+    private func checkWakeScreenSoon() {
+        showWakeScreenIfRequested()
+        Task {
+            for seconds in [1.0, 2.5] {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                showWakeScreenIfRequested()
+            }
+        }
     }
 
     var body: some View {
@@ -122,9 +142,9 @@ struct RootView: View {
             WakeScreen(request: request) { wakeRequest = nil }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { showWakeScreenIfRequested() }
+            if phase == .active { checkWakeScreenSoon() }
         }
-        .onAppear { showWakeScreenIfRequested() }
+        .onAppear { checkWakeScreenSoon() }
         // Applied after the sheets so the sheets receive them too. A sheet only inherits what is set outside it.
         .environmentObject(pro)
         .environment(\.locale, TimeFormat.locale(language: languageCode, format: timeFormat))
@@ -192,6 +212,14 @@ struct HomeDashboard: View {
     @State private var nextShabbatTime: ShabbatTimeItem?
     @State private var shabbatZone: TimeZone?
     @State private var savedTimes: [ShabbatTimeItem] = []
+
+    private func reloadSnapshot() {
+        let snapshot = SharedStore.load()
+        nextShabbatTime = snapshot.times.first { $0.date > .now }
+        savedTimes = snapshot.times
+        shabbatZone = snapshot.timeZoneIdentifier.flatMap { TimeZone(identifier: $0) }
+        nextTitle = snapshot.nextTitle
+    }
 
     /// True from candle lighting until Shabbat (or the holiday) ends: Home dresses in candle light.
     private var isShabbatNow: Bool {
@@ -306,7 +334,7 @@ struct HomeDashboard: View {
                     }
                     .buttonStyle(RingPressStyle())
                     .accessibilityElement(children: .combine)
-                    .accessibilityHint(Text("Opens this alarm"))
+                    .accessibilityHint(Text(alarmStore.nextWake != nil ? "Opens this alarm" : "New alarm"))
 
                     if alarmStore.nextWake != nil {
                         HStack(spacing: 8) {
@@ -385,13 +413,9 @@ struct HomeDashboard: View {
                 }.ignoresSafeArea()
             }
             .toolbar(.hidden, for: .navigationBar)
-            .onAppear {
-                let snapshot = SharedStore.load()
-                nextShabbatTime = snapshot.times.first { $0.date > .now }
-                savedTimes = snapshot.times
-                shabbatZone = snapshot.timeZoneIdentifier.flatMap { TimeZone(identifier: $0) }
-                nextTitle = snapshot.nextTitle
-            }
+            .onAppear(perform: reloadSnapshot)
+            .onReceive(NotificationCenter.default.publisher(for: .shabbatTimesUpdated)) { _ in reloadSnapshot() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in reloadSnapshot() }
         }
     }
 }
@@ -440,23 +464,19 @@ private struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Shabbat Waker Pro") {
-                    if ProStore.isEnforced && pro.hasPro {
-                        Label("Pro is unlocked", systemImage: "checkmark.seal.fill").foregroundStyle(Color.green)
-                    } else {
-                        Button { showPaywall = true } label: { Label("See what Pro includes", systemImage: "star.circle.fill") }
-                    }
-                    if ProStore.isEnforced {
+                // Hidden while Pro is not charged for (release builds before the subscriptions exist): no "preview" UI for reviewers.
+                if ProStore.isEnforced {
+                    Section("Shabbat Waker Pro") {
+                        if pro.hasPro {
+                            Label("Pro is unlocked", systemImage: "checkmark.seal.fill").foregroundStyle(Color.green)
+                        } else {
+                            Button { showPaywall = true } label: { Label("See what Pro includes", systemImage: "star.circle.fill") }
+                        }
                         Button { Task { await pro.restore() } } label: { Label("Restore purchases", systemImage: "arrow.clockwise") }
-                    }
-                    if !ProStore.isEnforced {
-                        Toggle("Try as a free user", isOn: Binding(get: { pro.previewFree }, set: { pro.setPreviewFree($0) }))
-                        Text("While Pro is in preview everything is open. This shows the locked features so you can see how they behave.")
-                            .font(.footnote).foregroundStyle(.secondary)
-                    }
 #if DEBUG
-                    Toggle("Show the locked state (testing)", isOn: $pro.debugLocked)
+                        Toggle("Show the locked state (testing)", isOn: $pro.debugLocked)
 #endif
+                    }
                 }
                 Section {
                     Button {

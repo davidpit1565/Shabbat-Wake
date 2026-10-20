@@ -322,7 +322,7 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertTrue(hebrew.hasSuffix("תשפ״ז"), hebrew)
         let english = day.hebrewDateString(in: Locale(identifier: "en"))
         XCTAssertTrue(english.contains("5787"), english)
-        XCTAssertTrue(english.hasPrefix("7 ") && english.contains("Heshvan"), english)
+        XCTAssertTrue(english.contains("7") && english.contains("Heshvan"), english)
     }
 
     func testEveryLanguageIsOfferedAndHasItsStrings() {

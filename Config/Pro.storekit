@@ -31,7 +31,7 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Saved places, several reminders, Lock Screen widgets, alarms for some weeks and every app icon.",
+              "description" : "Saved places, several reminders, alarms for some weeks and every app icon.",
               "displayName" : "Pro yearly",
               "locale" : "en_US"
             }
@@ -56,7 +56,7 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Saved places, several reminders, Lock Screen widgets, alarms for some weeks and every app icon.",
+              "description" : "Saved places, several reminders, alarms for some weeks and every app icon.",
               "displayName" : "Pro monthly",
               "locale" : "en_US"
             }
