@@ -33,6 +33,13 @@ final class ScreenshotTests: XCTestCase {
         sleep(4)
         shot("1-home")
 
+        // "Create an alarm" opens the editor with the Shabbat alarm switched on.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.68)).tap()
+        sleep(3)
+        shot("5-editor")
+        app.swipeDown(velocity: .fast)
+        sleep(2)
+
         buttons.element(boundBy: 1).tap()
         sleep(2)
         shot("2-alarms")

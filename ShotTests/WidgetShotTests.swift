@@ -14,10 +14,15 @@ final class WidgetShotTests: XCTestCase {
         return calendar.date(from: DateComponents(year: 2026, month: 10, day: day, hour: hour, minute: minute))!
     }
 
+    /// Alarms are on the phone's own clock, so 6:45 is built in the phone's zone.
+    private var alarmDate: Date {
+        Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 26, hour: 6, minute: 45))!
+    }
+
     private func entry(_ language: String) -> ShabbatWakeWidgetEntry {
         ShabbatWakeWidgetEntry(
             date: date(22, 12, 0),
-            nextAlarm: NextAlarmInfo(title: "Shabbat wake-up", date: date(26, 6, 45)),
+            nextAlarm: NextAlarmInfo(title: "Shabbat wake-up", date: alarmDate),
             candleLighting: ShabbatTimeItem(id: "c", title: "Candle lighting", date: date(23, 17, 12), category: "candles"),
             havdalah: ShabbatTimeItem(id: "h", title: "Havdalah", date: date(24, 18, 14), category: "havdalah"),
             placeName: "Jerusalem",
