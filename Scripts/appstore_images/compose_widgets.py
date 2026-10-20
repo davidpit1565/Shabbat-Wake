@@ -44,16 +44,16 @@ def make(lang):
         w = d.textlength(line, font=font, **kw)
         d.text(((W - w) / 2, y), line, font=font, fill=(10, 30, 80), **({"direction": "rtl", "language": "he"} if rtl else {}))
         y += 135
-    top = y + 130
+    top = y + 130 + (4 - len(lines)) * 55
     med = load(lang, "medium-ends", 1000)
     img = shadowed(img, med, (W - 1000) // 2, top, 96)
-    r2 = top + med.height + 100
+    r2 = top + med.height + 140
     smalls = [load(lang, "small-candle", 460), load(lang, "small-home", 460)]
     if rtl: smalls.reverse()
     for i, s in enumerate(smalls):
         img = shadowed(img, s, 160 + i * (460 + 80), r2, 96)
-    ly = r2 + 460 + 100
-    lw, lh = 1000, 640
+    ly = r2 + 460 + 140
+    lw, lh = 1000, 620
     tile = Image.new("RGBA", (lw, lh), (0, 0, 0, 0))
     g = Image.new("RGBA", (lw, lh)); gp = g.load()
     for yy in range(lh):
@@ -70,16 +70,8 @@ def make(lang):
     plate = Image.new("RGBA", (rect.width + 40, rect.height + 30), (0, 0, 0, 0))
     ImageDraw.Draw(plate).rounded_rectangle((0, 0, plate.width, plate.height), 44, fill=(255, 255, 255, 52))
     plate.alpha_composite(rect, (20, 15))
-    tile.alpha_composite(plate, ((lw - plate.width) // 2, 310))
+    tile.alpha_composite(plate, ((lw - plate.width) // 2, 290))
     img = shadowed(img, tile, (W - lw) // 2, ly, 96)
-    pill = PILL[lang]
-    pf = ImageFont.truetype(HEB if rtl else INTER, 64)
-    kw2 = dict(direction="rtl", language="he") if rtl else {}
-    tw = d.textlength(pill, font=pf, **kw2)
-    d = ImageDraw.Draw(img)
-    py = ly + lh + 120
-    d.rounded_rectangle(((W - tw) / 2 - 60, py, (W + tw) / 2 + 60, py + 130), 65, fill=(255, 255, 255, 235))
-    d.text(((W - tw) / 2, py + 26), pill, font=pf, fill=(20, 60, 160), **kw2)
     img.convert("RGB").save(os.path.join(OUT, f"{lang}-6-widgets.png"))
 
 for lang in TITLE: make(lang)
