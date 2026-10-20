@@ -346,3 +346,15 @@
 "Apple's standard sound cannot stop by itself. It rings until you press Stop." = "הצליל הרגיל של אפל לא נעצר לבד. הוא מצלצל עד שלוחצים על ״עצור״.";
 "Use it anyway" = "להשתמש בו בכל זאת";
 "It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves." = "הוא מצלצל עד שתלחץ על ״עצור״. הוא לא ייעצר לבד, גם בשבת. הצלילים שלנו נעצרים לבד.";
+"A Shabbat alarm is an ordinary notification with no buttons. Its sound and vibration stop by themselves after the time you choose. It does not sound if the silent switch on the side of the iPhone is on." = "שעון שבת הוא התראה רגילה בלי כפתורים. הצליל והרטט שלו נעצרים לבד אחרי הזמן שבחרת. הוא לא יישמע אם המתג בצד האייפון על שקט.";
+"A regular alarm is an Apple system alarm with Stop and Open buttons. It also rings when the iPhone is on silent, and the vibration continues until you press Stop." = "שעון רגיל הוא שעון מערכת של אפל עם כפתורי ״עצור״ ו״פתח״. הוא מצלצל גם כשהאייפון על שקט, והרטט נמשך עד שלוחצים ״עצור״.";
+"Each ring is a notification that stops by itself after the length you chose. The next ring comes after the minutes you set." = "כל צלצול הוא התראה שנעצרת לבד אחרי האורך שבחרת. הצלצול הבא מגיע אחרי הדקות שהגדרת.";
+"Save as a Shabbat alarm?" = "לשמור כשעון שבת?";
+"Save as a regular alarm?" = "לשמור כשעון רגיל?";
+"Keep Shabbat alarm" = "להשאיר שעון שבת";
+"Keep regular alarm" = "להשאיר שעון רגיל";
+"Make it a regular alarm" = "להפוך לשעון רגיל";
+"Make it a Shabbat alarm" = "להפוך לשעון שבת";
+"It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "הוא ייעצר לבד בלי כפתורים, ולא יישמע אם המתג בצד האייפון על שקט.";
+"It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "זה שעון מערכת של אפל עם כפתורי ״עצור״ ו״פתח״. הוא מצלצל גם על שקט ורוטט עד שעוצרים אותו.";
+"Shabbat Shalom" = "שבת שלום";

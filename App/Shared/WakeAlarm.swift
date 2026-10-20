@@ -42,6 +42,11 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
     var weeksLimit: Int?
     /// How many seconds each ring sounds. Nil means the default.
     var ringSeconds: Int?
+    /// A Shabbat alarm: an ordinary notification without buttons whose sound and vibration end by themselves.
+    /// Nil or false means a system alarm with Stop and Open buttons.
+    var shabbatMode: Bool?
+
+    var isShabbatMode: Bool { shabbatMode == true }
 
     var soundSeconds: Int { RingPlan.lengthChoices.contains(ringSeconds ?? 0) ? ringSeconds! : RingPlan.defaultLength }
 

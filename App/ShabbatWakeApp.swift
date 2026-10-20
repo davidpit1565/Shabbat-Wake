@@ -40,6 +40,9 @@ private enum WakePalette {
     static let blue = Color(red: 0, green: 92 / 255, blue: 230 / 255)
     static let cyan = Color(red: 89 / 255, green: 230 / 255, blue: 1)
     static let silver = Color(red: 201 / 255, green: 216 / 255, blue: 236 / 255)
+    /// Candle light, for Shabbat and Yom Tov.
+    static let gold = Color(red: 1, green: 0.74, blue: 0.32)
+    static let ember = Color(red: 0.93, green: 0.45, blue: 0.2)
 }
 
 private enum MainTab: String, CaseIterable, Identifiable {
@@ -181,6 +184,13 @@ struct HomeDashboard: View {
 
     @State private var nextShabbatTime: ShabbatTimeItem?
     @State private var shabbatZone: TimeZone?
+    @State private var savedTimes: [ShabbatTimeItem] = []
+
+    /// True from candle lighting until Shabbat (or the holiday) ends: Home dresses in candle light.
+    private var isShabbatNow: Bool {
+        guard let last = savedTimes.last(where: { $0.date <= .now }) else { return false }
+        return last.category == "candles" && Date.now.timeIntervalSince(last.date) < 4 * 86400
+    }
     @State private var nextTitle: String?
 
     /// The alarm that rings first comes first; switched-off alarms follow.
@@ -238,7 +248,7 @@ struct HomeDashboard: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Ready for Shabbat.")
+                        Text(isShabbatNow ? "Shabbat Shalom" : "Ready for Shabbat.")
                             .font(.system(.largeTitle, design: .rounded, weight: .semibold))
                         Text(Date.now.formatted(in: locale, date: .complete))
                             .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
@@ -253,13 +263,13 @@ struct HomeDashboard: View {
                         if alarmStore.nextWake == nil {
                             // Nothing is set: show a clock instead of an empty ring.
                             TimelineView(.periodic(from: .now, by: 1)) { context in
-                                AnalogClockView(date: context.date, ink: .primary, accent: WakePalette.blue)
+                                AnalogClockView(date: context.date, ink: .primary, accent: isShabbatNow ? WakePalette.gold : WakePalette.blue)
                             }
                             .frame(width: 236, height: 236)
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(Text("No alarm scheduled"))
                         } else {
-                        LivingRing(primary: WakePalette.cyan, secondary: WakePalette.blue)
+                        LivingRing(primary: isShabbatNow ? WakePalette.gold : WakePalette.cyan, secondary: isShabbatNow ? WakePalette.ember : WakePalette.blue)
                             .frame(width: 252, height: 252)
                         VStack(spacing: 7) {
                             Text(nextAlarmTime)
@@ -364,13 +374,14 @@ struct HomeDashboard: View {
             .background {
                 ZStack(alignment: .top) {
                     Color(uiColor: .systemBackground)
-                    RadialGradient(colors: [WakePalette.blue.opacity(0.14), .clear], center: .top, startRadius: 10, endRadius: 360)
+                    RadialGradient(colors: [(isShabbatNow ? WakePalette.gold : WakePalette.blue).opacity(isShabbatNow ? 0.22 : 0.14), .clear], center: .top, startRadius: 10, endRadius: 360)
                 }.ignoresSafeArea()
             }
             .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 let snapshot = SharedStore.load()
                 nextShabbatTime = snapshot.times.first { $0.date > .now }
+                savedTimes = snapshot.times
                 shabbatZone = snapshot.timeZoneIdentifier.flatMap { TimeZone(identifier: $0) }
                 nextTitle = snapshot.nextTitle
             }
