@@ -360,3 +360,19 @@
 "Shabbat Shalom" = "שבת שלום";
 "Rings once, then it stops by itself." = "מצלצל פעם אחת ואז נעצר לבד.";
 "Rings: %d · interval: %d min. Each ring stops by itself." = "צלצולים: %d · מרווח: %d דק׳. כל צלצול נעצר לבד.";
+
+/* Widget texts, also here so the widget views can be rendered inside the app for the App Store images. */
+"Shabbat Waker" = "Shabbat Waker";
+"No alarm set" = "אין התראה";
+"Shabbat" = "שבת";
+"Open Shabbat Waker to set your location" = "פתח את Shabbat Waker כדי להגדיר מיקום";
+"Candle lighting %@" = "הדלקת נרות %@";
+"Havdalah %@" = "הבדלה %@";
+"Alarm set" = "התראה מוגדרת";
+"Your next alarm and this week's candle-lighting and havdalah times." = "ההתראה הבאה שלך וזמני הדלקת הנרות וההבדלה של השבוע.";
+"The next candle-lighting time for your location." = "זמן הדלקת הנרות הקרוב במיקום שלך.";
+"When Shabbat ends at your location." = "מתי יוצאת השבת במיקום שלך.";
+
+"Pro widget" = "ווידג'ט Pro";
+"Open Shabbat Waker to unlock Lock Screen widgets." = "פתח את Shabbat Waker כדי לפתוח ווידג'טים למסך הנעילה.";
+

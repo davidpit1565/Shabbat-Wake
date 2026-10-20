@@ -281,7 +281,7 @@ struct ShabbatWakeHomeWidget: Widget {
 
 // MARK: - Single-time widgets (candle lighting, Shabbat ends)
 
-private enum SingleTimeKind {
+enum SingleTimeKind {
     case candles, ends
 
     var title: LocalizedStringKey { self == .candles ? "Candle lighting" : "Shabbat ends" }
@@ -290,7 +290,7 @@ private enum SingleTimeKind {
     func item(_ entry: ShabbatWakeWidgetEntry) -> ShabbatTimeItem? { self == .candles ? entry.candleLighting : entry.havdalah }
 }
 
-private struct SingleTimeWidgetView: View {
+struct SingleTimeWidgetView: View {
     let entry: ShabbatWakeWidgetEntry
     let kind: SingleTimeKind
     @Environment(\.widgetFamily) private var family
@@ -414,7 +414,9 @@ struct ShabbatWakeAlarmLiveActivity: Widget {
     }
 }
 
+#if !WIDGET_SHOTS
 @main
+#endif
 struct ShabbatWakeWidgetBundle: WidgetBundle {
     var body: some Widget {
         ShabbatWakeHomeWidget()
