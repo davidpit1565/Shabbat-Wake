@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import WidgetKit
 import XCTest
 
@@ -32,7 +33,6 @@ final class WidgetShotTests: XCTestCase {
             if background { WidgetBrand.background }
             view.padding(background ? 16 : 0)
         }
-        .environment(\.widgetFamily, family)
         .environment(\.colorScheme, .dark)
         .frame(width: size.width, height: size.height)
         .clipShape(RoundedRectangle(cornerRadius: background ? 24 : 0, style: .continuous))
@@ -42,7 +42,7 @@ final class WidgetShotTests: XCTestCase {
         guard let image = renderer.uiImage else { XCTFail("no image for \(name)"); return }
         let attachment = XCTAttachment(image: image)
         attachment.name = name
-        attachment.lifetime = .keepAlways
+        attachment.lifetime = XCTAttachment.Lifetime.keepAlways
         add(attachment)
     }
 
@@ -52,12 +52,12 @@ final class WidgetShotTests: XCTestCase {
             let small = CGSize(width: 170, height: 170)
             let medium = CGSize(width: 364, height: 170)
             let rect = CGSize(width: 170, height: 76)
-            save(SingleTimeWidgetView(entry: e, kind: .candles), family: .systemSmall, size: small, name: "w-\(language)-small-candle", background: true)
-            save(SingleTimeWidgetView(entry: e, kind: .ends), family: .systemSmall, size: small, name: "w-\(language)-small-ends", background: true)
-            save(ShabbatWakeWidgetView(entry: e), family: .systemSmall, size: small, name: "w-\(language)-small-home", background: true)
-            save(ShabbatWakeWidgetView(entry: e), family: .systemMedium, size: medium, name: "w-\(language)-medium-home", background: true)
-            save(SingleTimeWidgetView(entry: e, kind: .ends), family: .systemMedium, size: medium, name: "w-\(language)-medium-ends", background: true)
-            save(SingleTimeWidgetView(entry: e, kind: .ends), family: .accessoryRectangular, size: rect, name: "w-\(language)-lock-ends", background: false)
+            save(SingleTimeWidgetView(entry: e, kind: .candles, familyOverride: .systemSmall), family: .systemSmall, size: small, name: "w-\(language)-small-candle", background: true)
+            save(SingleTimeWidgetView(entry: e, kind: .ends, familyOverride: .systemSmall), family: .systemSmall, size: small, name: "w-\(language)-small-ends", background: true)
+            save(ShabbatWakeWidgetView(entry: e, familyOverride: .systemSmall), family: .systemSmall, size: small, name: "w-\(language)-small-home", background: true)
+            save(ShabbatWakeWidgetView(entry: e, familyOverride: .systemMedium), family: .systemMedium, size: medium, name: "w-\(language)-medium-home", background: true)
+            save(SingleTimeWidgetView(entry: e, kind: .ends, familyOverride: .systemMedium), family: .systemMedium, size: medium, name: "w-\(language)-medium-ends", background: true)
+            save(SingleTimeWidgetView(entry: e, kind: .ends, familyOverride: .accessoryRectangular), family: .accessoryRectangular, size: rect, name: "w-\(language)-lock-ends", background: false)
         }
     }
 }

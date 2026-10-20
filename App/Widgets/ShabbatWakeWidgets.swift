@@ -130,7 +130,15 @@ enum WidgetBrand {
 
 struct ShabbatWakeWidgetView: View {
     var entry: ShabbatWakeWidgetEntry
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Lets the App Store image test draw a given size; in a real widget the system decides.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    init(entry: ShabbatWakeWidgetEntry, familyOverride: WidgetFamily? = nil) {
+        self.entry = entry
+        self.familyOverride = familyOverride
+    }
 
     private var shabbatLines: [(label: LocalizedStringKey, date: Date)] {
         var lines: [(label: LocalizedStringKey, date: Date)] = []
@@ -293,7 +301,16 @@ enum SingleTimeKind {
 struct SingleTimeWidgetView: View {
     let entry: ShabbatWakeWidgetEntry
     let kind: SingleTimeKind
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
+    /// Lets the App Store image test draw a given size; in a real widget the system decides.
+    var familyOverride: WidgetFamily? = nil
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    init(entry: ShabbatWakeWidgetEntry, kind: SingleTimeKind, familyOverride: WidgetFamily? = nil) {
+        self.entry = entry
+        self.kind = kind
+        self.familyOverride = familyOverride
+    }
 
     private var date: Date? { kind.item(entry)?.date }
 
