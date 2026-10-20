@@ -142,7 +142,7 @@ struct RootView: View {
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
             WidgetSync.updateTimeFormat(timeFormat)
-            await pro.start()
+            Task { await pro.start() }
             await TimesRefresher.refreshIfNeeded()
             await reminders.reschedule()
         }
