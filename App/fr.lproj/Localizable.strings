@@ -344,3 +344,5 @@
 "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "Elle s’arrêtera d’elle-même, sans boutons, et ne sonnera pas si le commutateur silencieux de l’iPhone est activé.";
 "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "C’est une alarme système d’Apple avec les boutons Arrêter et Ouvrir. Elle sonne même en silencieux et vibre jusqu’à ce que vous l’arrêtiez.";
 "Shabbat Shalom" = "Chabbat chalom";
+"Rings once, then it stops by itself." = "Sonne une fois, puis s’arrête d’elle-même.";
+"Rings: %d · interval: %d min. Each ring stops by itself." = "Sonneries : %d · intervalle : %d min. Chaque sonnerie s’arrête d’elle-même.";

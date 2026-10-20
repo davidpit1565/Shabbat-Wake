@@ -75,14 +75,25 @@ struct WakeAlarm: Identifiable, Codable, Equatable {
                 return calendar.nextDate(after: now, matching: components, matchingPolicy: .nextTime)
             }.min()
             guard let fire = next else { return nil }
-            if let weeks = weeksLimit, fire >= (armedAt ?? createdAt).addingTimeInterval(Double(weeks) * 7 * 86400) { return nil }
+            if let weeks = weeksLimit {
+                let armed = armedAt ?? createdAt
+                let cutoff = calendar.date(byAdding: .weekOfYear, value: weeks, to: armed) ?? armed.addingTimeInterval(Double(weeks) * 7 * 86400)
+                if fire >= cutoff { return nil }
+            }
             return fire
         }
         let armed = armedAt ?? createdAt
-        guard let fire = calendar.nextDate(after: armed, matching: base, matchingPolicy: .nextTime), fire > now else {
-            return nil
+        guard let fire = calendar.nextDate(after: armed, matching: base, matchingPolicy: .nextTime) else { return nil }
+        if fire > now { return fire }
+        // A several-rings alarm is still ringing after its first ring: report the next ring that has not rung yet.
+        if let plan = ringPlan?.normalized(), plan.count > 1 {
+            let step = Double(plan.intervalMinutes) * 60
+            for ring in 1..<plan.count {
+                let later = fire.addingTimeInterval(step * Double(ring))
+                if later > now { return later }
+            }
         }
-        return fire
+        return nil
     }
 
     /// Short summary of when the alarm repeats, e.g. "Sat" or "Sun, Mon, Tue".

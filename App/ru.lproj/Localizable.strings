@@ -344,3 +344,5 @@
 "It will stop by itself with no buttons, and will not sound if the iPhone's silent switch is on." = "Он остановится сам, без кнопок, и не зазвучит, если на iPhone включён беззвучный режим.";
 "It is an Apple system alarm with Stop and Open buttons. It rings even on silent and vibrates until you stop it." = "Это системный будильник Apple с кнопками «Стоп» и «Открыть». Он звонит даже в беззвучном режиме и вибрирует, пока вы его не остановите.";
 "Shabbat Shalom" = "Шаббат шалом";
+"Rings once, then it stops by itself." = "Звонит один раз, затем отключается сам.";
+"Rings: %d · interval: %d min. Each ring stops by itself." = "Звонков: %d · интервал: %d мин. Каждый звонок отключается сам.";
