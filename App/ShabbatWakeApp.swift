@@ -27,8 +27,22 @@ struct ShabbatWakeApp: App {
         case "dark": style = .dark
         default: style = .unspecified
         }
-        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
-            for window in scene.windows { window.overrideUserInterfaceStyle = style }
+        func set(_ style: UIUserInterfaceStyle) {
+            for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+                for window in scene.windows { window.overrideUserInterfaceStyle = style }
+            }
+        }
+        set(style)
+        // Going back to "System" must show the phone's own look. If a window did not take it, set that look directly.
+        if style == .unspecified {
+            DispatchQueue.main.async {
+                let system = UIScreen.main.traitCollection.userInterfaceStyle
+                let stuck = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .flatMap(\.windows)
+                    .contains { $0.traitCollection.userInterfaceStyle != system }
+                if stuck && system != .unspecified { set(system) }
+            }
         }
     }
 }
@@ -546,6 +560,7 @@ private struct SettingsScreen: View {
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showPaywall) { PaywallView(reason: .general) }
+            .onChange(of: appearanceMode) { _, mode in ShabbatWakeApp.applyAppearance(mode) }
         }
     }
 }
