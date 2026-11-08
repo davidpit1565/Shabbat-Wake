@@ -11,7 +11,6 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     @Published private(set) var notifications: UNAuthorizationStatus = .notDetermined
     @Published var isPresented = false
     private let manager = CLLocationManager()
-    private var hasChecked = false
 
     override init() {
         alarm = .notDetermined
@@ -42,12 +41,10 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
 
     /// Called once when the app opens: shows the sheet if anything is missing.
     func checkOnLaunch() async {
-        guard !hasChecked else { return }
-        hasChecked = true
         location = manager.authorizationStatus
         await refreshAlarm()
-        // Only while something has never been asked; anyone who said "Not now" or "Don't allow" is not asked again at every launch.
-        if canAsk { isPresented = true }
+        // Every time the app opens, until everything is allowed: an alarm that cannot ring is worse than a reminder.
+        if !allAllowed { isPresented = true }
     }
 
     func allow() async {
@@ -104,6 +101,10 @@ struct PermissionsSheet: View {
                 row("bell.fill", "Notifications", "For Shabbat alarms and reminders before candle lighting.", allowed: gate.notificationsAllowed)
             }
             .padding(.horizontal, 24)
+            Text("For a Shabbat alarm, turn off the silent switch on the side of the iPhone. A regular alarm rings even on silent.")
+                .font(.footnote).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 28)
             VStack(spacing: 10) {
                 if gate.canAsk {
                     Button {
