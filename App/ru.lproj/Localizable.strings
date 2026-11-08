@@ -362,3 +362,36 @@
 "Open Shabbat Waker to unlock Lock Screen widgets." = "Откройте Shabbat Waker, чтобы разблокировать виджеты экрана блокировки.";
 
 "For a Shabbat alarm, turn off the silent switch on the side of the iPhone. A regular alarm rings even on silent." = "Для будильника Шаббата выключите переключатель беззвучного режима сбоку iPhone. Обычный будильник звонит и в беззвучном режиме.";
+
+/* More alarm sounds */
+"Morning Chime" = "Утренний перезвон";
+"Pleasing Bell" = "Приятный колокольчик";
+"Music Box Lullaby" = "Колыбельная из музыкальной шкатулки";
+"Music Box Polka" = "Полька из музыкальной шкатулки";
+"Happy Lullaby" = "Весёлая колыбельная";
+"Forest Birds" = "Птицы в лесу";
+"Meadow Birds" = "Птицы на лугу";
+"Wind and Birds" = "Ветер и птицы";
+"Marimba Morning" = "Утро с маримбой";
+"Soft Piano" = "Мягкое пианино";
+"Crow Caw" = "Карканье вороны";
+"Crow Chorus" = "Хор ворон";
+"Bright, slow chimes" = "Яркий неспешный перезвон";
+"One clear bell that repeats" = "Один чистый колокольчик, который повторяется";
+"A gentle music box melody" = "Нежная мелодия музыкальной шкатулки";
+"A light, bouncy music box tune" = "Лёгкая подвижная мелодия музыкальной шкатулки";
+"A warm, happy lullaby" = "Тёплая весёлая колыбельная";
+"Birdsong in the forest" = "Пение птиц в лесу";
+"Soft birds in an open meadow" = "Тихие птицы на открытом лугу";
+"Birds with a light breeze" = "Птицы и лёгкий ветерок";
+"A cheerful marimba tune" = "Весёлая мелодия маримбы";
+"A calm, quiet piano" = "Спокойное тихое пианино";
+"A funny one: a single crow caw" = "Смешной: одно карканье вороны";
+"A funny one: crows singing together" = "Смешной: поют вороны";
+"More sounds" = "Другие звуки";
+"These sounds are in the public domain (CC0). Credits are in Settings under Privacy." = "Эти звуки находятся в общественном достоянии (CC0). Авторы указаны в Настройках, в разделе «Конфиденциальность».";
+"More alarm sounds are part of Pro" = "Дополнительные звуки будильника входят в Pro";
+"More alarm sounds" = "Дополнительные звуки будильника";
+"Choose from music boxes, birds, piano and more for your alarms." = "Выбирайте музыкальные шкатулки, птиц, пианино и другое для своих будильников.";
+"Alarm sound credits" = "Авторы звуков будильника";
+"Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Некоторые звуки будильника взяты с OpenGameArt.org и находятся в общественном достоянии (CC0 1.0). Спасибо авторам:";
