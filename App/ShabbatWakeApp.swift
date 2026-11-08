@@ -455,6 +455,12 @@ private struct PrivacyScreen: View {
             Section("Credits") {
                 Text("Shabbat times by [Hebcal.com](https://www.hebcal.com), licensed CC BY 4.0. Customs differ between communities, so confirm with your rabbi or local calendar.")
             }
+            Section("Alarm sound credits") {
+                Text("Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:")
+                ForEach(AlarmSounds.credits, id: \.self) { line in
+                    Text(verbatim: line).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
             Section("Location") {
                 Text("If you allow location access, your coordinates are used to calculate candle-lighting and havdalah times. To do that, they are sent to Hebcal.com together with your time zone. They are not sent anywhere else and are not stored by Shabbat Waker on any server.")
                 Text("You can turn location access off at any time in iOS Settings. Alarms keep working without it.")

@@ -1,4 +1,5 @@
 import XCTest
+import AVFoundation
 @testable import ShabbatWake
 
 final class ShabbatWakeTests: XCTestCase {
@@ -120,9 +121,41 @@ final class ShabbatWakeTests: XCTestCase {
 
     func testAlarmSoundsAreBundledInTheApp() {
         let bundle = Bundle.main
-        for name in ["GentleChime", "SunriseSequence", "ClassicWake"] {
-            XCTAssertNotNil(bundle.url(forResource: name, withExtension: "wav"), "\(name).wav is missing from \(bundle.bundlePath)")
+        for sound in AlarmSounds.all {
+            XCTAssertNotNil(bundle.url(forResource: sound.file, withExtension: "wav"), "\(sound.file).wav is missing from \(bundle.bundlePath)")
+            for seconds in RingPlan.secondChoices {
+                XCTAssertNotNil(bundle.url(forResource: "\(sound.file)_\(seconds)s", withExtension: "wav"), "\(sound.file)_\(seconds)s.wav is missing")
+            }
+            for label in ["n10", "n15", "n20", "n29"] {
+                XCTAssertNotNil(bundle.url(forResource: "\(sound.file)_\(label)s", withExtension: "wav"), "\(sound.file)_\(label)s.wav is missing")
+            }
         }
+    }
+
+    func testNotificationSoundsAreUnderThirtySeconds() throws {
+        for sound in AlarmSounds.all {
+            for label in ["n10", "n15", "n20", "n29"] {
+                let url = try XCTUnwrap(Bundle.main.url(forResource: "\(sound.file)_\(label)s", withExtension: "wav"))
+                let file = try AVAudioFile(forReading: url)
+                let length = Double(file.length) / file.processingFormat.sampleRate
+                XCTAssertLessThan(length, 30, "\(sound.file)_\(label)s.wav is \(length) s")
+            }
+        }
+    }
+
+    func testSoundCatalogHasThreeFreeSoundsAndUniqueIDs() {
+        XCTAssertEqual(AlarmSounds.freeIDs, ["classic", "gentle", "morningchime"])
+        XCTAssertEqual(Set(AlarmSounds.all.map(\.id)).count, AlarmSounds.all.count)
+        XCTAssertGreaterThanOrEqual(AlarmSounds.community.count, 12)
+        XCTAssertEqual(AlarmSounds.file(for: "unknown"), "ClassicWake")
+    }
+
+    func testProSoundsNeedPro() {
+        XCTAssertTrue(ProPolicy.canUseSound(id: "classic", hasPro: false))
+        XCTAssertTrue(ProPolicy.canUseSound(id: "system", hasPro: false))
+        XCTAssertFalse(ProPolicy.canUseSound(id: "softpiano", hasPro: false))
+        XCTAssertFalse(ProPolicy.canUseSound(id: "sunrise", hasPro: false))
+        XCTAssertTrue(ProPolicy.canUseSound(id: "softpiano", hasPro: true))
     }
 
     func testWeeksAreBuiltFromCandlesParashaAndHavdalah() throws {

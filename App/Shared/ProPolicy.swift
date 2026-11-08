@@ -21,5 +21,10 @@ enum ProPolicy {
         hasPro ? currentCount < maxReminders : currentCount < freeReminderLimit
     }
 
+    /// Sound ids a free user can pick; "system" is Apple's own sound and is always allowed.
+    static func canUseSound(id: String, hasPro: Bool) -> Bool {
+        hasPro || id == "system" || AlarmSounds.freeIDs.contains(id)
+    }
+
     static func canChooseReminderTime(hasPro: Bool) -> Bool { hasPro }
 }
