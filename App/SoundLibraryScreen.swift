@@ -40,47 +40,53 @@ final class AlarmTonePlayer: ObservableObject {
 
 struct SoundLibraryScreen: View {
     @StateObject private var audio = AlarmTonePlayer.shared
-    private let tones: [(name: LocalizedStringKey, plainName: String, detail: LocalizedStringKey, file: String, symbol: String)] = [
-        ("Gentle Chime", "Gentle Chime", "A soft, layered morning chime", "GentleChime", "sparkles"),
-        ("Sunrise Sequence", "Sunrise Sequence", "A calm rising sequence of original notes", "SunriseSequence", "sunrise.fill"),
-        ("Classic Wake", "Classic Wake", "A clearer, more insistent bell-like pattern", "ClassicWake", "bell.fill")
-    ]
-
     var body: some View {
         List {
             Section {
-                ForEach(tones, id: \.file) { tone in
-                    HStack(spacing: 14) {
-                        Image(systemName: tone.symbol)
-                            .font(.title3)
-                            .foregroundStyle(.blue)
-                            .accessibilityHidden(true)
-                            .frame(width: 42, height: 42)
-                            .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(tone.name).font(.headline)
-                            Text(tone.detail).font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Button {
-                            audio.toggle(name: tone.plainName, resource: tone.file)
-                        } label: {
-                            Image(systemName: audio.playingName == tone.plainName ? "stop.fill" : "play.fill")
-                                .frame(width: 36, height: 36)
-                        }
-                        .buttonStyle(.bordered)
-                        .accessibilityLabel(audio.playingName == tone.plainName ? Text("Stop") : Text("Preview"))
-                        .accessibilityValue(Text(tone.name))
-                    }
-                    .padding(.vertical, 5)
-                }
+                ForEach(AlarmSounds.original) { row($0) }
             } header: {
                 Text("Original tones")
             } footer: {
                 Text("These tones were created for Shabbat Waker. Choose one when you create an alarm.")
             }
+            Section {
+                ForEach(AlarmSounds.community) { row($0) }
+            } header: {
+                Text("More sounds")
+            } footer: {
+                Text("These sounds are in the public domain (CC0). Credits are in Settings under Privacy.")
+            }
         }
         .navigationTitle("Sound library")
         .onDisappear { audio.stop() }
+    }
+
+    private func row(_ sound: AlarmSound) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: sound.symbol)
+                .font(.title3)
+                .foregroundStyle(.blue)
+                .accessibilityHidden(true)
+                .frame(width: 42, height: 42)
+                .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(LocalizedStringKey(sound.name)).font(.headline)
+                    if sound.isPro { ProBadge() }
+                }
+                Text(LocalizedStringKey(sound.detail)).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                audio.toggle(name: sound.name, resource: sound.file)
+            } label: {
+                Image(systemName: audio.playingName == sound.name ? "stop.fill" : "play.fill")
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityLabel(audio.playingName == sound.name ? Text("Stop") : Text("Preview"))
+            .accessibilityValue(Text(LocalizedStringKey(sound.name)))
+        }
+        .padding(.vertical, 5)
     }
 }

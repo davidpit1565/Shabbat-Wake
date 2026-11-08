@@ -8,6 +8,7 @@ enum PaywallReason {
     case icons
     case weeksAhead
     case places
+    case sounds
     case general
 
     var headline: LocalizedStringKey {
@@ -17,6 +18,7 @@ enum PaywallReason {
         case .icons: "Extra icons are part of Pro"
         case .weeksAhead: "Limiting an alarm to some weeks is part of Pro"
         case .places: "Saved places are part of Pro"
+        case .sounds: "More alarm sounds are part of Pro"
         case .general: "Shabbat Waker Pro"
         }
     }
@@ -35,6 +37,7 @@ struct PaywallView: View {
         ("mappin.and.ellipse", "Saved places", "Keep times for home, family and trips, and switch between them."),
         ("bell.badge", "Several reminders", "Remind yourself more than once before candle lighting, at times you choose."),
         ("calendar.badge.clock", "Alarms for some weeks", "Set an alarm for the next 4, 8, 12 or 26 weeks, then it ends on its own."),
+        ("music.note.list", "More alarm sounds", "Choose from music boxes, birds, piano and more for your alarms."),
         ("app.badge", "All app icons", "Pick any of the extra icons.")
     ]
 

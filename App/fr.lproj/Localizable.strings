@@ -362,3 +362,36 @@
 "Open Shabbat Waker to unlock Lock Screen widgets." = "Ouvrez Shabbat Waker pour débloquer les widgets de l’écran verrouillé.";
 
 "For a Shabbat alarm, turn off the silent switch on the side of the iPhone. A regular alarm rings even on silent." = "Pour l’alarme de Chabbat, désactivez le commutateur silencieux sur le côté de l’iPhone. Une alarme normale sonne même en mode silencieux.";
+
+/* More alarm sounds */
+"Morning Chime" = "Carillon du matin";
+"Pleasing Bell" = "Cloche agréable";
+"Music Box Lullaby" = "Berceuse de boîte à musique";
+"Music Box Polka" = "Polka de boîte à musique";
+"Happy Lullaby" = "Berceuse joyeuse";
+"Forest Birds" = "Oiseaux de la forêt";
+"Meadow Birds" = "Oiseaux de la prairie";
+"Wind and Birds" = "Vent et oiseaux";
+"Marimba Morning" = "Matin au marimba";
+"Soft Piano" = "Piano doux";
+"Crow Caw" = "Croassement de corbeau";
+"Crow Chorus" = "Chœur de corbeaux";
+"Bright, slow chimes" = "Carillons clairs et lents";
+"One clear bell that repeats" = "Une cloche claire qui se répète";
+"A gentle music box melody" = "Une douce mélodie de boîte à musique";
+"A light, bouncy music box tune" = "Un air léger et sautillant de boîte à musique";
+"A warm, happy lullaby" = "Une berceuse chaleureuse et joyeuse";
+"Birdsong in the forest" = "Chant d’oiseaux dans la forêt";
+"Soft birds in an open meadow" = "Oiseaux doux dans une prairie ouverte";
+"Birds with a light breeze" = "Oiseaux avec une légère brise";
+"A cheerful marimba tune" = "Un air joyeux au marimba";
+"A calm, quiet piano" = "Un piano calme et discret";
+"A funny one: a single crow caw" = "Pour rire : un seul croassement de corbeau";
+"A funny one: crows singing together" = "Pour rire : des corbeaux qui chantent ensemble";
+"More sounds" = "Plus de sons";
+"These sounds are in the public domain (CC0). Credits are in Settings under Privacy." = "Ces sons sont dans le domaine public (CC0). Les crédits se trouvent dans Réglages, sous Confidentialité.";
+"More alarm sounds are part of Pro" = "Plus de sons d’alarme font partie de Pro";
+"More alarm sounds" = "Plus de sons d’alarme";
+"Choose from music boxes, birds, piano and more for your alarms." = "Choisissez des boîtes à musique, des oiseaux, du piano et plus encore pour vos alarmes.";
+"Alarm sound credits" = "Crédits des sons d’alarme";
+"Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Certains sons d’alarme viennent d’OpenGameArt.org et sont dans le domaine public (CC0 1.0). Merci aux créateurs :";

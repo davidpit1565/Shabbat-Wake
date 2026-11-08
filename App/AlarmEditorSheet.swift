@@ -22,6 +22,7 @@ struct AlarmEditorSheet: View {
     @State private var showModeConfirm = false
     @State private var isSaving = false
     @State private var showPaywall = false
+    @State private var paywallReason: PaywallReason = .weeksAhead
     @EnvironmentObject private var pro: ProStore
 
     init(store: AlarmStore, editing: WakeAlarm?) {
@@ -89,9 +90,9 @@ struct AlarmEditorSheet: View {
                         WeekdayPicker(selection: $weekdays, locale: locale)
                     }
                     Picker("Alarm sound", selection: $soundID) {
-                        Text("Gentle Chime").tag("gentle")
-                        Text("Sunrise Sequence").tag("sunrise")
-                        Text("Classic Wake").tag("classic")
+                        ForEach(AlarmSounds.all) { sound in
+                            Text(sound.isPro ? "\(AppLanguage.text(sound.name)) · PRO" : AppLanguage.text(sound.name)).tag(sound.id)
+                        }
                         if !shabbatMode { Text("Apple's standard alarm sound").tag("system") }
                     }
                     if soundID == "system" && !shabbatMode {
@@ -162,6 +163,12 @@ struct AlarmEditorSheet: View {
             }
             .onChange(of: soundID) { old, new in
                 // Apple's standard sound never stops by itself, so ask once before it is chosen.
+                if !ProPolicy.canUseSound(id: new, hasPro: pro.hasPro) {
+                    soundID = old
+                    paywallReason = .sounds
+                    showPaywall = true
+                    return
+                }
                 if new == "system" && !systemSoundConfirmed {
                     soundID = old
                     showSystemSoundConfirm = true
@@ -188,7 +195,7 @@ struct AlarmEditorSheet: View {
             } message: {
                 Text("It rings until you press Stop. It will not stop by itself, on Shabbat too. Our own sounds stop by themselves.")
             }
-            .sheet(isPresented: $showPaywall) { PaywallView(reason: .weeksAhead) }
+            .sheet(isPresented: $showPaywall) { PaywallView(reason: paywallReason) }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
@@ -214,6 +221,7 @@ struct AlarmEditorSheet: View {
 
     private func chooseWeeks(_ weeks: Int) {
         if weeks != 0 && !pro.hasPro {
+            paywallReason = .weeksAhead
             showPaywall = true
         } else {
             weeksLimit = weeks

@@ -362,3 +362,36 @@
 "Open Shabbat Waker to unlock Lock Screen widgets." = "Abre Shabbat Waker para desbloquear los widgets de la pantalla de bloqueo.";
 
 "For a Shabbat alarm, turn off the silent switch on the side of the iPhone. A regular alarm rings even on silent." = "Para la alarma de Shabat, desactiva el interruptor de silencio del lateral del iPhone. Una alarma normal suena incluso en silencio.";
+
+/* More alarm sounds */
+"Morning Chime" = "Campanada de la mañana";
+"Pleasing Bell" = "Campana agradable";
+"Music Box Lullaby" = "Nana de caja de música";
+"Music Box Polka" = "Polca de caja de música";
+"Happy Lullaby" = "Nana alegre";
+"Forest Birds" = "Aves del bosque";
+"Meadow Birds" = "Aves de la pradera";
+"Wind and Birds" = "Viento y aves";
+"Marimba Morning" = "Mañana de marimba";
+"Soft Piano" = "Piano suave";
+"Crow Caw" = "Graznido de cuervo";
+"Crow Chorus" = "Coro de cuervos";
+"Bright, slow chimes" = "Campanadas claras y lentas";
+"One clear bell that repeats" = "Una campana clara que se repite";
+"A gentle music box melody" = "Una suave melodía de caja de música";
+"A light, bouncy music box tune" = "Una melodía ligera y saltarina de caja de música";
+"A warm, happy lullaby" = "Una nana cálida y alegre";
+"Birdsong in the forest" = "Canto de aves en el bosque";
+"Soft birds in an open meadow" = "Aves suaves en una pradera abierta";
+"Birds with a light breeze" = "Aves con una brisa ligera";
+"A cheerful marimba tune" = "Una alegre melodía de marimba";
+"A calm, quiet piano" = "Un piano tranquilo y suave";
+"A funny one: a single crow caw" = "Divertido: un solo graznido de cuervo";
+"A funny one: crows singing together" = "Divertido: cuervos cantando juntos";
+"More sounds" = "Más sonidos";
+"These sounds are in the public domain (CC0). Credits are in Settings under Privacy." = "Estos sonidos son de dominio público (CC0). Los créditos están en Ajustes, en Privacidad.";
+"More alarm sounds are part of Pro" = "Más sonidos de alarma forman parte de Pro";
+"More alarm sounds" = "Más sonidos de alarma";
+"Choose from music boxes, birds, piano and more for your alarms." = "Elige entre cajas de música, aves, piano y más para tus alarmas.";
+"Alarm sound credits" = "Créditos de los sonidos de alarma";
+"Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Algunos sonidos de alarma vienen de OpenGameArt.org y son de dominio público (CC0 1.0). Gracias a sus creadores:";

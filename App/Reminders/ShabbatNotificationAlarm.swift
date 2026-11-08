@@ -15,12 +15,7 @@ enum ShabbatNotificationAlarm {
     }
 
     private static func pieces(for alarm: WakeAlarm) -> [Piece] {
-        let tone: String
-        switch alarm.soundID {
-        case "gentle": tone = "GentleChime"
-        case "sunrise": tone = "SunriseSequence"
-        default: tone = "ClassicWake"
-        }
+        let tone = AlarmSounds.file(for: alarm.soundID)
         func file(_ label: String) -> String { "\(tone)_\(label)s.wav" }
         switch alarm.soundSeconds {
         case 10: return [Piece(file: file("n10"), offset: 0)]

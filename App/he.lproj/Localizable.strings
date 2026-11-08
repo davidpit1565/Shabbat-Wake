@@ -377,3 +377,36 @@
 "Open Shabbat Waker to unlock Lock Screen widgets." = "פתח את Shabbat Waker כדי לפתוח ווידג'טים למסך הנעילה.";
 
 "For a Shabbat alarm, turn off the silent switch on the side of the iPhone. A regular alarm rings even on silent." = "לשעון שבת, כבה את מתג השקט שבצד האייפון. שעון רגיל מצלצל גם על שקט.";
+
+/* More alarm sounds */
+"Morning Chime" = "צלצול בוקר";
+"Pleasing Bell" = "פעמון נעים";
+"Music Box Lullaby" = "שיר ערש בקופסת נגינה";
+"Music Box Polka" = "פולקה בקופסת נגינה";
+"Happy Lullaby" = "שיר ערש שמח";
+"Forest Birds" = "ציפורים ביער";
+"Meadow Birds" = "ציפורים באחו";
+"Wind and Birds" = "רוח וציפורים";
+"Marimba Morning" = "בוקר במרימבה";
+"Soft Piano" = "פסנתר רך";
+"Crow Caw" = "קריאת עורב";
+"Crow Chorus" = "מקהלת עורבים";
+"Bright, slow chimes" = "צלצולים בהירים ואיטיים";
+"One clear bell that repeats" = "פעמון צלול אחד שחוזר";
+"A gentle music box melody" = "מנגינה עדינה בקופסת נגינה";
+"A light, bouncy music box tune" = "לחן קליל וקופצני בקופסת נגינה";
+"A warm, happy lullaby" = "שיר ערש חם ושמח";
+"Birdsong in the forest" = "שירת ציפורים ביער";
+"Soft birds in an open meadow" = "ציפורים רכות באחו פתוח";
+"Birds with a light breeze" = "ציפורים עם רוח קלה";
+"A cheerful marimba tune" = "לחן מרימבה עליז";
+"A calm, quiet piano" = "פסנתר שקט ורגוע";
+"A funny one: a single crow caw" = "מצחיק: קריאת עורב אחת";
+"A funny one: crows singing together" = "מצחיק: עורבים שרים יחד";
+"More sounds" = "עוד צלילים";
+"These sounds are in the public domain (CC0). Credits are in Settings under Privacy." = "הצלילים האלה הם נחלת הכלל (CC0). הקרדיטים נמצאים בהגדרות תחת פרטיות.";
+"More alarm sounds are part of Pro" = "עוד צלילי התראה הם חלק מ-Pro";
+"More alarm sounds" = "עוד צלילי התראה";
+"Choose from music boxes, birds, piano and more for your alarms." = "בחרו מקופסאות נגינה, ציפורים, פסנתר ועוד עבור ההתראות שלכם.";
+"Alarm sound credits" = "קרדיט לצלילי ההתראה";
+"Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "חלק מצלילי ההתראה מגיעים מ-OpenGameArt.org והם נחלת הכלל (CC0 1.0). תודה ליוצרים:";
