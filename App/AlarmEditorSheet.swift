@@ -49,8 +49,8 @@ struct AlarmEditorSheet: View {
             _plan = State(initialValue: .standard)
             _weeksLimit = State(initialValue: 0)
             _ringSeconds = State(initialValue: RingPlan.defaultLength)
-            // A new alarm starts as a Shabbat alarm: the app is made for Shabbat.
-            _shabbatMode = State(initialValue: true)
+            // A new alarm starts as a regular system alarm: it rings on silent too. A Shabbat alarm is a choice.
+            _shabbatMode = State(initialValue: false)
         }
     }
 

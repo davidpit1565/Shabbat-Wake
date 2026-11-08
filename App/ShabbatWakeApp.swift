@@ -156,7 +156,10 @@ struct RootView: View {
             WakeScreen(request: request) { wakeRequest = nil }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { checkWakeScreenSoon() }
+            if phase == .active {
+                checkWakeScreenSoon()
+                if !ScreenshotMode.isOn { Task { await permissions.checkOnLaunch() } }
+            }
         }
         .onAppear { checkWakeScreenSoon() }
         // Applied after the sheets so the sheets receive them too. A sheet only inherits what is set outside it.
