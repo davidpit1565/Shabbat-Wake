@@ -43,11 +43,10 @@ final class ScreenshotTests: XCTestCase {
         sleep(2)
         shot("2-alarms")
 
-        // The "+" at the top right opens the editor, with the Shabbat alarm switched on.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
-        sleep(3)
-        // Switch the Shabbat alarm on: the first row of the form; its switch is on the right, or on the left in Hebrew.
+        // The "+" at the top opens the editor (on the right, or on the left in Hebrew), and the Shabbat alarm is switched on.
         let hebrew = Locale.current.language.languageCode?.identifier == "he"
+        app.coordinate(withNormalizedOffset: CGVector(dx: hebrew ? 0.095 : 0.905, dy: 0.0875)).tap()
+        sleep(3)
         app.coordinate(withNormalizedOffset: CGVector(dx: hebrew ? 0.16 : 0.84, dy: 0.206)).tap()
         sleep(1)
         shot("5-editor")
