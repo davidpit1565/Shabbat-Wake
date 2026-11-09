@@ -46,10 +46,9 @@ final class ScreenshotTests: XCTestCase {
         // The "+" at the top right opens the editor, with the Shabbat alarm switched on.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
         sleep(3)
-        // Switch the Shabbat alarm on (the first switch of the form) so the picture shows it.
-        // Of the switches that can be touched now, the topmost one is the Shabbat alarm switch of the editor.
-        let topSwitch = app.switches.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }.min { $0.frame.minY < $1.frame.minY }
-        topSwitch?.tap()
+        // Switch the Shabbat alarm on: the first row of the form; its switch is on the right, or on the left in Hebrew.
+        let hebrew = Locale.current.language.languageCode?.identifier == "he"
+        app.coordinate(withNormalizedOffset: CGVector(dx: hebrew ? 0.16 : 0.84, dy: 0.206)).tap()
         sleep(1)
         shot("5-editor")
         app.swipeDown(velocity: .fast)
