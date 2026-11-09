@@ -22,8 +22,11 @@ struct AlarmListScreen: View {
                     } actions: {
                         Button(action: onAddAlarm) {
                             Label("Create alarm", systemImage: "plus")
+                                .font(.title3.weight(.semibold))
+                                .padding(.horizontal, 30).padding(.vertical, 8)
                         }
                         .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
                     }
                 } else {
                     List {

@@ -99,6 +99,7 @@ struct RootView: View {
     @AppStorage(TimeFormat.storageKey) private var timeFormat = "system"
     @State private var editingAlarm: WakeAlarm?
     @State private var wakeRequest: WakeRequest?
+    @State private var showUpsell = false
     @Environment(\.scenePhase) private var scenePhase
 
     private var languageCode: String { AppLanguage.effectiveCode(for: preferredLanguage) }
@@ -115,6 +116,24 @@ struct RootView: View {
         Task {
             try? await Task.sleep(nanoseconds: 600_000_000)
             wakeRequest = request
+        }
+    }
+
+    /// The Pro screen when the app opens: the first time, then now and then (every fifth opening, at most once in two days).
+    /// Only once Pro is really for sale, never in front of the permissions sheet or a ringing alarm's screen.
+    private func maybeShowUpsell() {
+        guard ProStore.isEnforced, !pro.hasPro, !ScreenshotMode.isOn else { return }
+        let defaults = UserDefaults.standard
+        let opens = defaults.integer(forKey: "upsellOpens") + 1
+        defaults.set(opens, forKey: "upsellOpens")
+        let last = defaults.object(forKey: "upsellLast") as? Date
+        let due = last == nil || (opens % 5 == 0 && Date.now.timeIntervalSince(last ?? .distantPast) > 44 * 3600)
+        guard due else { return }
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            guard !permissions.isPresented, wakeRequest == nil else { return }
+            defaults.set(Date.now, forKey: "upsellLast")
+            showUpsell = true
         }
     }
 
@@ -152,6 +171,7 @@ struct RootView: View {
         .sheet(item: $editingAlarm) { AlarmEditorSheet(store: alarmStore, editing: $0) }
         .sheet(isPresented: $permissions.isPresented) { PermissionsSheet(gate: permissions) }
         .sheet(item: $browserLink) { InAppBrowser(url: $0.url).ignoresSafeArea() }
+        .sheet(isPresented: $showUpsell) { PaywallView(reason: .general) }
         .fullScreenCover(item: $wakeRequest) { request in
             WakeScreen(request: request) { wakeRequest = nil }
         }
@@ -175,6 +195,7 @@ struct RootView: View {
         .task {
             await ShabbatAlarmService.clearLegacyNotificationRings()
             if !ScreenshotMode.isOn { await permissions.checkOnLaunch() }
+            maybeShowUpsell()
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
@@ -489,11 +510,11 @@ private struct SettingsScreen: View {
             Form {
                 // Hidden while Pro is not charged for (release builds before the subscriptions exist): no "preview" UI for reviewers.
                 if ProStore.isEnforced {
-                    Section("Shabbat Waker Pro") {
+                    Section {
                         if pro.hasPro {
                             Label("Pro is unlocked", systemImage: "checkmark.seal.fill").foregroundStyle(Color.green)
                         } else {
-                            Button { showPaywall = true } label: { Label("See what Pro includes", systemImage: "star.circle.fill") }
+                            ProBanner { showPaywall = true }
                         }
                         Button { Task { await pro.restore() } } label: { Label("Restore purchases", systemImage: "arrow.clockwise") }
 #if DEBUG
