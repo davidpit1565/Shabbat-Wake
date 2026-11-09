@@ -88,6 +88,16 @@ enum ShabbatNotificationAlarm {
         }
     }
 
+    /// A Shabbat alarm about a minute from now, for checking by hand how it behaves on this phone.
+    static func scheduleTest() async throws {
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(75))
+        var alarm = WakeAlarm(title: AppLanguage.text("Test alarm"), hour: parts.hour ?? 0, minute: parts.minute ?? 0,
+                              repeatsWeekly: false, weekdays: [], soundID: "classic", ringPlan: nil, weeksLimit: nil,
+                              ringSeconds: RingPlan.defaultLength, shabbatMode: true)
+        alarm.armedAt = .now
+        try await schedule(alarm)
+    }
+
     static func cancel(id: UUID) async {
         let center = UNUserNotificationCenter.current()
         let key = prefix + id.uuidString

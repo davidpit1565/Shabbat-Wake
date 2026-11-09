@@ -411,3 +411,13 @@
 "A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps." = "Une alarme de Chabbat est une notification : désactivez le commutateur silencieux et montez le volume. Dans une Concentration comme Sommeil, autorisez Shabbat Waker sous Concentration, Apps.";
 "Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”." = "Autorisez les alarmes, les notifications et les notifications urgentes dans Réglages iOS, puis essayez « Tester l’alarme ».";
 "Time Sensitive" = "Urgentes";
+
+/* Alarm report */
+"Alarm report" = "Rapport d’alarmes";
+"Copy report" = "Copier le rapport";
+"Copied" = "Copié";
+"Test a system alarm in 20 seconds" = "Tester une alarme système dans 20 secondes";
+"Test a Shabbat alarm in about a minute" = "Tester une alarme de Chabbat dans environ une minute";
+"A system alarm will ring in about 20 seconds. Lock the phone and wait." = "Une alarme système sonnera dans environ 20 secondes. Verrouillez le téléphone et attendez.";
+"A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "Une alarme de Chabbat sonnera dans environ une minute. Verrouillez le téléphone et attendez.";
+"If an alarm does not ring, send this report to the developer." = "Si une alarme ne sonne pas, envoyez ce rapport au développeur.";
