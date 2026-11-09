@@ -47,7 +47,9 @@ final class ScreenshotTests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
         sleep(3)
         // Switch the Shabbat alarm on (the first switch of the form) so the picture shows it.
-        app.switches.firstMatch.tap()
+        // Of the switches that can be touched now, the topmost one is the Shabbat alarm switch of the editor.
+        let topSwitch = app.switches.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }.min { $0.frame.minY < $1.frame.minY }
+        topSwitch?.tap()
         sleep(1)
         shot("5-editor")
         app.swipeDown(velocity: .fast)
