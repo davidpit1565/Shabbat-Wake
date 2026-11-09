@@ -235,3 +235,38 @@ struct ProBadge: View {
             .accessibilityLabel("Pro feature")
     }
 }
+
+
+/// The first thing in Settings for someone without Pro: what it gives, and a button to see more.
+struct ProBanner: View {
+    let action: () -> Void
+    private let reasons: [(symbol: String, title: LocalizedStringKey)] = [
+        ("music.note.list", "More alarm sounds"),
+        ("mappin.and.ellipse", "Saved places"),
+        ("bell.badge", "Several reminders"),
+        ("calendar.badge.clock", "Alarms for some weeks"),
+        ("app.badge", "All app icons")
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Shabbat Waker Pro", systemImage: "star.circle.fill")
+                .font(.title3.weight(.bold))
+                .foregroundStyle(.tint)
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(reasons.enumerated()), id: \.offset) { _, reason in
+                    Label(reason.title, systemImage: reason.symbol)
+                        .font(.subheadline)
+                }
+            }
+            Text("Cancel any time. No account.")
+                .font(.footnote).foregroundStyle(.secondary)
+            Button(action: action) {
+                Text("See what Pro includes").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 6)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+        }
+        .padding(.vertical, 6)
+    }
+}
