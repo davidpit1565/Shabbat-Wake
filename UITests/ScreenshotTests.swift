@@ -46,6 +46,9 @@ final class ScreenshotTests: XCTestCase {
         // The "+" at the top right opens the editor, with the Shabbat alarm switched on.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
         sleep(3)
+        // Switch the Shabbat alarm on (the first switch of the form) so the picture shows it.
+        app.switches.firstMatch.tap()
+        sleep(1)
         shot("5-editor")
         app.swipeDown(velocity: .fast)
         sleep(2)
