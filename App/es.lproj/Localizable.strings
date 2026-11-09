@@ -402,3 +402,12 @@
 "Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Usa una canción o una grabación de tu teléfono. Se usan los primeros 30 segundos y se repite.";
 "Could not read this audio file." = "No se pudo leer este archivo de audio.";
 "Remove" = "Quitar";
+
+/* Make sure it rings */
+"Make sure it rings" = "Asegúrate de que suene";
+"A few things decide whether an alarm sounds. Check them once." = "Unas pocas cosas deciden si una alarma suena. Revísalas una vez.";
+"Keep the iPhone switched on. A phone that is turned off cannot ring." = "Deja el iPhone encendido. Un teléfono apagado no puede sonar.";
+"A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb." = "Una alarma normal es una alarma del sistema de Apple. Suena en silencio y también con los modos de concentración y No molestar.";
+"A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps." = "Una alarma de Shabat es una notificación: desactiva el interruptor de silencio y sube el volumen. En un modo de concentración como Dormir, permite Shabbat Waker en Concentración, Apps.";
+"Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”." = "Permite las alarmas, las notificaciones y las notificaciones urgentes en Ajustes de iOS y prueba «Probar la alarma».";
+"Time Sensitive" = "Urgentes";
