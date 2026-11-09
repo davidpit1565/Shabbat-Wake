@@ -119,7 +119,7 @@ struct RootView: View {
         }
     }
 
-    /// The Pro screen when the app opens: the first time, then now and then (every third opening, at most once a day).
+    /// The Pro screen when the app opens: the first time, then now and then (every fifth opening, at most once in two days).
     /// Only once Pro is really for sale, never in front of the permissions sheet or a ringing alarm's screen.
     private func maybeShowUpsell() {
         guard ProStore.isEnforced, !pro.hasPro, !ScreenshotMode.isOn else { return }
@@ -127,7 +127,7 @@ struct RootView: View {
         let opens = defaults.integer(forKey: "upsellOpens") + 1
         defaults.set(opens, forKey: "upsellOpens")
         let last = defaults.object(forKey: "upsellLast") as? Date
-        let due = last == nil || (opens % 3 == 0 && Date.now.timeIntervalSince(last ?? .distantPast) > 20 * 3600)
+        let due = last == nil || (opens % 5 == 0 && Date.now.timeIntervalSince(last ?? .distantPast) > 44 * 3600)
         guard due else { return }
         Task {
             try? await Task.sleep(nanoseconds: 1_500_000_000)
