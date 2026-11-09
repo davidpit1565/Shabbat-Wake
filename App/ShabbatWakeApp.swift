@@ -196,6 +196,11 @@ struct RootView: View {
             await ShabbatAlarmService.clearLegacyNotificationRings()
             if !ScreenshotMode.isOn { await permissions.checkOnLaunch() }
             maybeShowUpsell()
+            // For the App Store picture of the ringing screen.
+            if ScreenshotMode.isOn && CommandLine.arguments.contains("-showWake") {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                wakeRequest = WakeRequest(alarmID: nil, title: AppLanguage.text("Wake-up"))
+            }
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)

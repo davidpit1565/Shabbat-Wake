@@ -57,4 +57,13 @@ final class ScreenshotTests: XCTestCase {
         sleep(2)
         shot("4-settings")
     }
+
+    /// The full-screen picture shown when someone opens a ringing alarm.
+    func testWakeScreenshot() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-screenshotMode", "-showWake"]
+        app.launch()
+        sleep(8)
+        shot("7-wake")
+    }
 }
