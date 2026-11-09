@@ -395,3 +395,10 @@
 "Choose from music boxes, birds, piano and more for your alarms." = "Выбирайте музыкальные шкатулки, птиц, пианино и другое для своих будильников.";
 "Alarm sound credits" = "Авторы звуков будильника";
 "Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Некоторые звуки будильника взяты с OpenGameArt.org и находятся в общественном достоянии (CC0 1.0). Спасибо авторам:";
+
+/* Own alarm sounds */
+"My sounds" = "Мои звуки";
+"Add my own sound" = "Добавить свой звук";
+"Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Используйте песню или запись с телефона. Берутся первые 30 секунд, и звук повторяется.";
+"Could not read this audio file." = "Не удалось прочитать этот аудиофайл.";
+"Remove" = "Удалить";

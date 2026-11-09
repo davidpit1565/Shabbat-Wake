@@ -93,6 +93,9 @@ struct AlarmEditorSheet: View {
                         ForEach(AlarmSounds.all) { sound in
                             Text(sound.isPro ? "\(AppLanguage.text(sound.name)) · PRO" : AppLanguage.text(sound.name)).tag(sound.id)
                         }
+                        ForEach(CustomSounds.entries) { sound in
+                            Text(verbatim: "\(sound.name) · PRO").tag(sound.id)
+                        }
                         if !shabbatMode { Text("Apple's standard alarm sound").tag("system") }
                     }
                     if soundID == "system" && !shabbatMode {

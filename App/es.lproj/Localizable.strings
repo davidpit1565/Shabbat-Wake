@@ -395,3 +395,10 @@
 "Choose from music boxes, birds, piano and more for your alarms." = "Elige entre cajas de música, aves, piano y más para tus alarmas.";
 "Alarm sound credits" = "Créditos de los sonidos de alarma";
 "Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Algunos sonidos de alarma vienen de OpenGameArt.org y son de dominio público (CC0 1.0). Gracias a sus creadores:";
+
+/* Own alarm sounds */
+"My sounds" = "Mis sonidos";
+"Add my own sound" = "Añadir mi propio sonido";
+"Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Usa una canción o una grabación de tu teléfono. Se usan los primeros 30 segundos y se repite.";
+"Could not read this audio file." = "No se pudo leer este archivo de audio.";
+"Remove" = "Quitar";
