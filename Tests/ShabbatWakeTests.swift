@@ -322,14 +322,16 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertNil(alarm.weeksLimit)
     }
 
-    func testShabbatAlarmSoundFilesMatchTheChosenLength() {
+    func testShabbatAlarmSoundFilesMatchTheChosenLength() async {
         var alarm = WakeAlarm(title: "x", hour: 7, minute: 0, repeatsWeekly: false, weekdays: [], soundID: "gentle", ringPlan: RingPlan(count: 2, intervalMinutes: 5, seconds: 20))
         XCTAssertEqual(ShabbatAlarmService.soundFileName(for: alarm), "GentleChime_20s.wav")
         alarm.soundID = "classic"; alarm.ringPlan = RingPlan(count: 2, intervalMinutes: 5, seconds: 10)
         XCTAssertEqual(ShabbatAlarmService.soundFileName(for: alarm), "ClassicWake_10s.wav")
-        for tone in ["ClassicWake", "GentleChime", "SunriseSequence"] {
+        // The files for each length are made when an alarm needs them, from the small tone in the app.
+        for (id, tone) in [("classic", "ClassicWake"), ("gentle", "GentleChime"), ("sunrise", "SunriseSequence")] {
             for seconds in RingPlan.secondChoices {
-                XCTAssertNotNil(Bundle.main.url(forResource: "\(tone)_\(seconds)s", withExtension: "wav"), "\(tone)_\(seconds)s.wav is not in the app")
+                await SoundFiles.ensure(soundID: id, seconds: seconds, notification: false)
+                XCTAssertTrue(CustomSounds.exists(fileName: "\(tone)_\(seconds)s.wav"), "\(tone)_\(seconds)s.wav was not made")
             }
         }
     }
