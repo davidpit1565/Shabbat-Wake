@@ -16,7 +16,7 @@ final class AlarmTonePlayer: ObservableObject {
             return
         }
         player?.stop()
-        guard let url = Bundle.main.url(forResource: resource, withExtension: "wav") ?? CustomSounds.url(file: resource) else {
+        guard let url = Bundle.main.url(forResource: resource, withExtension: "wav") ?? Bundle.main.url(forResource: resource, withExtension: "mp3") ?? CustomSounds.url(file: resource) else {
             playingName = nil
             return
         }

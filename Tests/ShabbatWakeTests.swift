@@ -120,25 +120,28 @@ final class ShabbatWakeTests: XCTestCase {
     }
 
     func testAlarmSoundsAreBundledInTheApp() {
+        // Only the small source of each sound is in the app; the alarm files are made when an alarm needs them.
         let bundle = Bundle.main
         for sound in AlarmSounds.all {
-            XCTAssertNotNil(bundle.url(forResource: sound.file, withExtension: "wav"), "\(sound.file).wav is missing from \(bundle.bundlePath)")
-            for seconds in RingPlan.secondChoices {
-                XCTAssertNotNil(bundle.url(forResource: "\(sound.file)_\(seconds)s", withExtension: "wav"), "\(sound.file)_\(seconds)s.wav is missing")
-            }
-            for label in ["n10", "n15", "n20", "n29"] {
-                XCTAssertNotNil(bundle.url(forResource: "\(sound.file)_\(label)s", withExtension: "wav"), "\(sound.file)_\(label)s.wav is missing")
-            }
+            XCTAssertTrue(bundle.url(forResource: sound.file, withExtension: "wav") != nil || bundle.url(forResource: sound.file, withExtension: "mp3") != nil,
+                          "\(sound.file) source is missing from \(bundle.bundlePath)")
+            XCTAssertNil(bundle.url(forResource: "\(sound.file)_50s", withExtension: "wav"), "\(sound.file)_50s.wav should be made on demand, not shipped")
         }
     }
 
-    func testNotificationSoundsAreUnderThirtySeconds() throws {
-        for sound in AlarmSounds.all {
+    func testAlarmFilesAreMadeOnDemandAndNotificationPiecesAreUnderThirtySeconds() async throws {
+        for id in ["classic", "softpiano"] {
+            for seconds in [10, 15, 20, 40, 50] {
+                await SoundFiles.ensure(soundID: id, seconds: seconds, notification: true)
+            }
+            await SoundFiles.ensure(soundID: id, seconds: 20, notification: false)
+            let base = AlarmSounds.file(for: id)
+            XCTAssertTrue(CustomSounds.exists(fileName: "\(base)_20s.wav"), "\(base)_20s.wav was not made")
             for label in ["n10", "n15", "n20", "n29"] {
-                let url = try XCTUnwrap(Bundle.main.url(forResource: "\(sound.file)_\(label)s", withExtension: "wav"))
+                let url = try XCTUnwrap(CustomSounds.url(file: base, suffix: "_\(label)s"), "\(base)_\(label)s.wav was not made")
                 let file = try AVAudioFile(forReading: url)
                 let length = Double(file.length) / file.processingFormat.sampleRate
-                XCTAssertLessThan(length, 30, "\(sound.file)_\(label)s.wav is \(length) s")
+                XCTAssertLessThan(length, 30, "\(base)_\(label)s.wav is \(length) s")
             }
         }
     }

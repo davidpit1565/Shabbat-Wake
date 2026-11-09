@@ -180,3 +180,59 @@ enum CustomSounds {
         return file
     }
 }
+
+
+/// The alarm files for the built-in sounds are made when an alarm needs them (once), from the small source sound in the app,
+/// instead of shipping every length of every sound. That keeps the app small.
+enum SoundFiles {
+    /// The notification pieces a Shabbat alarm of this length plays, one after the other.
+    static func notificationLabels(for seconds: Int) -> [String] {
+        switch seconds {
+        case 10: return ["n10"]
+        case 15: return ["n15"]
+        case 20: return ["n20"]
+        case 30: return ["n29"]
+        case 40: return ["n29", "n10"]
+        default: return ["n29", "n20"]
+        }
+    }
+
+    private static func length(of label: String) -> Double {
+        switch label {
+        case "n10": return 10
+        case "n15": return 15
+        case "n20": return 20
+        default: return 29.5
+        }
+    }
+
+    private static func source(_ base: String) -> URL? {
+        Bundle.main.url(forResource: base, withExtension: "wav") ?? Bundle.main.url(forResource: base, withExtension: "mp3")
+    }
+
+    /// Makes the files for `soundID` at this ring length if they are not there yet. `notification` is for a Shabbat alarm.
+    static func ensure(soundID: String, seconds: Int, notification: Bool) async {
+        guard soundID != "system", !soundID.hasPrefix("custom-") else { return }   // own sounds are made when they are imported
+        let base = AlarmSounds.file(for: soundID)
+        struct Job { let name: String; let rate: Int; let seconds: Double; let alarmKit: Bool }
+        var jobs: [Job] = []
+        if notification {
+            for label in notificationLabels(for: seconds) {
+                jobs.append(Job(name: "\(base)_\(label)s.wav", rate: 22_050, seconds: length(of: label), alarmKit: false))
+            }
+        } else {
+            jobs.append(Job(name: "\(base)_\(seconds)s.wav", rate: 8_000, seconds: Double(seconds), alarmKit: true))
+        }
+        jobs = jobs.filter { !CustomSounds.exists(fileName: $0.name) }
+        guard !jobs.isEmpty, let url = source(base) else { return }
+        let work = jobs
+        await Task.detached(priority: .userInitiated) {
+            for job in work {
+                guard let clip = try? CustomSounds.decode(url, rate: Double(job.rate)), !clip.isEmpty else { continue }
+                let samples = CustomSounds.looped(clip, rate: job.rate, seconds: job.seconds)
+                let data = job.alarmKit ? CustomSounds.alarmKitWAV(samples, rate: job.rate) : CustomSounds.pcmWAV(samples, rate: job.rate)
+                try? data.write(to: CustomSounds.directory.appendingPathComponent(job.name), options: .atomic)
+            }
+        }.value
+    }
+}

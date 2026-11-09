@@ -54,6 +54,7 @@ enum ShabbatNotificationAlarm {
         }
         guard status == .authorized || status == .provisional else { throw ShabbatAlarmError.notificationsDenied }
 
+        await SoundFiles.ensure(soundID: alarm.soundID, seconds: alarm.soundSeconds, notification: true)
         let copy = planned(alarm)
         let rings = RingPlanner.rings(for: copy, limit: ringLimit(for: alarm))
         guard !rings.isEmpty else { throw ShabbatAlarmError.nothingToSchedule }

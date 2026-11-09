@@ -72,6 +72,7 @@ enum NativeAlarmKitService {
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
         // The file is as long as the person chose, so the sound ends by itself. If a file is missing, the system alarm sound is used.
+        await SoundFiles.ensure(soundID: soundID, seconds: seconds, notification: false)
         let file = "\(AlarmSounds.file(for: soundID))_\(seconds)s.wav"
         let sound: AlertConfiguration.AlertSound = soundID == "system" ? .default : (Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil || CustomSounds.exists(fileName: file)) ? .named(file) : .default
         let configuration = AlarmManager.AlarmConfiguration.alarm(
