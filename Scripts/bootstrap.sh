@@ -7,10 +7,9 @@ cd "$(dirname "$0")/.."
 command -v xcodegen >/dev/null || { echo "Install XcodeGen first: brew install xcodegen"; exit 1; }
 
 python3 App/AlarmSoundGenerator.py
-for f in GentleChime SunriseSequence ClassicWake $(ls App/SoundSources/*.mp3 | xargs -n1 basename | sed 's/\.mp3$//'); do
-  for suffix in "" _10s _15s _20s _30s _40s _50s _n10s _n15s _n20s _n29s; do
-    test -s "App/Resources/$f$suffix.wav" || { echo "Missing App/Resources/$f$suffix.wav"; exit 1; }
-  done
+for f in GentleChime SunriseSequence ClassicWake; do
+  test -s "App/Resources/$f.wav" || { echo "Missing App/Resources/$f.wav"; exit 1; }
 done
+ls App/SoundSources/*.mp3 > /dev/null || { echo "Missing App/SoundSources"; exit 1; }
 xcodegen generate
 echo "Done. Open ShabbatWake.xcodeproj, pick your Team under Signing & Capabilities for BOTH targets, then run on your iPhone."

@@ -196,6 +196,11 @@ struct RootView: View {
             await ShabbatAlarmService.clearLegacyNotificationRings()
             if !ScreenshotMode.isOn { await permissions.checkOnLaunch() }
             maybeShowUpsell()
+            // For the App Store picture of the ringing screen.
+            if ScreenshotMode.isOn && CommandLine.arguments.contains("-showWake") {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                wakeRequest = WakeRequest(alarmID: nil, title: AppLanguage.text("Wake-up"))
+            }
             await alarmStore.refreshFromSystem()
             WatchSync.shared.start()
             WidgetSync.updateLanguage(languageCode)
@@ -530,6 +535,7 @@ private struct SettingsScreen: View {
                         }
                     } label: { Label("Test the alarm", systemImage: "bell.badge") }
                     if let testMessage { Text(testMessage).font(.footnote).foregroundStyle(.secondary) }
+                    NavigationLink { RingTipsScreen() } label: { Label("Make sure it rings", systemImage: "checklist") }
                 } header: { Text("Check that it rings") }
                 Section("Reminders") {
                     NavigationLink {
@@ -592,5 +598,94 @@ private struct SettingsScreen: View {
             .sheet(isPresented: $showPaywall) { PaywallView(reason: .general) }
             .onChange(of: appearanceMode) { _, mode in ShabbatWakeApp.applyAppearance(mode) }
         }
+    }
+}
+
+
+/// What decides whether an alarm sounds, with the permissions as iOS reports them now.
+private struct RingTipsScreen: View {
+    @State private var alarms = NativeAlarmKitService.authorizationState()
+    @State private var notificationsOn = false
+    @State private var timeSensitiveOn = false
+    @State private var report = ""
+    @State private var copied = false
+    @State private var testMessage: String?
+    @Environment(\.scenePhase) private var scenePhase
+
+    private func testSystemAlarm() async {
+        do {
+            try await NativeAlarmKitService.scheduleTest(after: 20)
+            testMessage = AppLanguage.text("A system alarm will ring in about 20 seconds. Lock the phone and wait.")
+        } catch { testMessage = error.localizedDescription }
+        report = await AlarmReport.text()
+    }
+
+    private func testShabbatAlarm() async {
+        do {
+            try await ShabbatNotificationAlarm.scheduleTest()
+            testMessage = AppLanguage.text("A Shabbat alarm will sound in about a minute. Lock the phone and wait.")
+        } catch { testMessage = error.localizedDescription }
+        report = await AlarmReport.text()
+    }
+
+    var body: some View {
+        List {
+            Section {
+                Text("A few things decide whether an alarm sounds. Check them once.")
+                tip("power", "Keep the iPhone switched on. A phone that is turned off cannot ring.")
+                tip("alarm.fill", "A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb.")
+                tip("bell.badge", "A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps.")
+                tip("gearshape", "Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try \u{201C}Test the alarm\u{201D}.")
+            }
+            Section {
+                Button { Task { await testSystemAlarm() } } label: { Label("Test a system alarm in 20 seconds", systemImage: "alarm") }
+                Button { Task { await testShabbatAlarm() } } label: { Label("Test a Shabbat alarm in about a minute", systemImage: "bell.badge") }
+                if let testMessage { Text(testMessage).font(.footnote).foregroundStyle(.secondary) }
+            }
+            Section {
+                Text(verbatim: report).font(.system(.caption2, design: .monospaced)).textSelection(.enabled)
+                Button {
+                    UIPasteboard.general.string = report
+                    copied = true
+                } label: { Label(copied ? "Copied" : "Copy report", systemImage: "doc.on.doc") }
+            } header: {
+                Text("Alarm report")
+            } footer: {
+                Text("If an alarm does not ring, send this report to the developer.")
+            }
+            Section {
+                status("Alarms", alarms == .authorized)
+                status("Notifications", notificationsOn)
+                status("Time Sensitive", timeSensitiveOn)
+                Button {
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
+                } label: { Label("Open Settings", systemImage: "gear") }
+            }
+        }
+        .navigationTitle("Make sure it rings")
+        .task(id: scenePhase) { await refresh() }
+    }
+
+    private func tip(_ symbol: String, _ text: LocalizedStringKey) -> some View {
+        Label { Text(text).font(.subheadline) } icon: { Image(systemName: symbol).foregroundStyle(.tint) }
+    }
+
+    private func status(_ title: LocalizedStringKey, _ allowed: Bool) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Image(systemName: allowed ? "checkmark.circle.fill" : "xmark.circle")
+                .foregroundStyle(allowed ? Color.green : Color.orange)
+                .accessibilityLabel(allowed ? Text("Allowed") : Text("Not allowed"))
+        }
+    }
+
+    private func refresh() async {
+        alarms = NativeAlarmKitService.authorizationState()
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        notificationsOn = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
+        timeSensitiveOn = settings.timeSensitiveSetting == .enabled
+        report = await AlarmReport.text()
     }
 }

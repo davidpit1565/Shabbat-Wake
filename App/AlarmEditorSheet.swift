@@ -90,11 +90,19 @@ struct AlarmEditorSheet: View {
                         WeekdayPicker(selection: $weekdays, locale: locale)
                     }
                     Picker("Alarm sound", selection: $soundID) {
-                        ForEach(AlarmSounds.all) { sound in
-                            Text(sound.isPro ? "\(AppLanguage.text(sound.name)) · PRO" : AppLanguage.text(sound.name)).tag(sound.id)
+                        ForEach(AlarmSounds.original.filter { ProPolicy.canUseSound(id: $0.id, hasPro: pro.hasPro) || $0.id == soundID }) { sound in
+                            Text(AppLanguage.text(sound.name)).tag(sound.id)
                         }
-                        ForEach(CustomSounds.entries) { sound in
-                            Text(verbatim: "\(sound.name) · PRO").tag(sound.id)
+                        if pro.hasPro {
+                            ForEach(CustomSounds.entries) { sound in
+                                Text(verbatim: sound.name).tag(sound.id)
+                            }
+                        }
+                        ForEach(AlarmSounds.community.filter { ProPolicy.canUseSound(id: $0.id, hasPro: pro.hasPro) || $0.id == soundID }) { sound in
+                            Text(AppLanguage.text(sound.name)).tag(sound.id)
+                        }
+                        if !pro.hasPro {
+                            Text("\(AppLanguage.text("More sounds")) · PRO").tag("__pro__")
                         }
                         if !shabbatMode { Text("Apple's standard alarm sound").tag("system") }
                     }

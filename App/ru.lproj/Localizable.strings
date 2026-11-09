@@ -402,3 +402,22 @@
 "Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Используйте песню или запись с телефона. Берутся первые 30 секунд, и звук повторяется.";
 "Could not read this audio file." = "Не удалось прочитать этот аудиофайл.";
 "Remove" = "Удалить";
+
+/* Make sure it rings */
+"Make sure it rings" = "Чтобы будильник сработал";
+"A few things decide whether an alarm sounds. Check them once." = "От нескольких вещей зависит, прозвучит ли будильник. Проверьте их один раз.";
+"Keep the iPhone switched on. A phone that is turned off cannot ring." = "Не выключайте iPhone. Выключенный телефон не зазвонит.";
+"A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb." = "Обычный будильник — системный будильник Apple. Он звонит в беззвучном режиме, а также в «Фокусировке» и «Не беспокоить».";
+"A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps." = "Будильник Шаббата — это уведомление: выключите переключатель беззвучного режима и прибавьте громкость. В «Фокусировке», например «Сон», разрешите Shabbat Waker в разделе «Фокусировка», «Приложения».";
+"Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”." = "Разрешите будильники, уведомления и срочные по времени уведомления в настройках iOS, затем попробуйте «Проверить сигнал».";
+"Time Sensitive" = "Срочные по времени";
+
+/* Alarm report */
+"Alarm report" = "Отчёт о будильниках";
+"Copy report" = "Скопировать отчёт";
+"Copied" = "Скопировано";
+"Test a system alarm in 20 seconds" = "Проверить системный будильник через 20 секунд";
+"Test a Shabbat alarm in about a minute" = "Проверить будильник Шаббата примерно через минуту";
+"A system alarm will ring in about 20 seconds. Lock the phone and wait." = "Системный будильник зазвонит примерно через 20 секунд. Заблокируйте телефон и ждите.";
+"A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "Будильник Шаббата прозвучит примерно через минуту. Заблокируйте телефон и ждите.";
+"If an alarm does not ring, send this report to the developer." = "Если будильник не звонит, отправьте этот отчёт разработчику.";

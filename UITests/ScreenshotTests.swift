@@ -43,9 +43,12 @@ final class ScreenshotTests: XCTestCase {
         sleep(2)
         shot("2-alarms")
 
-        // The "+" at the top right opens the editor, with the Shabbat alarm switched on.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.905, dy: 0.0875)).tap()
+        // The "+" at the top opens the editor (on the right, or on the left in Hebrew), and the Shabbat alarm is switched on.
+        let hebrew = Locale.current.language.languageCode?.identifier == "he"
+        app.coordinate(withNormalizedOffset: CGVector(dx: hebrew ? 0.095 : 0.905, dy: 0.0875)).tap()
         sleep(3)
+        app.coordinate(withNormalizedOffset: CGVector(dx: hebrew ? 0.16 : 0.84, dy: 0.206)).tap()
+        sleep(1)
         shot("5-editor")
         app.swipeDown(velocity: .fast)
         sleep(2)
@@ -53,5 +56,14 @@ final class ScreenshotTests: XCTestCase {
         buttons.element(boundBy: 3).tap()
         sleep(2)
         shot("4-settings")
+    }
+
+    /// The full-screen picture shown when someone opens a ringing alarm.
+    func testWakeScreenshot() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-screenshotMode", "-showWake"]
+        app.launch()
+        sleep(8)
+        shot("7-wake")
     }
 }

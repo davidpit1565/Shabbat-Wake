@@ -6,15 +6,18 @@ SRC, OUT = sys.argv[1], sys.argv[2]
 os.makedirs(OUT, exist_ok=True)
 
 SLIDES = [  # (raw name, headlines)
-    ("1-home", {"en": "Never miss candle lighting again.", "he": "לא תפספסו הדלקת נרות. אף פעם.",
+    ("1-home", {"en": "Never miss candle lighting again.", "he": "לא תפספסו הדלקת נרות, אף פעם",
                 "ru": "Больше не пропустите зажигание свечей.", "fr": "Ne manquez plus jamais l’allumage des bougies.",
                 "es": "Nunca más te pierdas el encendido de velas."}),
     ("5-editor", {"en": "An alarm that respects Shabbat.", "he": "שעון מעורר שמכבד את השבת",
                   "ru": "Будильник, уважающий Шаббат.", "fr": "Un réveil qui respecte Chabbat.",
                   "es": "Una alarma que respeta el Shabat."}),
-    ("2-alarms", {"en": "Rings when it should. Stops by itself.", "he": "מצלצל כשצריך. נעצר לבד.",
+    ("2-alarms", {"en": "Rings when it should. Stops by itself.", "he": "מצלצל כשצריך, נעצר לבד",
                   "ru": "Звонит вовремя. Выключается сам.", "fr": "Sonne à l’heure. S’arrête tout seul.",
                   "es": "Suena a tu hora. Se detiene sola."}),
+    ("7-wake", {"en": "A calm start to your morning.", "he": "בוקר רגוע מתחיל כאן",
+                "ru": "Спокойное начало утра.", "fr": "Un réveil tout en douceur.",
+                "es": "Un despertar tranquilo."}),
     ("3-times", {"en": "Exact times for where you are.", "he": "הזמנים המדויקים של המקום שלכם",
                  "ru": "Точное время там, где вы.", "fr": "Les horaires exacts de votre lieu.",
                  "es": "Horarios exactos donde estés."}),

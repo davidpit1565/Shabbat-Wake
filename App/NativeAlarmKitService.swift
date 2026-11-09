@@ -40,9 +40,9 @@ enum NativeAlarmKitService {
     }
 
     /// A one-off alarm about a minute from now, for checking by hand that the alarm really sounds.
-    static func scheduleTest() async throws {
+    static func scheduleTest(after delay: TimeInterval = 65) async throws {
         guard #available(iOS 26.1, *) else { throw NativeAlarmKitError.unsupported }
-        try await submit(id: UUID(), title: AppLanguage.text("Test alarm"), soundID: "classic", seconds: RingPlan.defaultLength, schedule: .fixed(Date().addingTimeInterval(65)))
+        try await submit(id: UUID(), title: AppLanguage.text("Test alarm"), soundID: "classic", seconds: RingPlan.defaultLength, schedule: .fixed(Date().addingTimeInterval(delay)))
     }
 
     @available(iOS 26.1, *)
@@ -72,6 +72,7 @@ enum NativeAlarmKitService {
             tintColor: Color(red: 0.12, green: 0.42, blue: 0.92)
         )
         // The file is as long as the person chose, so the sound ends by itself. If a file is missing, the system alarm sound is used.
+        await SoundFiles.ensure(soundID: soundID, seconds: seconds, notification: false)
         let file = "\(AlarmSounds.file(for: soundID))_\(seconds)s.wav"
         let sound: AlertConfiguration.AlertSound = soundID == "system" ? .default : (Bundle.main.url(forResource: (file as NSString).deletingPathExtension, withExtension: "wav") != nil || CustomSounds.exists(fileName: file)) ? .named(file) : .default
         let configuration = AlarmManager.AlarmConfiguration.alarm(
@@ -97,6 +98,21 @@ enum NativeAlarmKitService {
         case .authorized: return .authorized
         case .denied: return .denied
         default: return .notDetermined
+        }
+    }
+
+    /// What iOS itself has scheduled for this app, for the alarm report.
+    static func systemAlarmLines() -> [String] {
+        guard #available(iOS 26.1, *) else { return ["System alarms: not available before iOS 26.1"] }
+        do {
+            let alarms = try AlarmManager.shared.alarms
+            var lines = ["System alarms scheduled by iOS: \(alarms.count)"]
+            for alarm in alarms.prefix(15) {
+                lines.append("- \(alarm.id.uuidString.prefix(8)) state=\(String(describing: alarm.state)) \(String(describing: alarm.schedule))")
+            }
+            return lines
+        } catch {
+            return ["System alarms: could not be read (\(error.localizedDescription))"]
         }
     }
 

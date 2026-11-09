@@ -270,3 +270,22 @@
 "Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Use a song or recording from your phone. The first 30 seconds are used, and it repeats.";
 "Could not read this audio file." = "Could not read this audio file.";
 "Remove" = "Remove";
+
+/* Make sure it rings */
+"Make sure it rings" = "Make sure it rings";
+"A few things decide whether an alarm sounds. Check them once." = "A few things decide whether an alarm sounds. Check them once.";
+"Keep the iPhone switched on. A phone that is turned off cannot ring." = "Keep the iPhone switched on. A phone that is turned off cannot ring.";
+"A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb." = "A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb.";
+"A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps." = "A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps.";
+"Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”." = "Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”.";
+"Time Sensitive" = "Time Sensitive";
+
+/* Alarm report */
+"Alarm report" = "Alarm report";
+"Copy report" = "Copy report";
+"Copied" = "Copied";
+"Test a system alarm in 20 seconds" = "Test a system alarm in 20 seconds";
+"Test a Shabbat alarm in about a minute" = "Test a Shabbat alarm in about a minute";
+"A system alarm will ring in about 20 seconds. Lock the phone and wait." = "A system alarm will ring in about 20 seconds. Lock the phone and wait.";
+"A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "A Shabbat alarm will sound in about a minute. Lock the phone and wait.";
+"If an alarm does not ring, send this report to the developer." = "If an alarm does not ring, send this report to the developer.";

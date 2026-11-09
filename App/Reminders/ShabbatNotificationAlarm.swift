@@ -54,6 +54,7 @@ enum ShabbatNotificationAlarm {
         }
         guard status == .authorized || status == .provisional else { throw ShabbatAlarmError.notificationsDenied }
 
+        await SoundFiles.ensure(soundID: alarm.soundID, seconds: alarm.soundSeconds, notification: true)
         let copy = planned(alarm)
         let rings = RingPlanner.rings(for: copy, limit: ringLimit(for: alarm))
         guard !rings.isEmpty else { throw ShabbatAlarmError.nothingToSchedule }
@@ -85,6 +86,16 @@ enum ShabbatNotificationAlarm {
             center.removePendingNotificationRequests(withIdentifiers: added)
             throw error
         }
+    }
+
+    /// A Shabbat alarm about a minute from now, for checking by hand how it behaves on this phone.
+    static func scheduleTest() async throws {
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(75))
+        var alarm = WakeAlarm(title: AppLanguage.text("Test alarm"), hour: parts.hour ?? 0, minute: parts.minute ?? 0,
+                              repeatsWeekly: false, weekdays: [], soundID: "classic", ringPlan: nil, weeksLimit: nil,
+                              ringSeconds: RingPlan.defaultLength, shabbatMode: true)
+        alarm.armedAt = .now
+        try await schedule(alarm)
     }
 
     static func cancel(id: UUID) async {

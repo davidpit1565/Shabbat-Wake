@@ -16,7 +16,7 @@ final class AlarmTonePlayer: ObservableObject {
             return
         }
         player?.stop()
-        guard let url = Bundle.main.url(forResource: resource, withExtension: "wav") ?? CustomSounds.url(file: resource) else {
+        guard let url = Bundle.main.url(forResource: resource, withExtension: "wav") ?? Bundle.main.url(forResource: resource, withExtension: "mp3") ?? CustomSounds.url(file: resource) else {
             playingName = nil
             return
         }
@@ -57,13 +57,7 @@ struct SoundLibraryScreen: View {
                 Text("These tones were created for Shabbat Waker. Choose one when you create an alarm.")
             }
             Section {
-                ForEach(AlarmSounds.community) { row($0) }
-            } header: {
-                Text("More sounds")
-            } footer: {
-                Text("These sounds are in the public domain (CC0). Credits are in Settings under Privacy.")
-            }
-            Section {
+                addOwnButton
                 ForEach(customSounds) { sound in
                     HStack(spacing: 14) {
                         Image(systemName: "waveform")
@@ -90,19 +84,14 @@ struct SoundLibraryScreen: View {
                         } label: { Label("Remove", systemImage: "trash") }
                     }
                 }
-                Button {
-                    if ProPolicy.canImportCustomSound(hasPro: pro.hasPro) { importing = true } else { showPaywall = true }
-                } label: {
-                    HStack {
-                        Label("Add my own sound", systemImage: "plus.circle.fill")
-                        if isWorking { Spacer(); ProgressView() }
-                    }
-                }
-                .disabled(isWorking)
+                ForEach(AlarmSounds.community) { row($0) }
             } header: {
-                Text("My sounds")
+                Text("More sounds")
             } footer: {
-                Text("Use a song or recording from your phone. The first 30 seconds are used, and it repeats.")
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Use a song or recording from your phone. The first 30 seconds are used, and it repeats.")
+                    Text("These sounds are in the public domain (CC0). Credits are in Settings under Privacy.")
+                }
             }
         }
         .navigationTitle("Sound library")
@@ -122,6 +111,28 @@ struct SoundLibraryScreen: View {
         }
         .alert("Could not read this audio file.", isPresented: $importFailed) { Button("OK", role: .cancel) {} }
         .sheet(isPresented: $showPaywall) { PaywallView(reason: .sounds) }
+    }
+
+    /// First row of "More sounds", so it is the fourth sound in the list after the original tones.
+    private var addOwnButton: some View {
+        Button {
+            if ProPolicy.canImportCustomSound(hasPro: pro.hasPro) { importing = true } else { showPaywall = true }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3).foregroundStyle(.blue)
+                    .accessibilityHidden(true)
+                    .frame(width: 42, height: 42)
+                    .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                Text("Add my own sound").font(.headline)
+                ProBadge()
+                Spacer()
+                if isWorking { ProgressView() }
+            }
+            .padding(.vertical, 5)
+        }
+        .buttonStyle(.plain)
+        .disabled(isWorking)
     }
 
     private func row(_ sound: AlarmSound) -> some View {

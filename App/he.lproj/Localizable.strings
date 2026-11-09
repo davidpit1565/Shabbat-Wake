@@ -417,3 +417,22 @@
 "Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "אפשר להשתמש בשיר או הקלטה מהטלפון. משתמשים ב-30 השניות הראשונות והצליל חוזר.";
 "Could not read this audio file." = "לא ניתן לקרוא את קובץ האודיו הזה.";
 "Remove" = "הסרה";
+
+/* Make sure it rings */
+"Make sure it rings" = "לוודא שזה מצלצל";
+"A few things decide whether an alarm sounds. Check them once." = "כמה דברים קובעים אם שעון מצלצל. כדאי לבדוק אותם פעם אחת.";
+"Keep the iPhone switched on. A phone that is turned off cannot ring." = "השאירו את האייפון דלוק. טלפון כבוי לא יכול לצלצל.";
+"A regular alarm is an Apple system alarm. It rings on silent and through Focus and Do Not Disturb." = "שעון רגיל הוא שעון מערכת של Apple. הוא מצלצל גם על שקט, ובמצבי מיקוד ו“נא לא להפריע”.";
+"A Shabbat alarm is a notification: turn the silent switch off and the volume up. In a Focus such as Sleep, allow Shabbat Waker under Focus, Apps." = "שעון שבת הוא התראה: כבו את מתג השקט והעלו את העוצמה. במצב מיקוד כמו שינה, אפשרו את Shabbat Waker תחת מיקוד, אפליקציות.";
+"Allow Alarms, Notifications and Time Sensitive Notifications in iOS Settings, then try “Test the alarm”." = "אפשרו התראות, שעונים והתראות רגישות לזמן בהגדרות iOS, ואז נסו “בדוק את ההתראה”.";
+"Time Sensitive" = "רגישות לזמן";
+
+/* Alarm report */
+"Alarm report" = "דוח התראות";
+"Copy report" = "העתקת הדוח";
+"Copied" = "הועתק";
+"Test a system alarm in 20 seconds" = "בדיקת שעון מערכת בעוד 20 שניות";
+"Test a Shabbat alarm in about a minute" = "בדיקת שעון שבת בעוד כדקה";
+"A system alarm will ring in about 20 seconds. Lock the phone and wait." = "שעון מערכת יצלצל בעוד כ-20 שניות. נעלו את הטלפון וחכו.";
+"A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "שעון שבת יישמע בעוד כדקה. נעלו את הטלפון וחכו.";
+"If an alarm does not ring, send this report to the developer." = "אם שעון לא מצלצל, שלחו את הדוח הזה למפתח.";
