@@ -150,6 +150,26 @@ final class ShabbatWakeTests: XCTestCase {
         XCTAssertEqual(AlarmSounds.file(for: "unknown"), "ClassicWake")
     }
 
+    func testOwnSoundFilesHaveTheRightShape() {
+        XCTAssertEqual(CustomSounds.mulaw(0), 0xFF)
+        let clip = [Int16](repeating: 1_000, count: 8_000)   // one second at 8 kHz
+        let looped = CustomSounds.looped(clip, rate: 8_000, seconds: 10)
+        XCTAssertEqual(looped.count, 80_000)
+        let alarmKit = CustomSounds.alarmKitWAV(looped, rate: 8_000)
+        XCTAssertGreaterThan(alarmKit.count, 8_000 * 300)   // the tone, then silence up to five minutes
+        XCTAssertEqual(String(decoding: alarmKit.prefix(4), as: UTF8.self), "RIFF")
+        let long = CustomSounds.looped([Int16](repeating: 500, count: 22_050), rate: 22_050, seconds: 29.5)
+        XCTAssertLessThan(Double(long.count) / 22_050, 30)
+        XCTAssertEqual(CustomSounds.pcmWAV(long, rate: 22_050).count, 44 + long.count * 2)
+    }
+
+    func testOwnSoundsAreForProAndUseTheirOwnFiles() {
+        XCTAssertFalse(ProPolicy.canImportCustomSound(hasPro: false))
+        XCTAssertTrue(ProPolicy.canImportCustomSound(hasPro: true))
+        XCTAssertFalse(ProPolicy.canUseSound(id: "custom-ABC", hasPro: false))
+        XCTAssertEqual(AlarmSounds.file(for: "custom-ABC"), "Custom_ABC")
+    }
+
     func testProSoundsNeedPro() {
         XCTAssertTrue(ProPolicy.canUseSound(id: "classic", hasPro: false))
         XCTAssertTrue(ProPolicy.canUseSound(id: "system", hasPro: false))

@@ -263,3 +263,10 @@
 "Choose from music boxes, birds, piano and more for your alarms." = "Choose from music boxes, birds, piano and more for your alarms.";
 "Alarm sound credits" = "Alarm sound credits";
 "Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:";
+
+/* Own alarm sounds */
+"My sounds" = "My sounds";
+"Add my own sound" = "Add my own sound";
+"Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "Use a song or recording from your phone. The first 30 seconds are used, and it repeats.";
+"Could not read this audio file." = "Could not read this audio file.";
+"Remove" = "Remove";

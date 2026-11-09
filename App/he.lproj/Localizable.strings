@@ -410,3 +410,10 @@
 "Choose from music boxes, birds, piano and more for your alarms." = "בחרו מקופסאות נגינה, ציפורים, פסנתר ועוד עבור ההתראות שלכם.";
 "Alarm sound credits" = "קרדיט לצלילי ההתראה";
 "Some alarm sounds come from OpenGameArt.org and are in the public domain (CC0 1.0). Thank you to the creators:" = "חלק מצלילי ההתראה מגיעים מ-OpenGameArt.org והם נחלת הכלל (CC0 1.0). תודה ליוצרים:";
+
+/* Own alarm sounds */
+"My sounds" = "הצלילים שלי";
+"Add my own sound" = "הוספת צליל משלי";
+"Use a song or recording from your phone. The first 30 seconds are used, and it repeats." = "אפשר להשתמש בשיר או הקלטה מהטלפון. משתמשים ב-30 השניות הראשונות והצליל חוזר.";
+"Could not read this audio file." = "לא ניתן לקרוא את קובץ האודיו הזה.";
+"Remove" = "הסרה";

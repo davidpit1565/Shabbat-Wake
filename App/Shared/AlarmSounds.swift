@@ -43,7 +43,11 @@ enum AlarmSounds {
     static func sound(id: String) -> AlarmSound? { all.first { $0.id == id } }
 
     /// File base name for an alarm's sound id; unknown ids fall back to the classic tone.
-    static func file(for id: String) -> String { (sound(id: id) ?? original[0]).file }
+    static func file(for id: String) -> String {
+        // The person's own sounds ("custom-" and a UUID) are made at import time; see App/CustomSounds.swift.
+        if id.hasPrefix("custom-") { return "Custom_" + id.dropFirst("custom-".count) }
+        return (sound(id: id) ?? original[0]).file
+    }
 
     /// Ids a free user may choose.
     static var freeIDs: Set<String> { Set(all.filter(\.isFree).map(\.id)) }

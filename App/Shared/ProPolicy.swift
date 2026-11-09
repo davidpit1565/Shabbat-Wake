@@ -26,5 +26,8 @@ enum ProPolicy {
         hasPro || id == "system" || AlarmSounds.freeIDs.contains(id)
     }
 
+    /// Importing a song or recording of one's own as an alarm sound.
+    static func canImportCustomSound(hasPro: Bool) -> Bool { hasPro }
+
     static func canChooseReminderTime(hasPro: Bool) -> Bool { hasPro }
 }
