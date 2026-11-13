@@ -421,3 +421,4 @@
 "A system alarm will ring in about 20 seconds. Lock the phone and wait." = "Una alarma del sistema sonará en unos 20 segundos. Bloquea el teléfono y espera.";
 "A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "Una alarma de Shabat sonará en un minuto aproximadamente. Bloquea el teléfono y espera.";
 "If an alarm does not ring, send this report to the developer." = "Si una alarma no suena, envía este informe al desarrollador.";
+"Shabbat alarm: a notification, silent if the side switch is on" = "Alarma de Shabat: una notificación, silenciosa si el interruptor lateral está en silencio";

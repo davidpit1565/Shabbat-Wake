@@ -421,3 +421,4 @@
 "A system alarm will ring in about 20 seconds. Lock the phone and wait." = "Системный будильник зазвонит примерно через 20 секунд. Заблокируйте телефон и ждите.";
 "A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "Будильник Шаббата прозвучит примерно через минуту. Заблокируйте телефон и ждите.";
 "If an alarm does not ring, send this report to the developer." = "Если будильник не звонит, отправьте этот отчёт разработчику.";
+"Shabbat alarm: a notification, silent if the side switch is on" = "Будильник Шаббата: уведомление, без звука при включённом беззвучном режиме";
