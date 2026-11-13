@@ -51,6 +51,11 @@ struct AlarmListScreen: View {
                                             .monospacedDigit()
                                         Text(alarm.title)
                                             .font(.subheadline.weight(.medium))
+                                        if alarm.isShabbatMode {
+                                            Label("Shabbat alarm: a notification, silent if the side switch is on", systemImage: "bell.badge")
+                                                .font(.caption)
+                                                .foregroundStyle(.orange)
+                                        }
                                         if let plan = alarm.ringPlan {
                                             Text(plan.count == 1 ? AppLanguage.text("One ring") : String(format: AppLanguage.text("Rings: %d · interval: %d min"), plan.count, plan.intervalMinutes))
                                                 .font(.caption)

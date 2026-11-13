@@ -436,3 +436,4 @@
 "A system alarm will ring in about 20 seconds. Lock the phone and wait." = "שעון מערכת יצלצל בעוד כ-20 שניות. נעלו את הטלפון וחכו.";
 "A Shabbat alarm will sound in about a minute. Lock the phone and wait." = "שעון שבת יישמע בעוד כדקה. נעלו את הטלפון וחכו.";
 "If an alarm does not ring, send this report to the developer." = "אם שעון לא מצלצל, שלחו את הדוח הזה למפתח.";
+"Shabbat alarm: a notification, silent if the side switch is on" = "התראת שבת: התראה רגילה, שקטה אם מתג הצד על שקט";
