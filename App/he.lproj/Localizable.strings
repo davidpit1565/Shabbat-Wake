@@ -450,3 +450,4 @@
 "A Shabbat alarm is a notification, so the iPhone plays no sound if it is on silent. An app cannot turn silent mode off, but an automation in the Shortcuts app can. Apple does not let an app create it for you, so set it up once:" = "התראת שבת היא התראה רגילה, ולכן האייפון לא משמיע צליל כשהוא על שקט. אפליקציה לא יכולה לכבות מצב שקט, אבל אוטומציה באפליקציית \"קיצורי דרך\" יכולה. אפל לא מאפשרת לאפליקציה ליצור אותה בשבילכם, ולכן מגדירים אותה פעם אחת:";
 "Open the Shortcuts app" = "פתיחת אפליקציית קיצורי דרך";
 "A regular alarm (Shabbat alarm switch off) rings on silent and needs none of this, but it vibrates until you stop it. Automations can miss when the phone has been idle for hours, so test it." = "שעון רגיל (מתג התראת שבת כבוי) מצלצל גם על שקט ולא צריך את כל זה, אבל הוא רוטט עד שעוצרים אותו. אוטומציות עלולות לפספס כשהטלפון לא היה בשימוש שעות, ולכן כדאי לבדוק.";
+"Continue" = "המשך";

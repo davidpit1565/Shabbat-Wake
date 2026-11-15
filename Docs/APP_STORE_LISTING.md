@@ -26,7 +26,7 @@ Languages: en (primary), he, ru, fr, es. Only features that are in the build are
 ## English (primary)
 
 - Subtitle: Shabbat alarm and candle times
-- Promotional text: Never miss candle lighting. Wake up on time, even on silent, with alarms made for Shabbat, exact times for where you are, and widgets for your Home and Lock Screen.
+- Promotional text: Never miss candle lighting. Wake up on time with alarms made for Shabbat, exact times for where you are, and widgets for your Home and Lock Screen.
 - Keywords: shabbat,shabbos,zmanim,candle lighting,havdalah,jewish,alarm clock,hebrew calendar,parasha,yom tov
 - Description:
 
@@ -60,7 +60,7 @@ System alarms need iOS 26.1 or later. Shabbat times need location and an interne
 ## עברית
 
 - Subtitle (תת-כותרת): שעון שבת וזמני הדלקת נרות
-- Promotional text: לא תפספסו הדלקת נרות. התעוררו בזמן, גם על שקט, עם שעונים שנבנו לשבת, זמנים מדויקים למקום שלכם וווידג'טים למסך הבית ולמסך הנעילה.
+- Promotional text: לא תפספסו הדלקת נרות. התעוררו בזמן עם שעונים שנבנו לשבת, זמנים מדויקים למקום שלכם וווידג'טים למסך הבית ולמסך הנעילה.
 - Keywords: שבת,זמני שבת,הדלקת נרות,הבדלה,שעון מעורר,פרשת שבוע,תאריך עברי,יום טוב,זמנים,יהדות
 - Description:
 
@@ -94,7 +94,7 @@ Shabbat Waker הוא שעון מעורר ולוח שנה לשבת, באפליק�
 ## Русский
 
 - Subtitle: Будильник и время свечей
-- Promotional text: Не пропустите зажигание свечей. Просыпайтесь вовремя, даже без звука: будильники для Шаббата, точное время и виджеты для экрана «Домой» и экрана блокировки.
+- Promotional text: Не пропустите зажигание свечей. Просыпайтесь вовремя: будильники для Шаббата, точное время и виджеты для экрана «Домой» и экрана блокировки.
 - Keywords: шаббат,зажигание свечей,авдала,будильник,еврейский календарь,недельная глава,йом тов,зманим,иудаизм
 - Description:
 
@@ -128,7 +128,7 @@ Shabbat Waker — это будильник и календарь Шаббата
 ## Français
 
 - Subtitle: Réveil de Chabbat, bougies
-- Promotional text: Ne manquez plus l’allumage des bougies. Réveillez-vous à l’heure, même en silencieux : alarmes de Chabbat, horaires exacts et widgets d’écran d’accueil et verrouillé.
+- Promotional text: Ne manquez plus l’allumage des bougies. Réveillez-vous à l’heure : alarmes de Chabbat, horaires exacts et widgets d’écran d’accueil et verrouillé.
 - Keywords: chabbat,shabbat,bougies,havdala,réveil,calendrier hébraïque,paracha,yom tov,zmanim,juif
 - Description:
 
@@ -162,7 +162,7 @@ Les alarmes système nécessitent iOS 26.1 ou plus récent. Les horaires de Chab
 ## Español
 
 - Subtitle: Alarma de Shabat y velas
-- Promotional text: No te pierdas el encendido de velas. Despierta a tiempo, incluso en silencio: alarmas de Shabat, horarios exactos y widgets para la pantalla de inicio y de bloqueo.
+- Promotional text: No te pierdas el encendido de velas. Despierta a tiempo: alarmas de Shabat, horarios exactos y widgets para la pantalla de inicio y de bloqueo.
 - Keywords: shabat,shabbat,velas,havdalá,despertador,calendario hebreo,parashá,yom tov,zmanim,judío
 - Description:
 

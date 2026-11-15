@@ -51,7 +51,7 @@ struct AlarmEditorSheet: View {
             _weeksLimit = State(initialValue: 0)
             _ringSeconds = State(initialValue: RingPlan.defaultLength)
             // A new alarm starts as a regular system alarm: it rings on silent too. A Shabbat alarm is a choice.
-            _shabbatMode = State(initialValue: false)
+            _shabbatMode = State(initialValue: !NativeAlarmKitService.systemAlarmsAvailable)
         }
     }
 
@@ -120,7 +120,7 @@ struct AlarmEditorSheet: View {
                     Section {
                         Picker(selection: Binding(get: { weeksLimit }, set: { chooseWeeks($0) })) {
                             ForEach(weekChoices, id: \.self) { weeks in
-                                Text(weeks == 0 ? AppLanguage.text("Until I turn it off") : String(format: AppLanguage.text("For %d weeks"), weeks) + " · PRO").tag(weeks)
+                                Text(weeks == 0 ? AppLanguage.text("Until I turn it off") : String(format: AppLanguage.text("For %d weeks"), weeks) + (ProStore.isEnforced ? " · PRO" : "")).tag(weeks)
                             }
                         } label: {
                             Text("Repeat for")
@@ -244,7 +244,8 @@ struct AlarmEditorSheet: View {
         if shabbatMode && soundID == "system" { soundID = "classic" }
         isSaving = true
         let ringPlan: RingPlan? = stopsByItself ? plan.normalized() : nil
-        let weeks: Int? = repeatWeekly && weeksLimit > 0 ? weeksLimit : nil
+        // The week limit only exists for alarms that stop by themselves; a plain system alarm repeats weekly and cannot end on its own.
+        let weeks: Int? = repeatWeekly && stopsByItself && weeksLimit > 0 ? weeksLimit : nil
         Task {
             let saved: Bool
             if let editing {
