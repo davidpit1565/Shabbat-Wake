@@ -58,6 +58,11 @@ enum ReminderScheduler {
         let status = await authorizationStatus()
         guard status == .authorized || status == .provisional else { return }
 
+        let hasShabbatAlarm: Bool = {
+            guard let data = UserDefaults.standard.data(forKey: "shabbatWake.localAlarms.v2"),
+                  let alarms = try? JSONDecoder().decode([WakeAlarm].self, from: data) else { return false }
+            return alarms.contains { $0.isEnabled && $0.isShabbatMode }
+        }()
         let candleTimes = times.filter { $0.category == "candles" }.map(\.date)
         let locale = TimeFormat.locale(language: AppLanguage.effectiveCode(for: AppLanguage.preference), format: UserDefaults.standard.string(forKey: TimeFormat.storageKey))
         let calendar = Calendar.current
@@ -65,8 +70,10 @@ enum ReminderScheduler {
             let content = UNMutableNotificationContent()
             content.title = String(format: AppLanguage.text("Candle lighting in %d minutes"), item.minutesBefore)
             let time = item.candleLighting.formatted(in: locale, time: .shortened, timeZone: placeZone)
-            content.body = [String(format: AppLanguage.text("Candle lighting at %@"), time), placeName]
-                .compactMap { $0 }.joined(separator: " · ")
+            var bodyParts = [String(format: AppLanguage.text("Candle lighting at %@"), time), placeName].compactMap { $0 }
+            // A Shabbat alarm is a notification, so it makes no sound while the iPhone is on silent.
+            if hasShabbatAlarm { bodyParts.append(AppLanguage.text("Make sure silent mode is off so your Shabbat alarm sounds.")) }
+            content.body = bodyParts.joined(separator: " · ")
             content.sound = .default
             var parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: item.fireDate)
             parts.timeZone = calendar.timeZone
