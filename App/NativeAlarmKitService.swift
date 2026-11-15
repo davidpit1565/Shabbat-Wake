@@ -90,6 +90,12 @@ enum NativeAlarmKitService {
         }
     }
 
+    /// System alarms need iOS 26.1; before that only the Shabbat (notification) alarm can be made.
+    static var systemAlarmsAvailable: Bool {
+        if #available(iOS 26.1, *) { return true }
+        return false
+    }
+
     enum AuthorizationState { case authorized, denied, notDetermined, unsupported }
 
     static func authorizationState() -> AuthorizationState {

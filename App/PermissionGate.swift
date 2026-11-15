@@ -28,6 +28,13 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
     /// True when at least one permission can still be granted by asking (not yet answered).
     var canAsk: Bool { alarm == .notDetermined || location == .notDetermined || notifications == .notDetermined }
 
+    /// What must still be done for the alarms to work. Location is optional once it has been answered, and there are no system alarms below iOS 26.1.
+    var needsAttention: Bool {
+        let alarmOK = alarm == .unsupported || alarmAllowed
+        let locationOK = location != .notDetermined
+        return !(alarmOK && notificationsAllowed && locationOK)
+    }
+
     func refresh() {
         location = manager.authorizationStatus
         Task { await refreshAlarm() }
@@ -44,7 +51,7 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
         location = manager.authorizationStatus
         await refreshAlarm()
         // Every time the app opens, until everything is allowed: an alarm that cannot ring is worse than a reminder.
-        if !allAllowed { isPresented = true }
+        if needsAttention { isPresented = true }
     }
 
     func allow() async {
@@ -60,12 +67,12 @@ final class PermissionGate: NSObject, ObservableObject, @preconcurrency CLLocati
             manager.requestWhenInUseAuthorization()
         }
         location = manager.authorizationStatus
-        if allAllowed { isPresented = false }
+        if !needsAttention { isPresented = false }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         refresh()
-        if allAllowed { isPresented = false }
+        if !needsAttention { isPresented = false }
     }
 
     func openSettings() {
@@ -110,7 +117,7 @@ struct PermissionsSheet: View {
                     Button {
                         Task { await gate.allow() }
                     } label: {
-                        Text("Allow").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
+                        Text("Continue").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
                     }
                     .buttonStyle(.borderedProminent)
                 } else {

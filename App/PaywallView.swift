@@ -227,12 +227,15 @@ struct PaywallView: View {
 /// A small "PRO" tag shown next to features that need Pro.
 struct ProBadge: View {
     var body: some View {
-        Text("PRO")
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, 6).padding(.vertical, 2)
-            .foregroundStyle(Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? .systemOrange : UIColor(red: 0.62, green: 0.30, blue: 0, alpha: 1) }))
-            .background(Color.orange.opacity(0.16), in: Capsule())
-            .accessibilityLabel("Pro feature")
+        // Nothing is for sale in a Release build until Pro is enforced, so no badge either.
+        if ProStore.isEnforced {
+            Text("PRO")
+                .font(.caption2.weight(.bold))
+                .padding(.horizontal, 6).padding(.vertical, 2)
+                .foregroundStyle(Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? .systemOrange : UIColor(red: 0.62, green: 0.30, blue: 0, alpha: 1) }))
+                .background(Color.orange.opacity(0.16), in: Capsule())
+                .accessibilityLabel("Pro feature")
+        }
     }
 }
 
