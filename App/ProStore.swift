@@ -9,15 +9,9 @@ final class ProStore: ObservableObject {
     static let monthlyProductID = "com.shabbatwake.ios.pro.monthly"
     static let productIDs = [yearlyProductID, monthlyProductID]
 
-    /// Pro is not charged for until this is turned on. While it is false every feature is open,
-    /// so the app can be tested end to end. Turn it on once the subscriptions exist in App Store Connect.
-    /// Debug builds (run from Xcode, with Config/Pro.storekit) show the real purchase flow so it can be tried.
-    /// Release builds keep everything unlocked until the two subscriptions exist in App Store Connect.
-    #if DEBUG
+    /// Pro is charged for. Both subscriptions must exist in App Store Connect (one subscription group) and be attached to the
+    /// version that is submitted. Debug builds (run from Xcode) use the local Config/Pro.storekit file.
     static let isEnforced = true
-    #else
-    static let isEnforced = false
-    #endif
 
     @Published private(set) var hasPro: Bool
     /// Yearly first, then monthly.
