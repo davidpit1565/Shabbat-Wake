@@ -244,7 +244,8 @@ struct AlarmEditorSheet: View {
         if shabbatMode && soundID == "system" { soundID = "classic" }
         isSaving = true
         let ringPlan: RingPlan? = stopsByItself ? plan.normalized() : nil
-        let weeks: Int? = repeatWeekly && weeksLimit > 0 ? weeksLimit : nil
+        // The week limit only exists for alarms that stop by themselves; a plain system alarm repeats weekly and cannot end on its own.
+        let weeks: Int? = repeatWeekly && stopsByItself && weeksLimit > 0 ? weeksLimit : nil
         Task {
             let saved: Bool
             if let editing {
