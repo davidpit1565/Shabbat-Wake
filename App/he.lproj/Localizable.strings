@@ -438,3 +438,15 @@
 "If an alarm does not ring, send this report to the developer." = "אם שעון לא מצלצל, שלחו את הדוח הזה למפתח.";
 "Shabbat alarm: a notification, silent if the side switch is on" = "התראת שבת: התראה רגילה, שקטה אם מתג הצד על שקט";
 "Make sure silent mode is off so your Shabbat alarm sounds." = "ודאו שמצב שקט כבוי כדי שהתראת השבת תישמע.";
+"Turn silent mode off before Shabbat" = "לכבות מצב שקט לפני שבת";
+"Silent mode" = "מצב שקט";
+"Open the Shortcuts app and tap Automation at the bottom." = "פתחו את אפליקציית \"קיצורי דרך\" ולחצו על \"אוטומציה\" בתחתית.";
+"Tap + (New Automation) and choose Time of Day." = "לחצו על + (אוטומציה חדשה) ובחרו \"שעה ביום\".";
+"Set a time a few hours before the Shabbat alarm, choose Weekly, and pick Friday (or the day before a holiday)." = "קבעו שעה כמה שעות לפני התראת השבת, בחרו \"שבועי\" ואת יום שישי (או ערב חג).";
+"Choose Run Immediately, then Next." = "בחרו \"הרץ מיד\" ואז \"הבא\".";
+"Tap New Blank Automation, type “silent” in the search field and choose Set Silent Mode." = "לחצו על \"אוטומציה ריקה חדשה\", הקלידו \"silent\" בחיפוש ובחרו \"Set Silent Mode\".";
+"Tap the word On so that it reads Off, then Done." = "לחצו על המילה \"On\" כדי שתהפוך ל-\"Off\", ואז \"סיום\".";
+"Test it once: turn silent mode on, set the time a few minutes ahead, lock the phone and wait." = "בדקו פעם אחת: הדליקו מצב שקט, קבעו שעה בעוד כמה דקות, נעלו את הטלפון וחכו.";
+"A Shabbat alarm is a notification, so the iPhone plays no sound if it is on silent. An app cannot turn silent mode off, but an automation in the Shortcuts app can. Apple does not let an app create it for you, so set it up once:" = "התראת שבת היא התראה רגילה, ולכן האייפון לא משמיע צליל כשהוא על שקט. אפליקציה לא יכולה לכבות מצב שקט, אבל אוטומציה באפליקציית \"קיצורי דרך\" יכולה. אפל לא מאפשרת לאפליקציה ליצור אותה בשבילכם, ולכן מגדירים אותה פעם אחת:";
+"Open the Shortcuts app" = "פתיחת אפליקציית קיצורי דרך";
+"A regular alarm (Shabbat alarm switch off) rings on silent and needs none of this, but it vibrates until you stop it. Automations can miss when the phone has been idle for hours, so test it." = "שעון רגיל (מתג התראת שבת כבוי) מצלצל גם על שקט ולא צריך את כל זה, אבל הוא רוטט עד שעוצרים אותו. אוטומציות עלולות לפספס כשהטלפון לא היה בשימוש שעות, ולכן כדאי לבדוק.";

@@ -536,6 +536,7 @@ private struct SettingsScreen: View {
                     } label: { Label("Test the alarm", systemImage: "bell.badge") }
                     if let testMessage { Text(testMessage).font(.footnote).foregroundStyle(.secondary) }
                     NavigationLink { RingTipsScreen() } label: { Label("Make sure it rings", systemImage: "checklist") }
+                    NavigationLink { SilentModeGuideScreen() } label: { Label("Turn silent mode off before Shabbat", systemImage: "bell.slash") }
                 } header: { Text("Check that it rings") }
                 Section("Reminders") {
                     NavigationLink {
@@ -603,6 +604,50 @@ private struct SettingsScreen: View {
 
 
 /// What decides whether an alarm sounds, with the permissions as iOS reports them now.
+/// Explains how to make the iPhone leave Silent Mode by itself before Shabbat. An app cannot change Silent Mode, and
+/// Shortcuts offers no way to create an automation for the person, so this walks through the steps.
+private struct SilentModeGuideScreen: View {
+    private let steps: [LocalizedStringKey] = [
+        "Open the Shortcuts app and tap Automation at the bottom.",
+        "Tap + (New Automation) and choose Time of Day.",
+        "Set a time a few hours before the Shabbat alarm, choose Weekly, and pick Friday (or the day before a holiday).",
+        "Choose Run Immediately, then Next.",
+        "Tap New Blank Automation, type \u{201C}silent\u{201D} in the search field and choose Set Silent Mode.",
+        "Tap the word On so that it reads Off, then Done.",
+        "Test it once: turn silent mode on, set the time a few minutes ahead, lock the phone and wait.",
+    ]
+
+    var body: some View {
+        List {
+            Section {
+                Text("A Shabbat alarm is a notification, so the iPhone plays no sound if it is on silent. An app cannot turn silent mode off, but an automation in the Shortcuts app can. Apple does not let an app create it for you, so set it up once:")
+                    .font(.subheadline)
+            }
+            Section {
+                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(width: 26, height: 26)
+                            .background(.tint.opacity(0.15), in: Circle())
+                        Text(step).font(.subheadline)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            Section {
+                Button {
+                    if let url = URL(string: "shortcuts://") { UIApplication.shared.open(url) }
+                } label: { Label("Open the Shortcuts app", systemImage: "arrow.up.forward.app") }
+            } footer: {
+                Text("A regular alarm (Shabbat alarm switch off) rings on silent and needs none of this, but it vibrates until you stop it. Automations can miss when the phone has been idle for hours, so test it.")
+            }
+        }
+        .navigationTitle("Silent mode")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 private struct RingTipsScreen: View {
     @State private var alarms = NativeAlarmKitService.authorizationState()
     @State private var notificationsOn = false
