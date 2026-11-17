@@ -2,7 +2,7 @@
 
 The published policy (English and Hebrew) lives in `privacy/index.html` and is what App Store Connect and the in-app link should point to.
 
-Operator and contact are filled in (David Pitchkhadze, davidpit2008@gmail.com).
+Operator and contact are filled in (David Pitchkhadze, tamid.app@gmail.com).
 
 
 To host it for free: make the repository public, then *Settings → Pages → Deploy from branch → main / (root)*. The URL will be `https://<owner>.github.io/<repo>/privacy/`. `AppLinks` in `App/ShabbatWakeApp.swift` already points there; use the same URLs (`/privacy/` and `/support/`) in App Store Connect.
