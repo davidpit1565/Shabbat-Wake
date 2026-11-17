@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 enum SupportContact {
-    static let email = "davidpit2008@gmail.com"
+    static let email = "tamid.app@gmail.com"
 }
 
 /// Where feedback is sent: a form service that emails the developer, so the person never leaves the app.
